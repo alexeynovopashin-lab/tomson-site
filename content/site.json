@@ -1,0 +1,19 @@
+{
+  "name": "Томсон",
+  "tagline": "фотостудия",
+  "city": "Томск",
+  "address": "Красноармейская, 101А",
+  "phone": "+7 961 887-80-78",
+  "phoneHref": "+79618878078",
+  "oldSite": "https://xn--l1acbbod.xn--p1ai",
+  "nav": [
+    { "label": "Залы", "href": "/#zaly" },
+    { "label": "Расписание", "slug": "raspisanie" },
+    { "label": "Фотошкола", "slug": "fotosfera" },
+    { "label": "Правила", "slug": "pravila_i_cena" },
+    { "label": "Оборудование", "slug": "oborudovanie" },
+    { "label": "Услуги", "slug": "sertifikaty" },
+    { "label": "Как найти", "slug": "kak-najti" }
+  ],
+  "footerNote": "Страницы без своей версии пока открываются на прежнем сайте студии."
+}

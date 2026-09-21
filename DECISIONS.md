@@ -1,0 +1,14 @@
+# DECISIONS
+
+Append-only: date · decision · why.
+
+- 2026-09-21 · Site first, with the same AppEvent widget; BroniOS is meant to replace AppEvent later, so the booking place on hall pages must stay swappable. Alexey: «Сначала только сайт, но с учетом, что BroniOS заменят AppEvent».
+- 2026-09-21 · Booking on the new site: «А для запуска» — AppEvent iframe as is, styled around. Alexey asks AppEvent support about official access to submitting requests; yes → own form on top of AppEvent, no → own booking on BroniOS.
+- 2026-09-21 · Photos come from Vigbo (Alexey: originals are huge, compression is fine).
+- 2026-09-21 · Admin panel: photos only, texts in separate files (Alexey: «A, тексты в отдельные файлы»).
+- 2026-09-21 · Design: exact copy of the sample is not needed, full freedom on fonts and layout, modern photo-studio site in magazine style (Alexey).
+- 2026-09-21 · Admin also edits prices (added to the photo admin, not instead of it). Each price is ONE variable: change it in the admin → it changes on every page. Pages with prices: halls and equipment. Alexey: «Цена должна быть единой переменной: поменял в админке и по всему сайту изменение».
+- 2026-09-21 · Vegas hourly prices confirmed by Alexey: 1–5 → 1300, 6–10 → 1500, 11–15 → 3100, 16–30 → 8100. Old «Правила и цены» (3000/8000) is outdated. Equipment prices: until Alexey says otherwise, take the «Оборудование» page values and mark them unverified.
+- 2026-09-21 · Equipment price units (Alexey): almost everything is per shoot, «shoot» = up to 6 hours; Arri and the projector are per hour. Price file needs a unit per price: per shoot (≤6 h) / per hour / per day. Show «за съёмку (до 6 часов)» on the equipment page.
+- 2026-09-21 · Prices live only in `content/prices.json` (hall tiers + items with unit per shoot ≤6 h / hour / day / check / fine); texts reference them by key, build fails on unknown keys. Proven: changing one price updates home, hall page and rules. Rules page no longer duplicates the equipment price table — it links to the equipment page. Alexey confirmed the goal (one variable, changed in the admin).
+- 2026-09-21 · Unverified prices taken from the «Оборудование» page (marked `check`): DP600II 50, SL200III 300, Aputure Spotlight 26° 300. Rules also say photographer 5500/h and 3000/h (reschedule) — kept as two separate items.

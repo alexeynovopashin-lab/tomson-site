@@ -1,0 +1,318 @@
+{
+  "units": {
+    "hour": "за час",
+    "shoot": "за съёмку",
+    "day": "за сутки",
+    "check": "к чеку",
+    "each": "",
+    "metre": "за метр",
+    "fine": "",
+    "percent": ""
+  },
+  "halls": {
+    "edison": [
+      {
+        "people": "1–9 человек",
+        "price": 1600
+      },
+      {
+        "people": "10–15 человек",
+        "price": 1800
+      },
+      {
+        "people": "16–30 человек",
+        "price": 2000
+      }
+    ],
+    "sfera": [
+      {
+        "people": "1–9 человек",
+        "price": 1500
+      },
+      {
+        "people": "10–15 человек",
+        "price": 1700
+      },
+      {
+        "people": "16–30 человек",
+        "price": 1900
+      }
+    ],
+    "vegas": [
+      {
+        "people": "1–5 человек",
+        "price": 1300
+      },
+      {
+        "people": "6–10 человек",
+        "price": 1500
+      },
+      {
+        "people": "11–15 человек",
+        "price": 3100
+      },
+      {
+        "people": "16–30 человек",
+        "price": 8100
+      }
+    ]
+  },
+  "items": {
+    "qt600": {
+      "group": "Оборудование",
+      "label": "Godox QT600III M (4 шт)",
+      "price": 100,
+      "unit": "shoot"
+    },
+    "ad600": {
+      "group": "Оборудование",
+      "label": "Godox AD600Pro",
+      "price": 200,
+      "unit": "shoot"
+    },
+    "ad300": {
+      "group": "Оборудование",
+      "label": "Godox AD300Pro",
+      "price": 150,
+      "unit": "shoot"
+    },
+    "dp600": {
+      "group": "Оборудование",
+      "label": "Godox DP600II (3 шт)",
+      "price": 50,
+      "unit": "shoot",
+      "check": true
+    },
+    "ad200": {
+      "group": "Оборудование",
+      "label": "Godox AD200Pro",
+      "price": 100,
+      "unit": "shoot"
+    },
+    "lux_senior": {
+      "group": "Оборудование",
+      "label": "Godox LUX Senior",
+      "price": 200,
+      "unit": "shoot"
+    },
+    "lux_junior": {
+      "group": "Оборудование",
+      "label": "Godox LUX Junior",
+      "price": 100,
+      "unit": "shoot"
+    },
+    "speedlite": {
+      "group": "Оборудование",
+      "label": "Canon Speedlite 600 EX RT",
+      "price": 150,
+      "unit": "shoot"
+    },
+    "sl150w": {
+      "group": "Оборудование",
+      "label": "Godox SL 150W (2 шт)",
+      "price": 100,
+      "unit": "shoot"
+    },
+    "sl150ii": {
+      "group": "Оборудование",
+      "label": "Godox SL150II",
+      "price": 150,
+      "unit": "shoot"
+    },
+    "sz200bi": {
+      "group": "Оборудование",
+      "label": "Godox SZ200Bi",
+      "price": 300,
+      "unit": "shoot"
+    },
+    "sz150r": {
+      "group": "Оборудование",
+      "label": "Godox SZ150R RGB",
+      "price": 300,
+      "unit": "shoot"
+    },
+    "sl200iii": {
+      "group": "Оборудование",
+      "label": "Godox SL200III",
+      "price": 300,
+      "unit": "shoot",
+      "check": true
+    },
+    "lp150r": {
+      "group": "Оборудование",
+      "label": "Godox LP150R (RGBWW-панель)",
+      "price": 400,
+      "unit": "shoot"
+    },
+    "tp4r_1": {
+      "group": "Оборудование",
+      "label": "Godox TP4R, 1 трубка",
+      "price": 300,
+      "unit": "shoot"
+    },
+    "tp4r_2": {
+      "group": "Оборудование",
+      "label": "Godox TP4R, 2 трубки",
+      "price": 500,
+      "unit": "shoot"
+    },
+    "arri": {
+      "group": "Оборудование",
+      "label": "Arri 2/3 (3000 W)",
+      "price": 500,
+      "unit": "hour"
+    },
+    "amaran": {
+      "group": "Оборудование",
+      "label": "Aputure Amaran 300c (2 шт)",
+      "price": 300,
+      "unit": "shoot"
+    },
+    "small_spot": {
+      "group": "Оборудование",
+      "label": "Маленький спот",
+      "price": 400,
+      "unit": "shoot"
+    },
+    "spot26": {
+      "group": "Оборудование",
+      "label": "Aputure Spotlight 26° (спот-насадка)",
+      "price": 300,
+      "unit": "shoot",
+      "check": true
+    },
+    "projector": {
+      "group": "Оборудование",
+      "label": "Проектор Canon LV-8320",
+      "price": 500,
+      "unit": "hour"
+    },
+    "instax": {
+      "group": "Оборудование",
+      "label": "Fujifilm Instax Wide 300",
+      "price": 1000,
+      "unit": "day"
+    },
+    "movelink": {
+      "group": "Оборудование",
+      "label": "Godox MoveLink M2 (радиопетличка)",
+      "price": 300,
+      "unit": "shoot"
+    },
+    "selens190": {
+      "group": "Оборудование",
+      "label": "Selens 190 см (параболический зонт-софтбокс)",
+      "price": 500,
+      "unit": "shoot"
+    },
+    "bg_roll": {
+      "group": "Услуги и доплаты",
+      "label": "Бумажный фон с раскаткой под ноги",
+      "price": 300,
+      "unit": "each"
+    },
+    "bg_extra": {
+      "group": "Услуги и доплаты",
+      "label": "Дополнительные 1–3 фона сверх трёх",
+      "price": 300,
+      "unit": "each"
+    },
+    "bg_self_roll": {
+      "group": "Услуги и доплаты",
+      "label": "Самостоятельная раскатка фона",
+      "price": 300,
+      "unit": "each"
+    },
+    "bg_damage": {
+      "group": "Услуги и доплаты",
+      "label": "Испорченный бумажный фон, за погонный метр",
+      "price": 800,
+      "unit": "metre"
+    },
+    "assistant": {
+      "group": "Услуги и доплаты",
+      "label": "Ассистент (работа со светом)",
+      "price": 1000,
+      "unit": "hour"
+    },
+    "photographer": {
+      "group": "Услуги и доплаты",
+      "label": "Фотограф студии",
+      "price": 5500,
+      "unit": "hour"
+    },
+    "photographer_alt": {
+      "group": "Услуги и доплаты",
+      "label": "Фотограф студии при переносе съёмки",
+      "price": 3000,
+      "unit": "hour",
+      "check": true
+    },
+    "pets": {
+      "group": "Услуги и доплаты",
+      "label": "Животные в студии (до 3 собак)",
+      "price": 500,
+      "unit": "hour"
+    },
+    "alcohol": {
+      "group": "Услуги и доплаты",
+      "label": "Распитие алкоголя по бокалам",
+      "price": 500,
+      "unit": "check"
+    },
+    "banquet": {
+      "group": "Услуги и доплаты",
+      "label": "Банкет, фуршет, ужин в зале Эдисон",
+      "price": 500,
+      "unit": "check"
+    },
+    "food": {
+      "group": "Услуги и доплаты",
+      "label": "Еда и фотосъёмка еды в зале Сфера",
+      "price": 500,
+      "unit": "check"
+    },
+    "shoes_sfera": {
+      "group": "Услуги и доплаты",
+      "label": "Вход в зал Сфера в уличной обуви",
+      "price": 500,
+      "unit": "check"
+    },
+    "shoes_cyclorama_fine": {
+      "group": "Услуги и доплаты",
+      "label": "Штраф: вход на циклораму в уличной обуви",
+      "price": 2000,
+      "unit": "fine"
+    },
+    "neon_damage_min": {
+      "group": "Услуги и доплаты",
+      "label": "Поломка неона, от",
+      "price": 16000,
+      "unit": "fine"
+    },
+    "neon_damage_max": {
+      "group": "Услуги и доплаты",
+      "label": "Поломка неона, до",
+      "price": 80000,
+      "unit": "fine"
+    },
+    "fire_fine": {
+      "group": "Услуги и доплаты",
+      "label": "Штраф: свечи, пиротехника, дым (от)",
+      "price": 2000,
+      "unit": "fine"
+    },
+    "smoking_fine": {
+      "group": "Услуги и доплаты",
+      "label": "Штраф: курение, вейп, дым-машина",
+      "price": 2000,
+      "unit": "fine"
+    },
+    "legal_pct": {
+      "group": "Услуги и доплаты",
+      "label": "Надбавка при оплате по счёту для юрлиц",
+      "price": 4,
+      "unit": "percent"
+    }
+  }
+}
