@@ -1,15 +1,26 @@
 #!/usr/bin/env python3
-"""Upload dist/ to the Yandex Object Storage bucket `tomson` (S3 API, SigV4, stdlib only).
+"""Publish the site to the Yandex Object Storage bucket `tomson` (S3 API, SigV4, stdlib only).
+
+The site is the main copy of prices and photos: Alexey changes them in the admin (/admin/) and
+the cloud function writes them straight into the bucket. So every run goes in three steps:
+  1. pull — take prices.json and replaced photos from the bucket into content/ and photos/
+     (stops if the same file was also changed here and not committed: someone's edit would be lost);
+  2. build — node build.mjs;
+  3. push — upload changed files of dist/ (compared by MD5 = ETag). Nothing is deleted.
+After a pull, commit what came from the admin (the script prints the list).
 
 Keys: ~/.config/tomson/s3.env (AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY), created by Alexey,
-never stored in a repo. Only changed files are uploaded (compared by MD5 = ETag). Nothing is deleted.
-Usage: node build.mjs && python3 deploy.py [--dry-run] [--force]  (--force re-uploads even unchanged files, e.g. to refresh headers)
+never stored in a repo.
+Usage: python3 deploy.py [--dry-run] [--force] [--pull-only]
+  --force re-uploads even unchanged files, e.g. to refresh headers
 """
-import datetime, hashlib, hmac, mimetypes, os, sys, urllib.error, urllib.parse, urllib.request
+import datetime, hashlib, hmac, json, mimetypes, os, subprocess, sys, urllib.error, urllib.parse, urllib.request
 
 BUCKET, HOST, REGION = "tomson", "storage.yandexcloud.net", "ru-central1"
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dist")
+PROJECT = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.join(PROJECT, "dist")
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+         ".mjs": "text/javascript; charset=utf-8",
          ".json": "application/json", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png", ".svg": "image/svg+xml"}
 
 
@@ -56,9 +67,65 @@ def remote_etag(path, keys):
         raise
 
 
+def remote_get(path, keys):
+    try:
+        return request("GET", path, keys).read()
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return None
+        raise
+
+
+def uncommitted(rel):
+    return subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel], cwd=PROJECT).returncode != 0
+
+
+def pull(keys, dry):
+    """Bring what Alexey changed in the admin into the working copy. Returns the pulled paths."""
+    pulled, conflicts, plan = [], [], []
+    remote_prices = remote_get("_src/content/prices.json", keys)
+    if remote_prices is None:
+        return []  # the admin was never published: nothing to take
+    local = os.path.join(PROJECT, "content", "prices.json")
+    if open(local, "rb").read() != remote_prices:
+        plan.append(("content/prices.json", remote_prices))
+    manifest = json.loads(remote_get("_src/manifest.json", keys))
+    for slot, v in manifest["versions"].items():
+        rel = f"photos/{slot}.jpg"
+        path = os.path.join(PROJECT, rel)
+        if os.path.exists(path) and hashlib.md5(open(path, "rb").read()).hexdigest()[:8] == v:
+            continue
+        body = remote_get(rel, keys)
+        if body is None or hashlib.md5(body).hexdigest()[:8] != v:
+            sys.exit(f"stop: {rel} on the site does not match its version {v}; run again in a minute")
+        plan.append((rel, body))
+    for rel, body in plan:
+        if uncommitted(rel):
+            conflicts.append(rel)
+    if conflicts:
+        sys.exit("stop: changed both in the admin and here (uncommitted): " + ", ".join(conflicts)
+                 + "\nCommit or drop the local change first, then run again.")
+    for rel, body in plan:
+        print(("would take " if dry else "take ") + rel + " from the admin")
+        if not dry:
+            with open(os.path.join(PROJECT, rel), "wb") as f:
+                f.write(body)
+        pulled.append(rel)
+    return pulled
+
+
 def main():
     dry = "--dry-run" in sys.argv
     force = "--force" in sys.argv
+    keys = load_keys()
+    pulled = pull(keys, dry)
+    if "--pull-only" in sys.argv:
+        print(f"pulled={len(pulled)}")
+        return
+    r = subprocess.run(["node", "build.mjs"], cwd=PROJECT)
+    if r.returncode:
+        sys.exit("stop: build failed, nothing uploaded")
+    remote_prices_before = remote_get("_src/content/prices.json", keys)
     files = []
     for d, _, names in os.walk(ROOT):
         for n in names:
@@ -67,21 +134,31 @@ def main():
             full = os.path.join(d, n)
             files.append((os.path.relpath(full, ROOT).replace(os.sep, "/"), full))
     files.sort()
-    keys = None if dry else load_keys()
     up = same = 0
     for key, full in files:
         body = open(full, "rb").read()
-        if not dry and not force and remote_etag(key, keys) == hashlib.md5(body).hexdigest():
+        if not force and remote_etag(key, keys) == hashlib.md5(body).hexdigest():
             same += 1
             continue
         ext = os.path.splitext(key)[1].lower()
         ctype = TYPES.get(ext) or mimetypes.guess_type(key)[0] or "application/octet-stream"
-        cache = "public, max-age=31536000, immutable" if ext == ".woff2" else "public, max-age=300"
+        if ext == ".woff2":
+            cache = "public, max-age=31536000, immutable"
+        elif ext in (".html", ".json", ".mjs"):
+            cache = "no-cache"  # prices change from the admin: always ask the site if the page is still current
+        elif key.startswith("photos/"):
+            cache = "public, max-age=31536000"  # pages link photos with ?v=<hash>, a new photo gets a new address
+        else:
+            cache = "public, max-age=300"
         print(("would upload " if dry else "upload ") + f"{key} ({len(body)//1024} KB, {ctype})")
         if not dry:
             request("PUT", key, keys, body, {"Content-Type": ctype, "Cache-Control": cache})
         up += 1
     print(f"{'planned' if dry else 'uploaded'}={up} unchanged={same}")
+    if remote_get("_src/content/prices.json", keys) != remote_prices_before:
+        print("WARNING: prices were changed in the admin during this upload; run deploy.py again")
+    if pulled:
+        print("from the admin, commit these: " + " ".join(pulled))
 
 
 if __name__ == "__main__":

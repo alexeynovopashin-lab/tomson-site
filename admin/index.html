@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>Томсон · админка</title>
+<meta name="theme-color" content="#f5f1ea">
+<style>
+@font-face{font-family:"Playfair Display";font-weight:400 700;font-display:swap;src:url(/fonts/playfair-cyr.woff2) format("woff2");unicode-range:U+0400-045F,U+2116}
+@font-face{font-family:"Playfair Display";font-weight:400 700;font-display:swap;src:url(/fonts/playfair-lat.woff2) format("woff2");unicode-range:U+0000-00FF,U+2000-206F}
+@font-face{font-family:"Manrope";font-weight:200 800;font-display:swap;src:url(/fonts/manrope-cyr.woff2) format("woff2");unicode-range:U+0400-045F,U+2116}
+@font-face{font-family:"Manrope";font-weight:200 800;font-display:swap;src:url(/fonts/manrope-lat.woff2) format("woff2");unicode-range:U+0000-00FF,U+2000-206F,U+20BD}
+:root{
+  --paper:#f5f1ea;--paper-2:#ece6db;--card:#fbf9f5;--ink:#17140f;--muted:#6d655a;--line:rgba(23,20,15,.14);
+  --accent:#b4532a;--accent-ink:#fff;--changed:#fff4ec;--warn:#8a5d00;--warn-bg:#f6e9c8;--ok:#2f6b3a;--ok-bg:#dfeedd;--err:#a3261b;--err-bg:#f7dcd8;
+  --field:#fff;--bar:#17140f;--bar-ink:#f5f1ea;
+  --serif:"Playfair Display",Georgia,serif;--sans:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#16130f;--paper-2:#221e18;--card:#1c1914;--ink:#efe9df;--muted:#a59c8f;--line:rgba(239,233,223,.14);
+  --accent:#d9774b;--accent-ink:#16130f;--changed:#2c2017;--warn:#e9c46a;--warn-bg:#3a3018;--ok:#8fcf98;--ok-bg:#1d2f20;--err:#f2a097;--err-bg:#3b1d19;
+  --field:#262119;--bar:#efe9df;--bar-ink:#16130f;
+}}
+:root[data-theme="dark"]{
+  --paper:#16130f;--paper-2:#221e18;--card:#1c1914;--ink:#efe9df;--muted:#a59c8f;--line:rgba(239,233,223,.14);
+  --accent:#d9774b;--accent-ink:#16130f;--changed:#2c2017;--warn:#e9c46a;--warn-bg:#3a3018;--ok:#8fcf98;--ok-bg:#1d2f20;--err:#f2a097;--err-bg:#3b1d19;
+  --field:#262119;--bar:#efe9df;--bar-ink:#16130f;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 var(--sans)}
+button,input{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:8px 12px;min-height:56px;flex-wrap:wrap;padding-top:6px;padding-bottom:6px}
+.logo{font:600 22px/1 var(--serif);margin-right:auto}
+.logo small{font:500 11px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-left:8px}
+.tabs{display:flex;gap:4px;background:var(--paper-2);border-radius:999px;padding:3px}
+.tabs button{border:0;background:none;padding:7px 16px;border-radius:999px;cursor:pointer;font-weight:600}
+.tabs button[aria-selected=true]{background:var(--ink);color:var(--paper)}
+.link{color:var(--muted);font-size:13px;text-decoration:none;border:0;background:none;cursor:pointer;padding:6px 4px}
+.link:hover{color:var(--ink)}
+main{padding:12px 0 140px}
+h2{font:600 clamp(26px,5vw,34px)/1.1 var(--serif);margin:20px 0 6px}
+h3{font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:26px 0 8px}
+.hint{color:var(--muted);margin:0 0 12px;max-width:62ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:grid;grid-template-columns:1fr auto;gap:6px 14px;align-items:center;padding:12px 16px;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0}
+.row .name{min-width:0}
+.row .name b{font-weight:600}
+.row .unit{color:var(--muted);font-size:13px;display:block}
+.money{display:flex;align-items:center;gap:6px}
+.money input{width:104px;text-align:right;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-variant-numeric:tabular-nums;font-size:16px}
+.money input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.money span{color:var(--muted);width:1em}
+.row.changed{background:var(--changed)}
+.row.changed input{border-color:var(--accent)}
+.row.bad input{border-color:var(--err);outline-color:var(--err)}
+.was{font-size:12px;color:var(--accent);display:block}
+.row.bad .was{color:var(--err)}
+.unver{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.badge{font-size:12px;font-weight:600;color:var(--warn);background:var(--warn-bg);border-radius:999px;padding:2px 9px}
+.badge.ok{color:var(--ok);background:var(--ok-bg)}
+.small-btn{font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--field);border-radius:999px;padding:5px 12px;cursor:pointer}
+.hall-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))}
+.hall-grid h4{font:600 20px/1.2 var(--serif);margin:0;padding:14px 16px 4px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--bar);color:var(--bar-ink);padding:12px 0 calc(12px + env(safe-area-inset-bottom));transform:translateY(110%);transition:transform .2s}
+.bar.on{transform:none}
+.bar .wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bar .what{margin-right:auto;font-size:14px}
+.btn{border:0;border-radius:999px;padding:11px 20px;font-weight:700;cursor:pointer;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:inherit;border:1px solid currentColor}
+.btn:disabled{opacity:.5;cursor:default}
+.photos{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.ph{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.frame{background:var(--paper-2);overflow:hidden}
+.frame img{display:block;width:100%;height:100%;object-fit:cover}
+.ph .cap{padding:8px 10px 0;font-size:12px;color:var(--muted);flex:1}
+.ph .cap b{display:block;color:var(--ink);font-weight:600;letter-spacing:.04em}
+.ph .small-btn{margin:8px 10px 10px;align-self:flex-start}
+.login{max-width:380px;margin:12vh auto 0;padding:0 16px}
+.login h1{font:600 40px/1 var(--serif);margin:0 0 6px}
+.login form{display:flex;gap:8px;margin-top:18px}
+.login input{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--field);font-size:16px}
+.msg{margin:14px 0;padding:12px 14px;border-radius:12px;white-space:pre-line}
+.msg.err{background:var(--err-bg);color:var(--err)}
+.msg.ok{background:var(--ok-bg);color:var(--ok)}
+dialog{border:0;border-radius:16px;padding:0;max-width:min(560px,calc(100vw - 32px));width:100%;background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(10,8,6,.6)}
+.dlg{padding:18px}
+.dlg h4{font:600 22px/1.2 var(--serif);margin:0 0 6px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmp figure{margin:0}
+.cmp figcaption{font-size:12px;color:var(--muted);margin-top:4px}
+.cmp .frame{border-radius:8px}
+.dlg .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="login" id="login" hidden>
+  <h1>Томсон</h1>
+  <p class="hint">Админка сайта: цены и фото.</p>
+  <form id="loginForm">
+    <input type="password" id="pw" autocomplete="current-password" placeholder="Пароль" required>
+    <button class="btn">Войти</button>
+  </form>
+  <div id="loginMsg"></div>
+</div>
+
+<div id="app" hidden>
+  <header><div class="wrap">
+    <div class="logo">Томсон<small>админка</small></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="prices">Цены</button>
+      <button role="tab" aria-selected="false" data-tab="photos">Фото</button>
+    </div>
+    <a class="link" href="/" target="_blank" rel="noopener">Открыть сайт</a>
+    <button class="link" id="logout">Выйти</button>
+  </div></header>
+
+  <main class="wrap">
+    <div id="msg"></div>
+    <section id="tab-prices">
+      <h2>Цены</h2>
+      <p class="hint">Меняйте числа и нажмите «Опубликовать» внизу. Каждая цена хранится в одном месте и меняется на всех страницах сайта сразу.</p>
+      <h3>Аренда залов, за час</h3>
+      <div class="hall-grid" id="halls"></div>
+      <div id="items"></div>
+    </section>
+    <section id="tab-photos" hidden>
+      <h2>Фото</h2>
+      <p class="hint">Нажмите «Заменить» и выберите снимок, можно прямо с телефона: он уменьшится до размера сайта. У каждого места своя рамка, лишнее обрежется по краям. Прежнее фото остаётся в архиве.</p>
+      <div id="photoGroups"></div>
+      <input type="file" id="file" accept="image/*" hidden>
+    </section>
+  </main>
+
+  <div class="bar" id="bar"><div class="wrap">
+    <div class="what" id="barWhat"></div>
+    <button class="btn ghost" id="undo">Отменить</button>
+    <button class="btn" id="publish">Опубликовать</button>
+  </div></div>
+</div>
+
+<dialog id="dlg"><div class="dlg">
+  <h4>Заменить фото?</h4>
+  <p class="hint" id="dlgWhere"></p>
+  <div class="cmp">
+    <figure><div class="frame" id="dlgOldF"><img id="dlgOld" alt=""></div><figcaption>Сейчас на сайте</figcaption></figure>
+    <figure><div class="frame" id="dlgNewF"><img id="dlgNew" alt=""></div><figcaption id="dlgNewCap">Новое</figcaption></figure>
+  </div>
+  <div id="dlgMsg"></div>
+  <div class="acts">
+    <button class="btn ghost" id="dlgCancel">Отмена</button>
+    <button class="btn" id="dlgOk">Опубликовать фото</button>
+  </div>
+</div></dialog>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  var UNIT = { shoot: 'за съёмку (до 6 ч)', percent: 'процент' };
+  var GROUPS = [['home-', 'Главная'], ['hall-', 'Главная, карточки залов'], ['edison-', 'Зал Эдисон'], ['sfera-', 'Зал Сфера'], ['vegas-', 'Зал Вегас']];
+  var api = null, C = {}, manifest = null, edits, busy = false, pending = null;
+  var pw = {
+    get: function () { try { return sessionStorage.getItem('pw') || ''; } catch (e) { return mem; } },
+    set: function (v) { mem = v; try { v ? sessionStorage.setItem('pw', v) : sessionStorage.removeItem('pw'); } catch (e) {} }
+  }, mem = '';
+
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function money(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function show(el, kind, text) { el.innerHTML = text ? '<div class="msg ' + kind + '">' + esc(text) + '</div>' : ''; }
+  function plural(n, a, b, c) { var m = n % 10, h = n % 100; return m === 1 && h !== 11 ? a : m >= 2 && m <= 4 && (h < 10 || h >= 20) ? b : c; }
+
+  // current state is read straight from the site; the cloud function only writes
+  function getJson(path) {
+    return fetch(path, { cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw new Error('не загрузилось ' + path + ' (' + r.status + ')');
+      return r.json();
+    });
+  }
+  function load() {
+    return getJson('/_src/manifest.json').then(function (m) {
+      manifest = m;
+      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json'].map(function (f) {
+        return getJson('/_src/content/' + f).then(function (d) { C[f] = d; });
+      }));
+    }).then(function () {
+      // ?api=http://127.0.0.1:<port> — local test run only
+      var q = new URLSearchParams(location.search).get('api');
+      api = q && /^http:\/\/127\.0\.0\.1:\d+(\/[\w-]*)?$/.test(q) ? q : C['site.json'].adminApi;
+      if (!api) throw new Error('Функция админки ещё не подключена.');
+    });
+  }
+  function call(body) {
+    body.password = pw.get();
+    // text/plain keeps it a simple request: no extra CORS round trip
+    return fetch(api, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) }).then(function (r) {
+      return r.json().catch(function () { return { error: 'сервер ответил ' + r.status }; }).then(function (d) {
+        if (r.status === 401) pw.set('');
+        if (!r.ok) { var e = new Error(d.error || ('ошибка ' + r.status)); e.status = r.status; throw e; }
+        return d;
+      });
+    }, function () { throw new Error('нет связи с сервером, проверьте интернет'); });
+  }
+
+  // ---------- login ----------
+  function askPassword(text) {
+    $('app').hidden = true; $('login').hidden = false;
+    show($('loginMsg'), 'err', text || '');
+    $('pw').focus();
+  }
+  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); }
+  $('loginForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    pw.set($('pw').value);
+    show($('loginMsg'), 'ok', 'Проверяю…');
+    call({ action: 'check' }).then(function () { $('pw').value = ''; openApp(); })
+      .catch(function (e) { askPassword(e.status === 401 ? 'Пароль не подошёл.' : e.message); });
+  });
+  $('logout').addEventListener('click', function () { pw.set(''); askPassword(); });
+
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
+      $('tab-prices').hidden = b.dataset.tab !== 'prices';
+      $('tab-photos').hidden = b.dataset.tab !== 'photos';
+      show($('msg'), '', '');
+      updateBar();
+    });
+  });
+
+  // ---------- prices ----------
+  function field(attrs, value, sign) {
+    return '<div class="money"><input inputmode="numeric" autocomplete="off" ' + attrs + ' value="' + value + '" aria-label="Цена"><span>' + sign + '</span></div>';
+  }
+  function renderPrices() {
+    var P = C['prices.json'], H = C['halls.json'];
+    $('halls').innerHTML = Object.keys(P.halls).map(function (hk) {
+      return '<div class="card"><h4>' + esc(H[hk].name) + '</h4>' + P.halls[hk].map(function (t, i) {
+        return '<div class="row"><div class="name">' + esc(t.people) + '<span class="was"></span></div>' + field('data-hall="' + hk + '" data-i="' + i + '"', t.price, '₽') + '</div>';
+      }).join('') + '</div>';
+    }).join('');
+    var groups = {};
+    Object.keys(P.items).forEach(function (k) { var g = P.items[k].group; (groups[g] = groups[g] || []).push(k); });
+    $('items').innerHTML = Object.keys(groups).map(function (g) {
+      return '<h3>' + esc(g) + '</h3><div class="card">' + groups[g].map(function (k) {
+        var it = P.items[k], unit = UNIT[it.unit] || P.units[it.unit] || '';
+        return '<div class="row"><div class="name"><b>' + esc(it.label) + '</b>' + (unit ? '<span class="unit">' + esc(unit) + '</span>' : '') +
+          (it.check ? '<span class="unver"><span class="badge">не проверено</span><button class="small-btn" data-ok="' + k + '">Цена верна</button></span>' : '') +
+          '<span class="was"></span></div>' + field('data-item="' + k + '"', it.price, it.unit === 'percent' ? '%' : '₽') + '</div>';
+      }).join('') + '</div>';
+    }).join('');
+    edits = { halls: {}, items: {}, bad: 0 };
+    updateBar();
+  }
+  function parse(v) { v = String(v).replace(/[\s ]/g, ''); return /^\d{1,7}$/.test(v) ? Number(v) : null; }
+  document.addEventListener('input', function (ev) {
+    var el = ev.target;
+    if (!el.matches || !el.matches('.money input')) return;
+    var P = C['prices.json'], n = parse(el.value), row = el.closest('.row'), old;
+    if (el.dataset.hall) {
+      var hk = el.dataset.hall, i = +el.dataset.i;
+      old = P.halls[hk][i].price;
+      var arr = edits.halls[hk] || P.halls[hk].map(function (t) { return t.price; });
+      arr[i] = n === null ? old : n;
+      edits.halls[hk] = arr;
+      if (arr.every(function (v, j) { return v === P.halls[hk][j].price; })) delete edits.halls[hk];
+    } else {
+      var k = el.dataset.item, e = edits.items[k] || {};
+      old = P.items[k].price;
+      if (n === null || n === old) delete e.price; else e.price = n;
+      if (Object.keys(e).length) edits.items[k] = e; else delete edits.items[k];
+    }
+    row.classList.toggle('bad', n === null);
+    row.classList.toggle('changed', n !== null && n !== old);
+    row.querySelector('.was').textContent = n === null ? 'нужно целое число' : n !== old ? 'было ' + money(old) : '';
+    edits.bad = document.querySelectorAll('.row.bad').length;
+    updateBar();
+  });
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-ok]');
+    if (!b) return;
+    var k = b.dataset.ok, e = edits.items[k] || {};
+    e.check = false; edits.items[k] = e;
+    b.parentNode.innerHTML = '<span class="badge ok">станет проверенной</span>';
+    updateBar();
+  });
+  function count() {
+    var P = C['prices.json'];
+    return Object.keys(edits.halls).reduce(function (s, hk) {
+      return s + edits.halls[hk].filter(function (v, i) { return v !== P.halls[hk][i].price; }).length;
+    }, 0) + Object.keys(edits.items).length;
+  }
+  function updateBar() {
+    var n = edits ? count() : 0;
+    $('bar').classList.toggle('on', (n > 0 || (edits && edits.bad > 0)) && !$('tab-prices').hidden);
+    $('barWhat').textContent = edits && edits.bad ? 'В поле не число, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние цены';
+    $('publish').disabled = !!(edits && edits.bad) || busy;
+  }
+  $('undo').addEventListener('click', function () { renderPrices(); show($('msg'), '', ''); });
+  $('publish').addEventListener('click', function () {
+    if (busy || edits.bad) return;
+    busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
+    call({ action: 'prices', halls: edits.halls, items: edits.items }).then(function (d) {
+      return load().then(function () {
+        renderPrices();
+        var list = (d.changes || []).join('\n');
+        show($('msg'), 'ok', list ? 'Опубликовано:\n' + list : 'Всё и так совпадало с сайтом, ничего не поменялось.');
+        window.scrollTo(0, 0);
+      });
+    }).catch(function (e) {
+      if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Цены не опубликованы, но введённые числа сохранились на этой странице.');
+      show($('msg'), 'err', 'Не опубликовано: ' + e.message); window.scrollTo(0, 0);
+    }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
+  });
+
+  // ---------- photos ----------
+  function ratio(r) { return String(r).replace('/', ' / '); }
+  function src(slot) { return '/photos/' + slot + '.jpg?v=' + manifest.versions[slot]; }
+  function renderPhotos() {
+    var PH = C['photos.json'], by = {};
+    Object.keys(PH).forEach(function (slot) {
+      var g = (GROUPS.filter(function (x) { return slot.indexOf(x[0]) === 0; })[0] || [0, 'Другое'])[1];
+      (by[g] = by[g] || []).push(slot);
+    });
+    $('photoGroups').innerHTML = Object.keys(by).map(function (g) {
+      return '<h3>' + esc(g) + '</h3><div class="photos">' + by[g].map(function (slot) {
+        return '<div class="ph"><div class="frame" style="aspect-ratio:' + ratio(PH[slot].ratio) + '"><img loading="lazy" src="' + src(slot) + '" alt=""></div>' +
+          '<div class="cap"><b>' + esc(slot) + '</b>' + esc(PH[slot].alt) + '</div><button class="small-btn" data-slot="' + slot + '">Заменить</button></div>';
+      }).join('') + '</div>';
+    }).join('');
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-slot]');
+    if (!b) return;
+    pending = { slot: b.dataset.slot };
+    $('file').value = ''; $('file').click();
+  });
+  $('file').addEventListener('change', function () {
+    var f = $('file').files[0];
+    if (!f || !pending) return;
+    var slot = pending.slot, p = C['photos.json'][slot];
+    $('dlgWhere').textContent = p.alt + ' · ' + slot;
+    $('dlgOldF').style.aspectRatio = $('dlgNewF').style.aspectRatio = ratio(p.ratio);
+    $('dlgOld').src = src(slot);
+    $('dlgNew').removeAttribute('src'); $('dlgNewCap').textContent = 'Готовлю…';
+    show($('dlgMsg'), '', ''); $('dlgOk').disabled = true;
+    $('dlg').showModal();
+    shrink(f).then(function (res) {
+      if (!pending || pending.slot !== slot) return;
+      pending.blob = res.blob;
+      $('dlgNew').src = URL.createObjectURL(res.blob);
+      $('dlgNewCap').textContent = 'Новое · ' + res.w + '×' + res.h + ', ' + Math.round(res.blob.size / 1024) + ' КБ';
+      if (Math.max(res.srcW, res.srcH) < 1200) show($('dlgMsg'), 'err', 'Снимок маленький (' + res.srcW + '×' + res.srcH + '), на большом экране будет нерезким.');
+      $('dlgOk').disabled = false;
+    }).catch(function () { $('dlgNewCap').textContent = ''; show($('dlgMsg'), 'err', 'Этот файл не открылся. Подойдёт JPEG, PNG или снимок с телефона.'); });
+  });
+  // long side 1800 px, JPEG: the same size as the other photos on the site
+  function shrink(file) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var sw = img.naturalWidth, sh = img.naturalHeight, k = Math.min(1, 1800 / Math.max(sw, sh));
+        var w = Math.round(sw * k), h = Math.round(sh * k), cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        var cx = cv.getContext('2d');
+        cx.imageSmoothingQuality = 'high';
+        cx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        var q = 0.82;
+        (function out() {
+          cv.toBlob(function (b) {
+            if (!b) return reject(new Error('toBlob'));
+            if (b.size > 2.4 * 1024 * 1024 && q > 0.5) { q -= 0.1; return out(); }
+            resolve({ blob: b, w: w, h: h, srcW: sw, srcH: sh });
+          }, 'image/jpeg', q);
+        })();
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  function base64(blob) {
+    return new Promise(function (resolve, reject) {
+      var r = new FileReader();
+      r.onload = function () { resolve(String(r.result).split(',')[1]); };
+      r.onerror = reject;
+      r.readAsDataURL(blob);
+    });
+  }
+  $('dlgCancel').addEventListener('click', function () { $('dlg').close(); });
+  $('dlg').addEventListener('close', function () { if (!busy) pending = null; });
+  $('dlgOk').addEventListener('click', function () {
+    if (!pending || !pending.blob || busy) return;
+    busy = true; $('dlgOk').disabled = true; $('dlgOk').textContent = 'Публикую…';
+    var slot = pending.slot;
+    base64(pending.blob).then(function (data) { return call({ action: 'photo', slot: slot, data: data }); })
+      .then(load)
+      .then(function () {
+        busy = false; $('dlg').close(); renderPhotos();
+        show($('msg'), 'ok', 'Фото ' + slot + ' опубликовано. Прежнее сохранено в архиве.'); window.scrollTo(0, 0);
+      })
+      .catch(function (e) {
+        busy = false;
+        if (e.status === 401) { $('dlg').close(); return askPassword('Пароль не подошёл, войдите снова. Фото не опубликовано.'); }
+        show($('dlgMsg'), 'err', 'Не опубликовано: ' + e.message);
+      })
+      .then(function () { $('dlgOk').disabled = false; $('dlgOk').textContent = 'Опубликовать фото'; });
+  });
+
+  load().then(function () { pw.get() ? openApp() : askPassword(); })
+    .catch(function (e) { $('login').hidden = false; show($('loginMsg'), 'err', e.message); });
+})();
+</script>
+</body>
+</html>
