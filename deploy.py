@@ -125,7 +125,6 @@ def main():
     r = subprocess.run(["node", "build.mjs"], cwd=PROJECT)
     if r.returncode:
         sys.exit("stop: build failed, nothing uploaded")
-    remote_prices_before = remote_get("_src/content/prices.json", keys)
     files = []
     for d, _, names in os.walk(ROOT):
         for n in names:
@@ -155,7 +154,8 @@ def main():
             request("PUT", key, keys, body, {"Content-Type": ctype, "Cache-Control": cache})
         up += 1
     print(f"{'planned' if dry else 'uploaded'}={up} unchanged={same}")
-    if remote_get("_src/content/prices.json", keys) != remote_prices_before:
+    local_prices = open(os.path.join(PROJECT, "content", "prices.json"), "rb").read()
+    if not dry and remote_get("_src/content/prices.json", keys) != local_prices:
         print("WARNING: prices were changed in the admin during this upload; run deploy.py again")
     if pulled:
         print("from the admin, commit these: " + " ".join(pulled))

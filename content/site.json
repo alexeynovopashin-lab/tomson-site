@@ -15,5 +15,6 @@
     { "label": "Услуги", "slug": "sertifikaty" },
     { "label": "Как найти", "slug": "kak-najti" }
   ],
+  "adminApi": "https://functions.yandexcloud.net/d4epbmr3i7lmo39rpsf2",
   "footerNote": "Страницы без своей версии пока открываются на прежнем сайте студии."
 }
