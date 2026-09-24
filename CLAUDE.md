@@ -18,7 +18,7 @@ page when `content/zal-<name>.json` exists.
 ## The site is the main copy of prices and photos
 Alexey edits them in `/admin/` (any device). The page reads `/_src/…` and posts to the cloud
 function `tomsonadmin` (`cloud/admin/index.js`, folder `tomson`, public, service account
-`deploytomson`, env `ADMIN_PASSWORD` — set by Alexey, never ask for it). The function writes
+`deploytomson`, env `ADMIN_PASSWORD` — Alexey's own since 2026-09-25, never ask for it). The function writes
 `_src/content/prices.json` or `photos/<slot>.jpg`, re-renders pages with `_src/render.mjs`
 from the bucket, keeps the old file in `_src/archive/<time>/`. So:
 - ALWAYS `python3 deploy.py` (pull → build → push), never upload `dist/` another way:
