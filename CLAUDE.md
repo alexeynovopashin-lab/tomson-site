@@ -11,22 +11,24 @@ Claude memory `tomson-site-migration`, `ws:30_agents/_all.md` («Yandex Cloud и
 ## Status
 Local git only (no GitHub), domains still on Vigbo. Built and deployed to the test address: home, `zal-edison`, `zal-sfera`, `zal-vegas`,
 `oborudovanie`, `pravila_i_cena` (same slugs as the old site; slash-less URLs 302 to them).
-Admin `/admin/` works (prices + photos, Alexey's password). Not built: contacts (`kak-najti`), photo school, services, schedule. Nav links to pages that are not ported point to the old site
+Admin `/admin/` works (prices, photos, equipment videos; Alexey's password). Not built: contacts (`kak-najti`), photo school, services, schedule. Nav links to pages that are not ported point to the old site
 (`content/site.json` → `oldSite`); `build.mjs` switches a hall link to the new
 page when `content/zal-<name>.json` exists.
 
 ## The site is the main copy of prices and photos
 Alexey edits them in `/admin/` (any device). The page reads `/_src/…` and posts to the cloud
 function `tomsonadmin` (`cloud/admin/index.js`, folder `tomson`, public, service account
-`deploytomson`, env `ADMIN_PASSWORD` — Alexey's own since 2026-09-25, never ask for it). The function writes
-`_src/content/prices.json` or `photos/<slot>.jpg`, re-renders pages with `_src/render.mjs`
-from the bucket, keeps the old file in `_src/archive/<time>/`. So:
+`deploytomson`, env `ADMIN_PASSWORD` — Alexey's own since 2026-09-25, never ask for it; its form in the
+console shows it in plain text: no screenshots below «Точка входа»). It writes admin-owned content
+(`render.mjs` → `ADMIN_FILES`: prices.json, videos.json) or `photos/<slot>.jpg`, re-renders pages
+with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<time>/`. So:
 - ALWAYS `python3 deploy.py` (pull → build → push), never upload `dist/` another way:
   a stale local `prices.json` would overwrite his prices. After a pull, commit the pulled files
   («Из админки: …»). Never edit `content/prices.json` by hand without pulling first.
-- `src/render.mjs` is shared by `build.mjs` and the function (uploaded as `_src/render.mjs`), so
-  a layout change reaches the function by a normal deploy. `cloud/admin/index.js` changes need a
-  new function version (console → function → Редактор → ZIP-архив, entry `index.handler`).
+- `src/render.mjs` is shared by `build.mjs`, the function and the admin page (`adminEdit` = what an
+  edit means, `vkEmbed` = VK link check), so layout and new kinds of edits ship by a normal deploy.
+  Only auth/bucket/photo changes in `cloud/admin/index.js` need a new function version (console →
+  function → Редактор → ZIP-архив, entry `index.handler`).
 - Test bench without the cloud: `node cloud/admin/local_test.mjs <copy of dist>` (port 8794).
 
 ## Layout
@@ -35,6 +37,9 @@ from the bucket, keeps the old file in `_src/archive/<time>/`. So:
   fails on an unknown key and warns on keys shown nowhere. Change a price → `node build.mjs` → every page.
 - `content/*.json` — ALL texts, prices, nav, photo alt/ratio. Alexey decided
   (2026-09-21): texts live in separate files, edited by the agent on request.
+- Equipment: `content/oborudovanie.json` items have `id` (anchor, video key) and `photo` (`eq-<id>`,
+  66 pictures from Vigbo; stands have none — Vigbo had blank placeholders). `content/videos.json`
+  {id: VK player URL} → «Смотреть в работе» button, player over the page (`site.js`).
 - `photos/<slot>.jpg` — one file per place on a page (slot); replaced from the admin (shrunk to
   1800 px in the browser), layout unchanged (ratio in `content/photos.json`, `object-fit: cover`).
   Pages link `?v=<md5 8>` so a new photo shows at once.

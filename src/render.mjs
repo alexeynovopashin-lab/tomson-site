@@ -157,18 +157,32 @@ function eqPrice(item) {
 
 function equipmentPage() {
   const c = C['oborudovanie.json'];
+  const videos = C['videos.json'] || {};
   const chips = c.groups.map((g) => `<a href="#${g.id}">${esc(g.title)}</a>`).join('');
+  const watch = (i) => {
+    const src = videos[i.id] && vkEmbed(videos[i.id]);
+    return src ? `<button class="eq-play" data-video="${esc(src)}" data-title="${esc(i.name)}"><span aria-hidden="true">▶</span> <i>Смотреть </i>в работе</button>` : '';
+  };
+  const card = (i) => `<article class="eq-card${i.qty === 0 ? ' soon' : ''}" id="${esc(i.id)}">
+<div class="eq-pic">${i.photo ? photo(i.photo) : ''}${watch(i)}</div>
+<h3>${esc(i.name)}</h3>${i.desc ? `<p>${esc(i.desc)}</p>` : ''}
+<div class="eq-foot"><span class="eq-qty">${i.qty ? `${i.qty} шт` : 'скоро'}</span><span class="eq-price">${eqPrice(i)}</span></div>
+</article>`;
+  const swatch = (i) => `<li class="eq-swatch">${i.photo ? photo(i.photo) : ''}<span>${esc(i.name)}${i.qty > 1 ? `<small> · ${i.qty} шт</small>` : ''}</span>${watch(i)}</li>`;
   const groups = c.groups.map((g) => {
-    const rows = g.compact
-      ? `<ul class="chips">${g.items.map((i) => `<li>${esc(i.name)}${i.qty > 1 ? `<small> · ${i.qty} шт</small>` : ''}</li>`).join('')}</ul>`
-      : `<div class="eq">${g.items.map((i) => `<div class="eq-row${i.qty === 0 ? ' soon' : ''}"><div class="eq-name"><h3>${esc(i.name)}</h3>${i.desc ? `<p>${esc(i.desc)}</p>` : ''}</div><div class="eq-qty">${i.qty ? `${i.qty} шт` : ''}</div><div class="eq-price">${eqPrice(i)}</div></div>`).join('')}</div>`;
+    const rows = !g.compact
+      ? `<div class="eq-cards">${g.items.map(card).join('')}</div>`
+      : g.items.some((i) => i.photo)
+        ? `<ul class="eq-swatches">${g.items.map(swatch).join('')}</ul>`
+        : `<ul class="chips">${g.items.map((i) => `<li>${esc(i.name)}${i.qty > 1 ? `<small> · ${i.qty} шт</small>` : ''}</li>`).join('')}</ul>`;
     return `<section class="eq-group" id="${g.id}"><h2>${esc(g.title)}</h2>${g.note ? `<p class="eq-note">${esc(g.note)}</p>` : ''}${rows}</section>`;
   }).join('\n');
   const body = `<main>
 <div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / Оборудование</span></div>
 <section class="wrap page-title"><h1>${esc(c.heading)}</h1><div class="pt-side"><p class="lede-s">${esc(c.lede)}</p><p class="pt-note">${esc(c.note)}</p></div></section>
 <div class="wrap"><nav class="chips-nav" aria-label="Разделы">${chips}</nav>${groups}</div>
-</main>`;
+</main>
+<dialog class="vd" aria-label="Видео"><div class="vd-box"><div class="vd-head"><span class="vd-title"></span><button class="vd-x" aria-label="Закрыть">×</button></div><div class="vd-frame"></div></div></dialog>`;
   return { path: 'oborudovanie/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Оборудование' }) };
 }
 
@@ -195,4 +209,86 @@ function rulesPage() {
   files.push(equipmentPage(), rulesPage());
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   return { files, unused };
+}
+
+// VK Video: accepts a page link (vkvideo.ru/video-1_2, vk.com/video?z=video-1_2) or the
+// «Экспортировать → код для вставки» iframe; returns the player address or null.
+// The embed code carries a hash that some videos need, so it is the surest input.
+export function vkEmbed(input) {
+  let s = String(input || '').trim().replace(/&amp;/g, '&');
+  const src = s.match(/src=["']([^"']+)["']/);
+  if (src) s = src[1];
+  let oid, id, hash;
+  const ext = s.match(/video_ext\.php\?([^"'\s<>]+)/);
+  if (ext) {
+    const q = new URLSearchParams(ext[1]);
+    [oid, id, hash] = [q.get('oid'), q.get('id'), q.get('hash')];
+  } else {
+    const m = s.match(/^https?:\/\/(?:m\.)?(?:vkvideo\.ru|vk\.com|vk\.ru)\/.*?video(-?\d+)_(\d+)/);
+    if (m) [oid, id] = [m[1], m[2]];
+  }
+  if (!/^-?\d{1,12}$/.test(oid || '') || !/^\d{1,12}$/.test(id || '')) return null;
+  const h = hash && /^[0-9a-f]{6,32}$/.test(hash) ? `&hash=${hash}` : '';
+  return `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}${h}&hd=2&autoplay=1`;
+}
+
+// Edits from the admin page, applied by the cloud function to content loaded from the bucket.
+// Lives here, next to the pages, so a new kind of edit ships with a normal deploy instead of a
+// new function version. Returns { changes: [text], files: [content files that changed] };
+// throws an Error with .user = true for a mistake Alexey can fix himself.
+export const ADMIN_FILES = ['prices.json', 'videos.json'];
+const userError = (msg) => Object.assign(new Error(msg), { user: true });
+
+export function adminEdit(C, req) {
+  if (req.action === 'prices') return editPrices(C, req);
+  if (req.action === 'videos') return editVideos(C, req);
+  throw userError('нет такого действия');
+}
+
+function editPrices(C, req) {
+  const prices = C['prices.json'], halls = C['halls.json'], changes = [];
+  const price = (v, label) => {
+    if (!Number.isInteger(v) || v < 0 || v > 1_000_000) throw userError(`${label}: цена должна быть целым числом рублей`);
+    return v;
+  };
+  for (const [hk, vals] of Object.entries(req.halls || {})) {
+    const tiers = prices.halls[hk];
+    if (!tiers || !Array.isArray(vals) || vals.length !== tiers.length) throw userError('зал или ступени не совпадают с сайтом, обновите страницу');
+    tiers.forEach((t, i) => {
+      const n = price(vals[i], `${halls[hk].name}, ${t.people}`);
+      if (n !== t.price) changes.push(`${halls[hk].name}, ${t.people}: ${t.price} → ${n}`);
+      t.price = n;
+    });
+  }
+  for (const [k, upd] of Object.entries(req.items || {})) {
+    const it = prices.items[k];
+    if (!it) throw userError('такой позиции уже нет на сайте, обновите страницу');
+    if ('price' in upd) {
+      const n = price(upd.price, it.label);
+      if (it.unit === 'percent' && n > 100) throw userError(`${it.label}: процент больше 100`);
+      if (n !== it.price) { changes.push(`${it.label}: ${it.price} → ${n}`); delete it.check; }
+      it.price = n;
+    }
+    if (upd.check === false && it.check) { changes.push(`${it.label}: цена ${it.price} проверена`); delete it.check; }
+  }
+  return { changes, files: changes.length ? ['prices.json'] : [] };
+}
+
+function editVideos(C, req) {
+  const videos = (C['videos.json'] = C['videos.json'] || {}), changes = [];
+  const items = Object.fromEntries(C['oborudovanie.json'].groups.flatMap((g) => g.items).map((i) => [i.id, i]));
+  for (const [id, raw] of Object.entries(req.videos || {})) {
+    const it = items[id];
+    if (!it) throw userError('такой позиции уже нет на сайте, обновите страницу');
+    const text = String(raw || '').trim();
+    if (!text) {
+      if (videos[id]) { delete videos[id]; changes.push(`${it.name}: ролик убран`); }
+      continue;
+    }
+    const src = vkEmbed(text);
+    if (!src) throw userError(`${it.name}: не похоже на ссылку VK Видео. Вставьте код из «Поделиться → Экспортировать» или ссылку на ролик`);
+    const keep = src.replace(/&hd=2&autoplay=1$/, '');
+    if (videos[id] !== keep) { changes.push(`${it.name}: ${videos[id] ? 'ролик заменён' : 'ролик добавлен'}`); videos[id] = keep; }
+  }
+  return { changes, files: changes.length ? ['videos.json'] : [] };
 }

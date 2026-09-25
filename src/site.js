@@ -1,6 +1,23 @@
 (function(){
   var nav=document.querySelector('nav.main'),btn=document.querySelector('.menu-btn');
   if(btn)btn.addEventListener('click',function(){var o=nav.classList.toggle('open');btn.setAttribute('aria-expanded',o)});
+  // equipment demo: VK player over the page; the iframe is removed on close so the video stops
+  var vd=document.querySelector('dialog.vd');
+  if(vd){
+    var frame=vd.querySelector('.vd-frame');
+    document.addEventListener('click',function(e){
+      var b=e.target.closest&&e.target.closest('.eq-play');
+      if(!b)return;
+      frame.innerHTML='<iframe allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock" allowfullscreen></iframe>';
+      frame.firstChild.src=b.dataset.video;
+      frame.firstChild.title=b.dataset.title;
+      vd.querySelector('.vd-title').textContent=b.dataset.title;
+      vd.showModal();
+    });
+    vd.addEventListener('close',function(){frame.innerHTML=''});
+    vd.querySelector('.vd-x').addEventListener('click',function(){vd.close()});
+    vd.addEventListener('click',function(e){if(!e.target.closest('.vd-frame')&&!e.target.closest('.vd-title'))vd.close()});
+  }
   var lb=document.querySelector('dialog.lb');
   if(!lb)return;
   var items=[].slice.call(document.querySelectorAll('.gallery .open')),i=0,img=lb.querySelector('img');

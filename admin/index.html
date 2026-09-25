@@ -79,6 +79,15 @@ h3{font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;c
 .frame img{display:block;width:100%;height:100%;object-fit:cover}
 .ph .cap{padding:8px 10px 0;font-size:12px;color:var(--muted);flex:1}
 .ph .cap b{display:block;color:var(--ink);font-weight:600;letter-spacing:.04em}
+.ph .cap span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.vrow{display:block}
+.vrow input{width:100%;margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:14px}
+.vrow input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.vstate{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:2px}
+.vstate a{color:inherit}
+.vrow.changed .vstate{color:var(--accent)}
+.vrow.bad .vstate{color:var(--err)}
+.vrow.bad input{border-color:var(--err)}
 .ph .small-btn{margin:8px 10px 10px;align-self:flex-start}
 .login{max-width:380px;margin:12vh auto 0;padding:0 16px}
 .login h1{font:600 40px/1 var(--serif);margin:0 0 6px}
@@ -117,6 +126,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     <div class="tabs" role="tablist">
       <button role="tab" aria-selected="true" data-tab="prices">Цены</button>
       <button role="tab" aria-selected="false" data-tab="photos">Фото</button>
+      <button role="tab" aria-selected="false" data-tab="videos">Ролики</button>
     </div>
     <a class="link" href="/" target="_blank" rel="noopener">Открыть сайт</a>
     <button class="link" id="logout">Выйти</button>
@@ -130,6 +140,11 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <h3>Аренда залов, за час</h3>
       <div class="hall-grid" id="halls"></div>
       <div id="items"></div>
+    </section>
+    <section id="tab-videos" hidden>
+      <h2>Ролики</h2>
+      <p class="hint">Ролик с VK Видео у позиции оборудования. На сайте у неё появится кнопка «Смотреть в работе», ролик откроется поверх каталога. Надёжнее всего код из VK: под роликом «Поделиться» → «Экспортировать» → скопировать код. Обычная ссылка на ролик тоже подойдёт, но некоторые ролики без кода не показываются.</p>
+      <div id="videoGroups"></div>
     </section>
     <section id="tab-photos" hidden>
       <h2>Фото</h2>
@@ -165,7 +180,8 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
   var UNIT = { shoot: 'за съёмку (до 6 ч)', percent: 'процент' };
-  var GROUPS = [['home-', 'Главная'], ['hall-', 'Главная, карточки залов'], ['edison-', 'Зал Эдисон'], ['sfera-', 'Зал Сфера'], ['vegas-', 'Зал Вегас']];
+  var GROUPS = [['home-', 'Главная'], ['hall-', 'Главная, карточки залов'], ['edison-', 'Зал Эдисон'], ['sfera-', 'Зал Сфера'], ['vegas-', 'Зал Вегас'], ['eq-', 'Оборудование']];
+  var site = null, vEdits = {};  // site = /_src/render.mjs: the same link check as the cloud function
   var api = null, C = {}, manifest = null, edits, busy = false, pending = null;
   var pw = {
     get: function () { try { return sessionStorage.getItem('pw') || ''; } catch (e) { return mem; } },
@@ -187,9 +203,11 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   function load() {
     return getJson('/_src/manifest.json').then(function (m) {
       manifest = m;
-      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json'].map(function (f) {
-        return getJson('/_src/content/' + f).then(function (d) { C[f] = d; });
-      }));
+      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json'].map(function (f) {
+        return getJson('/_src/content/' + f).then(function (d) { C[f] = d; }, function (e) {
+          if (f === 'videos.json') C[f] = {}; else throw e;  // no video published yet
+        });
+      }).concat(import('/_src/render.mjs?t=' + Date.now()).then(function (m) { site = m; })));
     }).then(function () {
       // ?api=http://127.0.0.1:<port> — local test run only
       var q = new URLSearchParams(location.search).get('api');
@@ -215,7 +233,8 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     show($('loginMsg'), 'err', text || '');
     $('pw').focus();
   }
-  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); }
+  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); renderVideos(); }
+  function tab() { return document.querySelector('.tabs [aria-selected=true]').dataset.tab; }
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
     pw.set($('pw').value);
@@ -228,8 +247,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   document.querySelectorAll('.tabs button').forEach(function (b) {
     b.addEventListener('click', function () {
       document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
-      $('tab-prices').hidden = b.dataset.tab !== 'prices';
-      $('tab-photos').hidden = b.dataset.tab !== 'photos';
+      ['prices', 'photos', 'videos'].forEach(function (t) { $('tab-' + t).hidden = b.dataset.tab !== t; });
       show($('msg'), '', '');
       updateBar();
     });
@@ -298,13 +316,15 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     }, 0) + Object.keys(edits.items).length;
   }
   function updateBar() {
+    if (tab() === 'videos') return updateVideoBar();
     var n = edits ? count() : 0;
-    $('bar').classList.toggle('on', (n > 0 || (edits && edits.bad > 0)) && !$('tab-prices').hidden);
+    $('bar').classList.toggle('on', (n > 0 || (edits && edits.bad > 0)) && tab() === 'prices');
     $('barWhat').textContent = edits && edits.bad ? 'В поле не число, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние цены';
     $('publish').disabled = !!(edits && edits.bad) || busy;
   }
-  $('undo').addEventListener('click', function () { renderPrices(); show($('msg'), '', ''); });
+  $('undo').addEventListener('click', function () { if (tab() === 'videos') renderVideos(); else renderPrices(); show($('msg'), '', ''); });
   $('publish').addEventListener('click', function () {
+    if (tab() === 'videos') return publishVideos();
     if (busy || edits.bad) return;
     busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
     call({ action: 'prices', halls: edits.halls, items: edits.items }).then(function (d) {
@@ -320,6 +340,62 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
   });
 
+  // ---------- videos ----------
+  function renderVideos() {
+    var V = C['videos.json'] || {};
+    $('videoGroups').innerHTML = C['oborudovanie.json'].groups.map(function (g) {
+      return '<h3>' + esc(g.title) + '</h3><div class="card">' + g.items.map(function (i) {
+        var has = V[i.id];
+        return '<div class="row vrow" data-vid="' + esc(i.id) + '"><div class="name"><b>' + esc(i.name) + '</b>' +
+          '<input type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="' + (has ? 'Вставьте новую ссылку, чтобы заменить' : 'Ссылка или код с VK Видео') + '">' +
+          '<span class="vstate">' + (has ? 'Ролик есть · <a href="' + esc(has) + '" target="_blank" rel="noopener">посмотреть</a> · <button class="link" data-vdel="' + esc(i.id) + '">убрать</button>' : 'Ролика нет') + '</span></div></div>';
+      }).join('') + '</div>';
+    }).join('');
+    vEdits = {};
+    updateBar();
+  }
+  function vBad() { return Object.keys(vEdits).filter(function (k) { return vEdits[k] && !site.vkEmbed(vEdits[k]); }).length; }
+  function updateVideoBar() {
+    var n = Object.keys(vEdits).length, bad = vBad();
+    $('bar').classList.toggle('on', n > 0);
+    $('barWhat').textContent = bad ? 'Одна из ссылок не с VK Видео, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние ролики';
+    $('publish').disabled = bad > 0 || busy;
+  }
+  document.addEventListener('input', function (ev) {
+    var row = ev.target.closest && ev.target.closest('.vrow');
+    if (!row) return;
+    var id = row.dataset.vid, v = ev.target.value.trim(), ok = v && site.vkEmbed(v);
+    if (v) vEdits[id] = v; else delete vEdits[id];
+    row.classList.toggle('changed', !!ok);
+    row.classList.toggle('bad', !!v && !ok);
+    row.querySelector('.vstate').textContent = !v ? (C['videos.json'][id] ? 'Ролик есть, останется прежним' : 'Ролика нет') : ok ? 'Ссылка подходит, ролик появится после публикации' : 'Не похоже на ссылку VK Видео';
+    updateBar();
+  });
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-vdel]');
+    if (!b) return;
+    var row = b.closest('.vrow');
+    vEdits[b.dataset.vdel] = '';
+    row.classList.add('changed');
+    row.querySelector('.vstate').textContent = 'Ролик уберётся после публикации';
+    updateBar();
+  });
+  function publishVideos() {
+    if (busy || vBad()) return;
+    busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
+    call({ action: 'videos', videos: vEdits }).then(function (d) {
+      return load().then(function () {
+        renderVideos();
+        var list = (d.changes || []).join('\n');
+        show($('msg'), 'ok', list ? 'Опубликовано:\n' + list : 'Всё и так совпадало с сайтом, ничего не поменялось.');
+        window.scrollTo(0, 0);
+      });
+    }).catch(function (e) {
+      if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Ролики не опубликованы.');
+      show($('msg'), 'err', 'Не опубликовано: ' + e.message); window.scrollTo(0, 0);
+    }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
+  }
+
   // ---------- photos ----------
   function ratio(r) { return String(r).replace('/', ' / '); }
   function src(slot) { return '/photos/' + slot + '.jpg?v=' + manifest.versions[slot]; }
@@ -332,7 +408,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     $('photoGroups').innerHTML = Object.keys(by).map(function (g) {
       return '<h3>' + esc(g) + '</h3><div class="photos">' + by[g].map(function (slot) {
         return '<div class="ph"><div class="frame" style="aspect-ratio:' + ratio(PH[slot].ratio) + '"><img loading="lazy" src="' + src(slot) + '" alt=""></div>' +
-          '<div class="cap"><b>' + esc(slot) + '</b>' + esc(PH[slot].alt) + '</div><button class="small-btn" data-slot="' + slot + '">Заменить</button></div>';
+          '<div class="cap"><b>' + esc(slot) + '</b><span>' + esc(PH[slot].alt) + '</span></div><button class="small-btn" data-slot="' + slot + '">Заменить</button></div>';
       }).join('') + '</div>';
     }).join('');
   }

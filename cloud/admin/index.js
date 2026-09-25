@@ -1,7 +1,9 @@
 // Admin cloud function (Yandex Cloud Functions, Node.js). The admin page at /admin/ calls it.
-// Checks Alexey's password, saves new prices or a photo into the bucket, re-renders every page
+// Checks Alexey's password, applies the edit to content in the bucket, re-renders every page
 // with _src/render.mjs taken from the same bucket and uploads the pages. The site itself is
 // static: this function runs only when Alexey presses «Опубликовать».
+// What an edit means (prices, videos, …) lives in render.mjs → adminEdit, so new kinds of edits
+// ship with a normal deploy; this file only needs a new version for auth, bucket or photo changes.
 //
 // Settings (function environment variables):
 //   ADMIN_PASSWORD  — the password; Alexey types it into the console himself
@@ -63,11 +65,11 @@ function bucket(token) {
 
 // ---------- pages ----------
 
-async function renderer(b) {
+async function siteModule(b) {
   const code = await b.getText('_src/render.mjs');
   const file = `/tmp/render-${sha256(code).slice(0, 12)}.mjs`;
   if (!fs.existsSync(file)) fs.writeFileSync(file, code);
-  return (await import(pathToFileURL(file).href)).render;
+  return import(pathToFileURL(file).href);
 }
 
 async function loadContent(b) {
@@ -77,48 +79,26 @@ async function loadContent(b) {
   return { manifest, C };
 }
 
-async function publishPages(b, C, manifest) {
-  const render = await renderer(b);
-  const { files } = render(C, manifest.versions); // throws on a broken price key: nothing is uploaded
+async function publishPages(b, C, manifest, mod) {
+  const { files } = (mod || (await siteModule(b))).render(C, manifest.versions); // throws on a broken price key: nothing is uploaded
   await Promise.all(files.map((f) => b.put(f.path, f.html, 'text/html; charset=utf-8')));
   return files.map((f) => f.path);
 }
 
 // ---------- actions ----------
 
-function checkPrice(v, label) {
-  if (!Number.isInteger(v) || v < 0 || v > 1_000_000) throw new UserError(`${label}: цена должна быть целым числом рублей`);
-  return v;
-}
-
-async function savePrices(b, req, stamp) {
-  const { manifest, C } = await loadContent(b);
-  const prices = C['prices.json'];
-  const changes = [];
-  for (const [hk, vals] of Object.entries(req.halls || {})) {
-    const tiers = prices.halls[hk];
-    if (!tiers || !Array.isArray(vals) || vals.length !== tiers.length) throw new UserError('зал или ступени не совпадают с сайтом, обновите страницу');
-    tiers.forEach((t, i) => {
-      const n = checkPrice(vals[i], `${C['halls.json'][hk].name}, ${t.people}`);
-      if (n !== t.price) changes.push(`${C['halls.json'][hk].name}, ${t.people}: ${t.price} → ${n}`);
-      t.price = n;
-    });
+async function saveEdit(b, req, stamp) {
+  const [{ manifest, C }, mod] = await Promise.all([loadContent(b), siteModule(b)]);
+  const { changes, files } = mod.adminEdit(C, req);
+  if (!files.length) return { changes };
+  const isNew = (f) => !manifest.content.includes(f);
+  await Promise.all(files.filter((f) => !isNew(f)).map((f) => b.archive(`_src/content/${f}`, stamp)));
+  const pages = await publishPages(b, C, manifest, mod); // pages first: if rendering fails, content stays as it was
+  await Promise.all(files.map((f) => b.put(`_src/content/${f}`, JSON.stringify(C[f], null, 2) + '\n', 'application/json')));
+  if (files.some(isNew)) {
+    manifest.content.push(...files.filter(isNew));
+    await b.put('_src/manifest.json', JSON.stringify(manifest, null, 2) + '\n', 'application/json');
   }
-  for (const [k, upd] of Object.entries(req.items || {})) {
-    const it = prices.items[k];
-    if (!it) throw new UserError('такой позиции уже нет на сайте, обновите страницу');
-    if ('price' in upd) {
-      const n = checkPrice(upd.price, it.label);
-      if (it.unit === 'percent' && n > 100) throw new UserError(`${it.label}: процент больше 100`);
-      if (n !== it.price) { changes.push(`${it.label}: ${it.price} → ${n}`); delete it.check; }
-      it.price = n;
-    }
-    if (upd.check === false && it.check) { changes.push(`${it.label}: цена ${it.price} проверена`); delete it.check; }
-  }
-  if (!changes.length) return { changes };
-  await b.archive('_src/content/prices.json', stamp);
-  const pages = await publishPages(b, C, manifest); // pages first: if rendering fails, prices stay as they were
-  await b.put('_src/content/prices.json', JSON.stringify(prices, null, 2) + '\n', 'application/json');
   return { changes, pages };
 }
 
@@ -140,7 +120,9 @@ async function savePhoto(b, req, stamp) {
 
 // ---------- http ----------
 
-class UserError extends Error {}
+class UserError extends Error {
+  constructor(msg) { super(msg); this.user = true; }
+}
 
 function passwordOk(given) {
   const want = process.env.ADMIN_PASSWORD || '';
@@ -171,11 +153,10 @@ module.exports.handler = async (event, context) => {
   try {
     // login also proves the function can reach the bucket, so a broken setup shows up at once
     if (req.action === 'check') { await b.getJson('_src/manifest.json'); return reply(200, { ok: true }); }
-    if (req.action === 'prices') return reply(200, { ok: true, ...(await savePrices(b, req, stamp)) });
     if (req.action === 'photo') return reply(200, { ok: true, ...(await savePhoto(b, req, stamp)) });
-    return reply(400, { error: 'нет такого действия' });
+    return reply(200, { ok: true, ...(await saveEdit(b, req, stamp)) });
   } catch (e) {
-    if (e instanceof UserError) return reply(400, { error: e.message });
+    if (e.user) return reply(400, { error: e.message });
     console.error(e);
     return reply(500, { error: 'сайт не изменился: ошибка на сервере', detail: String(e.message).slice(0, 300) });
   }

@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync, mkdirSync, cpSync, rmSync, readdirSync } f
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { render } from './src/render.mjs';
+import { render, ADMIN_FILES } from './src/render.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
@@ -33,7 +33,7 @@ for (const f of ['style.css', 'site.js']) cpSync(join(root, 'src', f), join(dist
 for (const { path, html } of files) out(path, html);
 cpSync(join(root, 'admin/index.html'), join(dist, 'admin/index.html'));
 for (const [f, data] of Object.entries(C)) out(`_src/content/${f}`, JSON.stringify(data, null, 2) + '\n');
-out('_src/manifest.json', JSON.stringify({ content: Object.keys(C), versions }, null, 2) + '\n');
+out('_src/manifest.json', JSON.stringify({ content: Object.keys(C), adminFiles: ADMIN_FILES, versions }, null, 2) + '\n');
 cpSync(join(root, 'src/render.mjs'), join(dist, '_src/render.mjs'));
 
 if (unused.length) console.warn('price keys not shown anywhere:', unused.join(', '));

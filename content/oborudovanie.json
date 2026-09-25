@@ -10,52 +10,68 @@
       "title": "Импульсные источники",
       "items": [
         {
+          "id": "godox-qt600iii-m",
           "name": "Godox QT600III M",
           "desc": "Беспроводная студийная вспышка с поддержкой HSS, функцией заморозки и мультивспышкой. Работает от сети.",
           "qty": 4,
-          "price": "qt600"
+          "price": "qt600",
+          "photo": "eq-godox-qt600iii-m"
         },
         {
+          "id": "godox-ad600pro",
           "name": "Godox AD600Pro",
           "desc": "Беспроводная студийная вспышка с поддержкой TTL и HSS, мультивспышка. Работает от аккумулятора или от сети.",
           "qty": 1,
-          "price": "ad600"
+          "price": "ad600",
+          "photo": "eq-godox-ad600pro"
         },
         {
+          "id": "godox-ad300pro",
           "name": "Godox AD300Pro",
           "desc": "Беспроводная студийная вспышка с поддержкой TTL и HSS, мультивспышка, сменные насадки. Работает от аккумулятора.",
           "qty": 1,
-          "price": "ad300"
+          "price": "ad300",
+          "photo": "eq-godox-ad300pro"
         },
         {
+          "id": "godox-dp600ii",
           "name": "Godox DP600II",
           "desc": "Стандартная студийная вспышка с дистанционным управлением. Простое управление. Работает от сети.",
           "qty": 3,
-          "price": "dp600"
+          "price": "dp600",
+          "photo": "eq-godox-dp600ii"
         },
         {
+          "id": "godox-ad200pro",
           "name": "Godox AD200Pro",
           "desc": "Беспроводная студийная вспышка с поддержкой TTL и HSS, мультивспышка. Работает от аккумулятора.",
           "qty": 1,
-          "price": "ad200"
+          "price": "ad200",
+          "photo": "eq-godox-ad200pro"
         },
         {
+          "id": "godox-lux-senior",
           "name": "Godox LUX Senior",
           "desc": "Накамерная вспышка. Идеальна для гламурной или ретро-съёмки в стиле «вспышка в лоб». Встроенный аккумулятор.",
           "qty": 1,
-          "price": "lux_senior"
+          "price": "lux_senior",
+          "photo": "eq-godox-lux-senior"
         },
         {
+          "id": "godox-lux-junior",
           "name": "Godox LUX Junior",
           "desc": "Накамерная вспышка для гламурной съёмки «вспышка в лоб». Работает от мизинчиковых батареек.",
           "qty": 1,
-          "price": "lux_junior"
+          "price": "lux_junior",
+          "photo": "eq-godox-lux-junior"
         },
         {
+          "id": "canon-600ex-rt",
           "name": "Canon Speedlite 600 EX RT",
           "desc": "Накамерная вспышка для камер Canon. Встроенное радиоуправление. Работает от пальчиковых батареек.",
           "qty": 1,
-          "price": "speedlite"
+          "price": "speedlite",
+          "photo": "eq-canon-600ex-rt"
         }
       ]
     },
@@ -64,42 +80,55 @@
       "title": "Постоянные источники",
       "items": [
         {
+          "id": "godox-sl-150w",
           "name": "Godox SL 150W",
           "desc": "Источник постоянного света, сменные насадки. Не совместим со спотом.",
           "qty": 2,
-          "price": "sl150w"
+          "price": "sl150w",
+          "photo": "eq-godox-sl-150w"
         },
         {
+          "id": "godox-sl150ii",
           "name": "Godox SL150II",
           "desc": "Источник постоянного света, сменные насадки. Совместим со спотом.",
           "qty": 1,
-          "price": "sl150ii"
+          "price": "sl150ii",
+          "photo": "eq-godox-sl150ii"
         },
         {
+          "id": "godox-sz200bi",
           "name": "Godox SZ200Bi",
           "desc": "Фокусируемый биколорный источник, сменные насадки, управление через смартфон. Не совместим со спотом.",
           "qty": 1,
-          "price": "sz200bi"
+          "price": "sz200bi",
+          "photo": "eq-godox-sz200bi"
         },
         {
+          "id": "godox-sz150r-rgb",
           "name": "Godox SZ150R RGB",
           "desc": "Фокусируемый RGB-источник, сменные насадки, управление через смартфон. Совместим со спотом.",
           "qty": 1,
-          "price": "sz150r"
+          "price": "sz150r",
+          "photo": "eq-godox-sz150r-rgb"
         },
         {
+          "id": "godox-sl200iii",
           "name": "Godox SL200III",
           "desc": "Стандартный источник белого света, управление через смартфон. Совместим со спотом.",
           "qty": 1,
-          "price": "sl200iii"
+          "price": "sl200iii",
+          "photo": "eq-godox-sl200iii"
         },
         {
+          "id": "godox-lp150r",
           "name": "Godox LP150R",
           "desc": "Большая светодиодная RGBWW-панель со шторками. Множество режимов работы, управление через смартфон.",
           "qty": 1,
-          "price": "lp150r"
+          "price": "lp150r",
+          "photo": "eq-godox-lp150r"
         },
         {
+          "id": "godox-tp4r",
           "name": "Godox TP4R",
           "desc": "RGB-трубки 120 см: светят белым, любым цветом или переливаются разными цветами. Управление через смартфон.",
           "tiers": [
@@ -111,25 +140,32 @@
               "qty": 2,
               "price": "tp4r_2"
             }
-          ]
+          ],
+          "photo": "eq-godox-tp4r"
         },
         {
+          "id": "arri-2-3",
           "name": "Arri 2/3",
           "desc": "Киностудийный прожектор мощностью 3000 W со шторками. В дополнение можно взять усиленную стойку 4 или 5 м, фростраму и диммер.",
           "qty": 1,
-          "price": "arri"
+          "price": "arri",
+          "photo": "eq-arri-2-3"
         },
         {
+          "id": "aputure-amaran-300c",
           "name": "Aputure Amaran 300c",
           "desc": "Полноцветный 300-ваттный светодиодный моноблок с байонетом Bowens и настройкой RGBWW. Диапазон CCT от 2 500 K до 7 500 K, 360° HSI. В удобном кейсе.",
           "qty": 2,
-          "price": "amaran"
+          "price": "amaran",
+          "photo": "eq-aputure-amaran-300c"
         },
         {
+          "id": "malenkij-spot",
           "name": "Маленький спот",
           "desc": "Компактная спот-насадка размером с объектив. Безопасно стоит на журавле, можно взять на выездную съёмку.",
           "qty": 1,
-          "price": "small_spot"
+          "price": "small_spot",
+          "photo": "eq-malenkij-spot"
         }
       ]
     },
@@ -138,47 +174,63 @@
       "title": "Дополнительное оборудование",
       "items": [
         {
+          "id": "aputure-spotlight-26",
           "name": "Aputure Spotlight 26°",
           "desc": "Спотлайт-насадка.",
           "qty": 1,
-          "price": "spot26"
+          "price": "spot26",
+          "photo": "eq-aputure-spotlight-26"
         },
         {
+          "id": "maski-gobo",
           "name": "Маски гобо к спот-насадке",
           "desc": "Разные.",
-          "qty": 10
+          "qty": 10,
+          "photo": "eq-maski-gobo"
         },
         {
+          "id": "proektor-canon-lv-8320",
           "name": "Проектор Canon LV-8320",
           "qty": 1,
-          "price": "projector"
+          "price": "projector",
+          "photo": "eq-proektor-canon-lv-8320"
         },
         {
+          "id": "cvetnye-filtry",
           "name": "Цветные фильтры",
           "desc": "Color Pack: набор из 44 цветных фильтров размером 30×30 см.",
-          "free": true
+          "free": true,
+          "photo": "eq-cvetnye-filtry"
         },
         {
+          "id": "gibkoe-zerkalo",
           "name": "Гибкое зеркало",
           "desc": "Серебряное.",
           "qty": 1,
-          "free": true
+          "free": true,
+          "photo": "eq-gibkoe-zerkalo"
         },
         {
+          "id": "zakatnaya-lampa",
           "name": "Закатная лампа",
           "qty": 1,
-          "free": true
+          "free": true,
+          "photo": "eq-zakatnaya-lampa"
         },
         {
+          "id": "fujifilm-instax-wide-300",
           "name": "Fujifilm Instax Wide 300",
           "desc": "Аналог Polaroid.",
           "qty": 1,
-          "price": "instax"
+          "price": "instax",
+          "photo": "eq-fujifilm-instax-wide-300"
         },
         {
+          "id": "godox-movelink-m2",
           "name": "Godox MoveLink M2",
           "desc": "Радиопетличка: два микрофона и приёмник, подключается к телефону или камере.",
-          "price": "movelink"
+          "price": "movelink",
+          "photo": "eq-godox-movelink-m2"
         }
       ]
     },
@@ -187,41 +239,57 @@
       "title": "Светоформирующие насадки",
       "items": [
         {
+          "id": "tarelka-53-serebro",
           "name": "Портретная тарелка 53, серебро",
           "desc": "Соты и диффузор.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-tarelka-53-serebro"
         },
         {
+          "id": "tarelka-55-belaya",
           "name": "Портретная тарелка 55, белая",
           "desc": "Соты и диффузор.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-tarelka-55-belaya"
         },
         {
+          "id": "reflektory-standartnye",
           "name": "Стандартные рефлекторы разных видов",
           "desc": "Соты и диффузоры.",
-          "qty": 9
+          "qty": 9,
+          "photo": "eq-reflektory-standartnye"
         },
         {
+          "id": "glubokij-reflektor-45",
           "name": "Глубокий рефлектор 45",
           "desc": "С сотами.",
-          "qty": 2
+          "qty": 2,
+          "photo": "eq-glubokij-reflektor-45"
         },
         {
+          "id": "shirokij-reflektor",
           "name": "Широкий рефлектор",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-shirokij-reflektor"
         },
         {
+          "id": "shtorki-s-sotami",
           "name": "Шторки с сотами",
-          "qty": 2
+          "qty": 2,
+          "photo": "eq-shtorki-s-sotami"
         },
         {
+          "id": "otrazhatel-5v1",
           "name": "Отражатель, флаг, фрострама 5 в 1, 150×200",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-otrazhatel-5v1"
         },
         {
+          "id": "otrazhateli-kruglye",
           "name": "Круглые отражатели всех размеров",
           "desc": "Белые и серебристые.",
-          "qty": 4
+          "qty": 4,
+          "photo": "eq-otrazhateli-kruglye"
         }
       ]
     },
@@ -230,81 +298,113 @@
       "title": "Софтбоксы и фотозонты",
       "items": [
         {
+          "id": "godox-140-sm",
           "name": "Godox 140 см",
           "desc": "Октобокс с сотами.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-godox-140-sm"
         },
         {
+          "id": "godox-120-sm",
           "name": "Godox 120 см",
           "desc": "Октобокс с сотами.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-godox-120-sm"
         },
         {
+          "id": "godox-35-160-sm",
           "name": "Godox 35×160 см",
           "desc": "Стрип с сотами.",
-          "qty": 2
+          "qty": 2,
+          "photo": "eq-godox-35-160-sm"
         },
         {
+          "id": "godox-50-130-sm",
           "name": "Godox 50×130 см",
           "desc": "Стрип с сотами.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-godox-50-130-sm"
         },
         {
+          "id": "godox-80-120-sm",
           "name": "Godox 80×120 см",
           "desc": "Софтбокс с сотами.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-godox-80-120-sm"
         },
         {
+          "id": "godox-60-90-sm",
           "name": "Godox 60×90 см",
           "desc": "Софтбокс без сот.",
-          "qty": 2
+          "qty": 2,
+          "photo": "eq-godox-60-90-sm"
         },
         {
+          "id": "lumifor-120-180-sm",
           "name": "Lumifor 120×180 см",
           "desc": "Софтбокс.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-lumifor-120-180-sm"
         },
         {
+          "id": "selens-190-sm",
           "name": "Selens 190 см",
           "desc": "Параболический зонт-софтбокс огромных размеров с функцией зума. Собирается за сутки до съёмки.",
           "qty": 1,
-          "price": "selens190"
+          "price": "selens190",
+          "photo": "eq-selens-190-sm"
         },
         {
+          "id": "chajnabol-godox-85-sm",
           "name": "Чайнабол Godox 85 см",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-chajnabol-godox-85-sm"
         },
         {
+          "id": "parazont-70",
           "name": "Складной параболический зонт 70 см",
-          "qty": 2
+          "qty": 2,
+          "photo": "eq-parazont-70"
         },
         {
+          "id": "zont-na-prosvet-160-sm",
           "name": "Зонт на просвет 160 см",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-zont-na-prosvet-160-sm"
         },
         {
+          "id": "mini-strip-90-22",
           "name": "Мини-стрип 90×22",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-mini-strip-90-22"
         },
         {
+          "id": "godox-ad-s-85",
           "name": "Складной софт AD-S 85 см",
           "desc": "Для Godox AD300Pro.",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-godox-ad-s-85"
         },
         {
+          "id": "zont-serebryanyj",
           "name": "Зонт серебряный",
           "desc": "Скоро.",
-          "qty": 0
+          "qty": 0,
+          "photo": "eq-zont-serebryanyj"
         },
         {
+          "id": "zont-belyj",
           "name": "Зонт белый",
           "desc": "Скоро.",
-          "qty": 0
+          "qty": 0,
+          "photo": "eq-zont-belyj"
         },
         {
+          "id": "parazont-120",
           "name": "Складной параболический зонт 120 см",
           "desc": "Скоро.",
-          "qty": 0
+          "qty": 0,
+          "photo": "eq-parazont-120"
         }
       ]
     },
@@ -315,68 +415,100 @@
       "note": "Бумажные фоны — расходный материал, правила смотрите в правилах студии.",
       "items": [
         {
+          "id": "arkticheskij-belyj",
           "name": "Арктический белый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-arkticheskij-belyj"
         },
         {
+          "id": "chernyj",
           "name": "Чёрный",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-chernyj"
         },
         {
+          "id": "bezhevyj",
           "name": "Бежевый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-bezhevyj"
         },
         {
+          "id": "kofejnyj",
           "name": "Кофейный",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-kofejnyj"
         },
         {
+          "id": "seryj",
           "name": "Серый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-seryj"
         },
         {
+          "id": "olivkovyj",
           "name": "Оливковый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-olivkovyj"
         },
         {
+          "id": "bordovyj",
           "name": "Бордовый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-bordovyj"
         },
         {
+          "id": "rozovyj",
           "name": "Розовый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-rozovyj"
         },
         {
+          "id": "goluboj",
           "name": "Голубой",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-goluboj"
         },
         {
+          "id": "zheltyj",
           "name": "Жёлтый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-zheltyj"
         },
         {
+          "id": "zelenyj",
           "name": "Зелёный (хромакей)",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-zelenyj"
         },
         {
+          "id": "izumrudnyj",
           "name": "Изумрудный",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-izumrudnyj"
         },
         {
+          "id": "alyj",
           "name": "Алый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-alyj"
         },
         {
+          "id": "kofejnyj-temnyj",
           "name": "Кофейный тёмный",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-kofejnyj-temnyj"
         },
         {
+          "id": "bezhevyj-tkan",
           "name": "Бежевый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-bezhevyj-tkan"
         },
         {
+          "id": "netkanyj-seryj",
           "name": "Нетканый серый",
-          "qty": 1
+          "qty": 1,
+          "photo": "eq-netkanyj-seryj"
         }
       ]
     },
@@ -386,34 +518,42 @@
       "compact": true,
       "items": [
         {
+          "id": "sistendy",
           "name": "Систенды",
           "qty": 4
         },
         {
+          "id": "standartnye-stojki",
           "name": "Стандартные стойки",
           "qty": 15
         },
         {
+          "id": "kreplenie-dlya-fonov",
           "name": "Крепление для фонов",
           "qty": 1
         },
         {
+          "id": "stojka-lyagushka",
           "name": "Низкая стойка «лягушка»",
           "qty": 1
         },
         {
+          "id": "shtativ-dlya-telefona",
           "name": "Штатив с креплением для телефона",
           "qty": 1
         },
         {
+          "id": "kreplenie-dlya-telefona",
           "name": "Крепление для телефона на штатив",
           "qty": 1
         },
         {
+          "id": "zhuravl-manfrotto",
           "name": "Журавль Manfrotto",
           "qty": 2
         },
         {
+          "id": "stojka-5m",
           "name": "Тяжёлая высокая стойка 5 м",
           "qty": 1
         }

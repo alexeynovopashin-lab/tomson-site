@@ -3,7 +3,8 @@
 
 The site is the main copy of prices and photos: Alexey changes them in the admin (/admin/) and
 the cloud function writes them straight into the bucket. So every run goes in three steps:
-  1. pull — take prices.json and replaced photos from the bucket into content/ and photos/
+  1. pull — take admin-owned content (prices.json, videos.json: manifest → adminFiles) and
+     replaced photos from the bucket into content/ and photos/
      (stops if the same file was also changed here and not committed: someone's edit would be lost);
   2. build — node build.mjs;
   3. push — upload changed files of dist/ (compared by MD5 = ETag). Nothing is deleted.
@@ -83,13 +84,15 @@ def uncommitted(rel):
 def pull(keys, dry):
     """Bring what Alexey changed in the admin into the working copy. Returns the pulled paths."""
     pulled, conflicts, plan = [], [], []
-    remote_prices = remote_get("_src/content/prices.json", keys)
-    if remote_prices is None:
-        return []  # the admin was never published: nothing to take
-    local = os.path.join(PROJECT, "content", "prices.json")
-    if open(local, "rb").read() != remote_prices:
-        plan.append(("content/prices.json", remote_prices))
-    manifest = json.loads(remote_get("_src/manifest.json", keys))
+    raw = remote_get("_src/manifest.json", keys)
+    if raw is None:
+        return []  # the site was never published with the admin: nothing to take
+    manifest = json.loads(raw)
+    for name in manifest.get("adminFiles", ["prices.json"]):
+        body = remote_get(f"_src/content/{name}", keys)
+        local = os.path.join(PROJECT, "content", name)
+        if body is not None and (not os.path.exists(local) or open(local, "rb").read() != body):
+            plan.append((f"content/{name}", body))
     for slot, v in manifest["versions"].items():
         rel = f"photos/{slot}.jpg"
         path = os.path.join(PROJECT, rel)
@@ -154,9 +157,10 @@ def main():
             request("PUT", key, keys, body, {"Content-Type": ctype, "Cache-Control": cache})
         up += 1
     print(f"{'planned' if dry else 'uploaded'}={up} unchanged={same}")
-    local_prices = open(os.path.join(PROJECT, "content", "prices.json"), "rb").read()
-    if not dry and remote_get("_src/content/prices.json", keys) != local_prices:
-        print("WARNING: prices were changed in the admin during this upload; run deploy.py again")
+    for name in ("prices.json", "videos.json"):
+        local = open(os.path.join(PROJECT, "content", name), "rb").read()
+        if not dry and remote_get(f"_src/content/{name}", keys) != local:
+            print(f"WARNING: {name} was changed in the admin during this upload; run deploy.py again")
     if pulled:
         print("from the admin, commit these: " + " ".join(pulled))
 
