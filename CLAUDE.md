@@ -2,11 +2,9 @@ Workspace rules: ~/Documents/workspace/CLAUDE.md
 
 # tomson_site — new website of the photo studio «Томсон» (Tomsk)
 
-Replaces the Vigbo site (томсон.рф = xn--l1acbbod.xn--p1ai, novopashin.ru → same
-site). Written from scratch, magazine-style layout. Russian audience → hosted
-in Yandex Cloud (catalog + bucket `tomson`, test address
-https://tomson.website.yandexcloud.net, see `ws:INDEX.md` → Region mirrors). Context and open questions:
-Claude memory `tomson-site-migration`, `ws:30_agents/_all.md` («Yandex Cloud и сайт студии»).
+Replaces the Vigbo site (томсон.рф = xn--l1acbbod.xn--p1ai, novopashin.ru → same site), magazine layout,
+hosted in Yandex Cloud (bucket `tomson`, https://tomson.website.yandexcloud.net, `ws:INDEX.md` → Region
+mirrors). Context: memory `tomson-site-migration`, `ws:30_agents/_all.md` («Yandex Cloud и сайт студии»).
 
 ## Status
 Local git only (no GitHub), domains still on Vigbo. Built and deployed to the test address: home, `zal-edison`, `zal-sfera`, `zal-vegas`,
@@ -58,5 +56,4 @@ confirm. Do not add acquiring.
 ## Do not
 - Put secrets or bank details in this repo (repos are public), incl. card numbers from chat templates.
 - Publish anywhere before Alexey says so (Yandex bucket, GitHub, DNS).
-- Copy Vigbo fonts/Geometria; photos were taken from Vigbo with Alexey's permission
-  (2000 px versions, resized to 1800 px, q82).
+- Copy Vigbo fonts/Geometria; photos were taken from Vigbo with Alexey's permission (resized, q82).
