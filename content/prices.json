@@ -7,7 +7,8 @@
     "each": "",
     "metre": "за метр",
     "fine": "",
-    "percent": ""
+    "percent": "",
+    "course": "за курс"
   },
   "halls": {
     "edison": [
@@ -313,6 +314,51 @@
       "label": "Надбавка при оплате по счёту для юрлиц",
       "price": 4,
       "unit": "percent"
+    },
+    "school_base": {
+      "group": "Фотошкола",
+      "label": "Курс «Основы фотографии и света», 17 занятий",
+      "price": 25000,
+      "unit": "course"
+    },
+    "school_individual": {
+      "group": "Фотошкола",
+      "label": "Индивидуальный курс, от 8 занятий",
+      "price": 35000,
+      "unit": "course"
+    },
+    "school_pro": {
+      "group": "Фотошкола",
+      "label": "PRO-курс «Студийный свет», 11 занятий",
+      "price": 45000,
+      "unit": "course"
+    },
+    "cert_rent_1": {
+      "group": "Подарочные сертификаты",
+      "label": "Сертификат на аренду, 1 час",
+      "price": 1500,
+      "unit": "each",
+      "check": true
+    },
+    "cert_rent_2": {
+      "group": "Подарочные сертификаты",
+      "label": "Сертификат на аренду, 2 часа",
+      "price": 3000,
+      "unit": "each",
+      "check": true
+    },
+    "cert_rent_3": {
+      "group": "Подарочные сертификаты",
+      "label": "Сертификат на аренду, 3 часа",
+      "price": 4500,
+      "unit": "each",
+      "check": true
+    },
+    "cert_photo": {
+      "group": "Подарочные сертификаты",
+      "label": "Сертификат на фотосессию с Алексеем Новопашиным (аренда + фотограф)",
+      "price": 7000,
+      "unit": "hour"
     }
   }
 }

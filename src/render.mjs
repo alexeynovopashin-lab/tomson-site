@@ -15,7 +15,7 @@ export function render(C, versions) {
 const money = (n) => new Intl.NumberFormat('ru-RU').format(n).replace(/\u00a0/g, ' ');
 const fromPrice = (h) => Math.min(...h.tiers.map((t) => t.price));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-const PAGE_FILES = Object.keys(C).filter((f) => f.startsWith('zal-') || ['oborudovanie.json', 'pravila_i_cena.json'].includes(f));
+const PAGE_FILES = Object.keys(C).filter((f) => f.startsWith('zal-') || ['oborudovanie.json', 'pravila_i_cena.json', 'kak-najti.json', 'fotosfera.json', 'sertifikaty.json', 'raspisanie.json'].includes(f));
 const ported = new Set(PAGE_FILES.map((f) => f.replace('.json', '')));
 const hallUrl = (h) => (ported.has(h.pageSlug) ? `/${h.pageSlug}/` : `${site.oldSite}/${h.pageSlug}`);
 const slugUrl = (slug) => (ported.has(slug) ? `/${slug}/` : `${site.oldSite}/${slug}`);
@@ -69,7 +69,7 @@ ${body}
 <div class="word">${esc(site.name)}</div>
 <div class="col"><span class="label">Адрес</span><p>${esc(site.city)}, ${esc(site.address)}</p></div>
 <div class="col"><span class="label">Телефон</span><p><a href="tel:${site.phoneHref}">${esc(site.phone)}</a></p></div>
-<p class="note">${esc(site.footerNote)}</p>
+${site.nav.some((n) => n.slug && !ported.has(n.slug)) ? `<p class="note">${esc(site.footerNote)}</p>` : ''}
 </div></footer>
 <script src="/site.js" defer></script>
 </body>
@@ -99,7 +99,7 @@ function home() {
 <section class="wrap cover">
 <div class="text"><div><span class="label">${esc(c.cover.label)}</span><h1>${h1}</h1></div>
 <p class="lead">${esc(c.cover.lead)}</p>
-<div class="actions"><a class="btn solid" href="#zaly">Выбрать зал</a><a class="btn" href="${site.oldSite}/kak-najti">Как найти</a></div></div>
+<div class="actions"><a class="btn solid" href="#zaly">Выбрать зал</a><a class="btn" href="${slugUrl('kak-najti')}">Как найти</a></div></div>
 <div class="fig">${photo(c.cover.photo, { eager: true })}<figcaption>${esc(c.cover.caption)}</figcaption></div>
 </section>
 <div class="wrap"><div class="facts">${c.facts.map((f) => `<div><b>${esc(f.value)}</b><span class="label">${esc(f.label)}</span></div>`).join('')}</div></div>
@@ -108,7 +108,7 @@ function home() {
 ${Object.values(halls).map(hallCard).join('\n')}
 </section>
 <section class="band">${photo(c.band.photo)}<blockquote><div class="wrap"><p>${esc(c.band.quote)}</p><cite>${esc(c.band.by)}</cite></div></blockquote></section>
-<section class="wrap visit"><h2>${esc(c.visit.title)}</h2><div class="info"><p>${esc(c.visit.text)}</p><a class="btn" href="${site.oldSite}/kak-najti">Схема проезда</a></div></section>
+<section class="wrap visit"><h2>${esc(c.visit.title)}</h2><div class="info"><p>${esc(c.visit.text)}</p><a class="btn" href="${slugUrl('kak-najti')}">Схема проезда</a></div></section>
 </main>`;
   return shell({ title: c.title, description: c.description, body });
 }
@@ -204,9 +204,90 @@ function rulesPage() {
   return { path: 'pravila_i_cena/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Правила' }) };
 }
 
+
+const pageHead = (crumb, c) => `<div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / ${esc(crumb)}</span></div>
+<section class="wrap page-title"><h1>${esc(c.heading)}</h1><div class="pt-side"><p class="lede-s">${esc(c.lede)}</p></div></section>`;
+const telLink = (href, label) => `<a href="tel:${href}">${esc(label)}</a>`;
+const galleryBlock = (slots) => `<div class="cols">${slots.map((s) => `<button class="open" aria-label="Открыть фото" style="--r:${photos[s].ratio}">${photo(s)}</button>`).join('')}</div>`;
+const LIGHTBOX = '<dialog class="lb" aria-label="Просмотр фото"><div class="stage"><img alt=""></div><button class="x" aria-label="Закрыть">×</button><button class="p" aria-label="Назад">‹</button><button class="n" aria-label="Вперёд">›</button></dialog>';
+
+function findPage() {
+  const c = C['kak-najti.json'];
+  const body = `<main>
+${pageHead('Как найти', c)}
+<section class="wrap find">
+<div class="find-map"><iframe src="${esc(c.map)}" title="Фотостудия Томсон на Яндекс Картах" loading="lazy" allowfullscreen></iframe></div>
+<div class="find-info">
+<div class="find-contact"><span class="label">Телефон</span><p class="find-phone">${telLink(site.phoneHref, site.phone)}</p>${c.hours.map((h) => `<p>${esc(h)}</p>`).join('')}</div>
+<h2>${esc(c.stepsTitle)}</h2>
+<ol class="steps">${c.steps.map((t) => `<li>${esc(t)}</li>`).join('')}</ol>
+<p>${esc(c.alt)}</p>
+<p class="warn">${esc(c.closed)}</p>
+</div>
+</section>
+<section class="wrap find-photos">${c.photos.map((p) => `<figure class="find-ph">${photo(p.slot)}<figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</section>
+</main>`;
+  return { path: 'kak-najti/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Как найти' }) };
+}
+
+function schedulePage() {
+  const c = C['raspisanie.json'];
+  const body = `<main>
+${pageHead('Расписание', c)}
+<section class="booking" id="bron"><div class="wrap grid">
+<div class="intro"><span class="label">Онлайн-бронь</span><h2>Календарь залов</h2>${c.steps.map((t) => `<p>${esc(t)}</p>`).join('')}<p>Залы: ${Object.values(halls).map((h) => `<a href="${esc(hallUrl(h))}">${esc(h.name)}</a>`).join(', ')}.</p></div>
+<div class="frame"><iframe src="${esc(c.widget)}" title="Календарь бронирования залов" height="${c.height}" loading="lazy"></iframe></div>
+</div></section>
+</main>`;
+  return { path: 'raspisanie/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Расписание' }) };
+}
+
+function servicesPage() {
+  const c = C['sertifikaty.json'];
+  const cards = c.cards.map((k) => `<article class="cert">
+<div class="cert-ph">${photo(k.photo)}</div>
+<div class="cert-b"><span class="label">Подарочный сертификат</span><h2>${esc(k.title)}</h2>
+<ul class="cert-rows">${k.rows.map(([l, key]) => `<li><span>${esc(l)}</span><b>${priceStr(key)}</b></li>`).join('')}</ul>
+${k.text ? `<p>${esc(k.text)}</p>` : ''}</div>
+</article>`).join('');
+  const body = `<main>
+${pageHead('Услуги', c)}
+<section class="wrap certs">${cards}</section>
+<section class="wrap cert-buy"><p>${esc(c.buy)}</p><a class="btn solid" href="tel:${site.phoneHref}">${esc(site.phone)}</a></section>
+</main>`;
+  return { path: 'sertifikaty/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Услуги' }) };
+}
+
+function schoolPage() {
+  const c = C['fotosfera.json'];
+  const course = (k, i) => `<article class="course${i % 2 ? ' flip' : ''}">
+${photo(k.photo)}
+<div class="course-b"><span class="label">${esc(k.kicker)}</span><h2>${esc(k.name)}</h2>${k.text.map((t) => `<p>${esc(t)}</p>`).join('')}
+<details class="program"><summary>Программа курса · ${k.program.length} ${k.program.length % 10 === 1 && k.program.length % 100 !== 11 ? 'тема' : 'тем'}</summary><ol>${k.program.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details></div>
+</article>`;
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / Фотошкола</span></div>
+<section class="wrap school-cover">
+<div class="t"><h1>${esc(c.heading)}</h1><p class="lede-s">${esc(c.lede)}</p><div class="actions"><a class="btn solid" href="#zapis">Записаться</a><a class="btn" href="#kursy">Курсы и цены</a></div></div>
+${photo(c.photo, { eager: true })}
+</section>
+<section class="wrap mission"><blockquote><p>${esc(c.mission)}</p></blockquote></section>
+<section class="wrap courses" id="kursy">${c.courses.map(course).join('')}</section>
+<section class="wrap learn"><div><h2>${esc(c.learnTitle)}</h2><ul>${c.learn.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div><div class="vision">${c.vision.map((t) => `<p>${esc(t)}</p>`).join('')}</div></section>
+<section class="wrap packs"><div class="sec-head" style="padding-top:0"><h2>Стоимость</h2><span class="label">Рассрочка — раз в неделю</span></div>
+<div class="pack-grid">${c.packages.map((k) => `<article class="pack"><span class="label">${esc(k.kicker)}</span><h3>${esc(k.name)}</h3><p class="pack-price">${priceStr(k.price)}</p><p class="pack-n">${esc(k.lessons)}</p><ul>${k.notes.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></article>`).join('')}</div></section>
+<section class="wrap faq"><h2>Вопрос — ответ</h2>${c.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</section>
+<section class="wrap teacher"><span class="label">Преподаватель</span><h2>${esc(c.teacher.name)}</h2><p>${esc(c.teacher.text)}</p></section>
+<section class="school-cta" id="zapis"><div class="wrap"><h2>${esc(c.contact.cta)}</h2><p class="cta-phone">${telLink(c.contact.phoneHref, c.contact.phone)}</p><p>${esc(c.contact.address)}</p></div></section>
+<section class="wrap gallery"><div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">${esc(c.galleryNote)}</span></div>${galleryBlock(c.gallery)}</section>
+</main>
+${LIGHTBOX}`;
+  return { path: 'fotosfera/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Фотошкола' }) };
+}
+
   const files = [{ path: 'index.html', html: home() }];
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
-  files.push(equipmentPage(), rulesPage());
+  files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   return { files, unused };
 }

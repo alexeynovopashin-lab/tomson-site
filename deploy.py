@@ -77,6 +77,22 @@ def remote_get(path, keys):
         raise
 
 
+def known_versions(rel):
+    """Git blob ids of every committed version of a file. A copy on the site that matches one of
+    them is an old publish, not an admin edit: taking it would roll back newer work here."""
+    shas = subprocess.run(["git", "log", "--format=%H", "--", rel], cwd=PROJECT, capture_output=True, text=True).stdout.split()
+    blobs = set()
+    for c in shas:
+        r = subprocess.run(["git", "rev-parse", f"{c}:{rel}"], cwd=PROJECT, capture_output=True, text=True)
+        if r.returncode == 0:
+            blobs.add(r.stdout.strip())
+    return blobs
+
+
+def blob_id(body):
+    return hashlib.sha1(b"blob %d\0" % len(body) + body).hexdigest()
+
+
 def uncommitted(rel):
     return subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel], cwd=PROJECT).returncode != 0
 
@@ -91,8 +107,12 @@ def pull(keys, dry):
     for name in manifest.get("adminFiles", ["prices.json"]):
         body = remote_get(f"_src/content/{name}", keys)
         local = os.path.join(PROJECT, "content", name)
-        if body is not None and (not os.path.exists(local) or open(local, "rb").read() != body):
-            plan.append((f"content/{name}", body))
+        rel = f"content/{name}"
+        if body is None or (os.path.exists(local) and open(local, "rb").read() == body):
+            continue
+        if blob_id(body) in known_versions(rel):
+            continue  # the site has an older publish of this file: the local copy is newer
+        plan.append((rel, body))
     for slot, v in manifest["versions"].items():
         rel = f"photos/{slot}.jpg"
         path = os.path.join(PROJECT, rel)
