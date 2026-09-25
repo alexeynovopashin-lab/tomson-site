@@ -29,14 +29,13 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
   edit means, `vkEmbed` = VK link check), so layout and new kinds of edits ship by a normal deploy.
   Only auth/bucket/photo changes in `cloud/admin/index.js` need a new function version (console →
   function → Редактор → ZIP-архив, entry `index.handler`).
-- Test bench without the cloud: `node cloud/admin/local_test.mjs <copy of dist>` (port 8794).
+- Bench without the cloud: `node cloud/admin/local_test.mjs <copy of dist>` (8794).
 
 ## Layout
 - `content/prices.json` — the ONLY place with numbers (hall tiers + `items` with unit, `check` = unverified).
   Texts reference prices by key: `{{pets}}` in rules text, `price` key in `oborudovanie.json`; build
   fails on an unknown key and warns on keys shown nowhere. Change a price → `node build.mjs` → every page.
-- `content/*.json` — ALL texts, prices, nav, photo alt/ratio. Alexey decided
-  (2026-09-21): texts live in separate files, edited by the agent on request.
+- `content/*.json` — ALL texts, prices, nav, photo alt/ratio; texts edited by the agent on request.
 - Equipment: `content/oborudovanie.json` items have `id` (anchor, video key) and `photo` (`eq-<id>`,
   66 pictures from Vigbo; stands have none — Vigbo had blank placeholders). `content/videos.json`
   {id: VK player URL} → «Смотреть в работе» button, player over the page (`site.js`).
@@ -48,8 +47,7 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
 - Deploy: `python3 deploy.py [--dry-run] [--pull-only]` uploads changed files of `dist/` to bucket
   `tomson` (S3 API, keys in `~/.config/tomson/s3.env`, made by Alexey, never in a repo). No deletes.
   HTML/JSON are `no-cache`, photos a year (versioned URLs).
-- Preview: `preview_start tomson-site` (port 8791, serves `dist/`; entry lives in
-  `light_plan:.claude/launch.json`). Browser caches CSS: hard-reload after a build.
+- Preview: `preview_start tomson-site` (8791, `dist/`; entry in `light_plan:.claude/launch.json`).
 
 ## Booking
 AppEvent iframe (`content/zal-*.json` → `booking.widget`) stays as is for launch (2026-09-21);
@@ -58,8 +56,7 @@ Payment is manual: request → Telegram/email to Alexey → chat → receipt →
 confirm. Do not add acquiring.
 
 ## Do not
-- Put secrets or bank details in this repo (repos are public). Card numbers from
-  the client chat templates stay out.
+- Put secrets or bank details in this repo (repos are public), incl. card numbers from chat templates.
 - Publish anywhere before Alexey says so (Yandex bucket, GitHub, DNS).
 - Copy Vigbo fonts/Geometria; photos were taken from Vigbo with Alexey's permission
   (2000 px versions, resized to 1800 px, q82).
