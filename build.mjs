@@ -28,6 +28,7 @@ const out = (path, data) => {
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 cpSync(join(root, 'src/fonts'), join(dist, 'fonts'), { recursive: true });
+cpSync(join(root, 'src/img'), join(dist, 'img'), { recursive: true });
 cpSync(join(root, 'photos'), join(dist, 'photos'), { recursive: true });
 for (const f of ['style.css', 'site.js']) cpSync(join(root, 'src', f), join(dist, f));
 for (const { path, html } of files) out(path, html);

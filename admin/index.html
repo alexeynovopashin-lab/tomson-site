@@ -81,6 +81,18 @@ h3{font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;c
 .ph .cap b{display:block;color:var(--ink);font-weight:600;letter-spacing:.04em}
 .ph .cap span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .vrow{display:block}
+.evc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;display:grid;grid-template-columns:96px 1fr;gap:14px}
+.evc.dirty{border-color:var(--accent)}
+.evc .pic{width:96px;height:96px;border-radius:50%;overflow:hidden;background:var(--paper-2);display:grid;place-items:center;font-size:12px;color:var(--muted);text-align:center}
+.evc .pic img{width:100%;height:100%;object-fit:cover}
+.evc .pic+button{margin-top:8px}
+.evc .f{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.evc label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.evc label.w{grid-column:1/-1}
+.evc input,.evc textarea{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:15px;color:var(--ink)}
+.evc textarea{min-height:76px;resize:vertical;font:inherit;font-size:15px}
+.evc .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+@media (max-width:560px){.evc{grid-template-columns:1fr}.evc .f{grid-template-columns:1fr}}
 .vrow input{width:100%;margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:14px}
 .vrow input:focus{outline:2px solid var(--accent);outline-offset:1px}
 .vstate{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:2px}
@@ -127,6 +139,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <button role="tab" aria-selected="true" data-tab="prices">Цены</button>
       <button role="tab" aria-selected="false" data-tab="photos">Фото</button>
       <button role="tab" aria-selected="false" data-tab="videos">Ролики</button>
+      <button role="tab" aria-selected="false" data-tab="events">Афиша</button>
     </div>
     <a class="link" href="/" target="_blank" rel="noopener">Открыть сайт</a>
     <button class="link" id="logout">Выйти</button>
@@ -145,6 +158,13 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <h2>Ролики</h2>
       <p class="hint">Ролик с VK Видео у позиции оборудования. На сайте у неё появится кнопка «Смотреть в работе», ролик откроется поверх каталога. Надёжнее всего код из VK: под роликом «Поделиться» → «Экспортировать» → скопировать код. Обычная ссылка на ролик тоже подойдёт, но некоторые ролики без кода не показываются.</p>
       <div id="videoGroups"></div>
+    </section>
+    <section id="tab-events" hidden>
+      <h2>Афиша фотошколы</h2>
+      <p class="hint">Анонсы на странице «Фотошкола». Будущие мероприятия сайт сам ставит наверх, прошедшие остаются ниже с пометкой «прошло» — видно, что школа живёт. Фото показывается маленьким кружком.</p>
+      <p><button class="btn" id="evAdd" type="button">+ Добавить мероприятие</button></p>
+      <div id="evList"></div>
+      <input type="file" id="evFile" accept="image/*" hidden>
     </section>
     <section id="tab-photos" hidden>
       <h2>Фото</h2>
@@ -203,9 +223,9 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   function load() {
     return getJson('/_src/manifest.json').then(function (m) {
       manifest = m;
-      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json'].map(function (f) {
+      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json', 'events.json'].map(function (f) {
         return getJson('/_src/content/' + f).then(function (d) { C[f] = d; }, function (e) {
-          if (f === 'videos.json') C[f] = {}; else throw e;  // no video published yet
+          if (f === 'videos.json') C[f] = {}; else if (f === 'events.json') C[f] = []; else throw e;  // not published yet
         });
       }).concat(import('/_src/render.mjs?t=' + Date.now()).then(function (m) { site = m; })));
     }).then(function () {
@@ -233,7 +253,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     show($('loginMsg'), 'err', text || '');
     $('pw').focus();
   }
-  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); renderVideos(); }
+  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); renderVideos(); renderEvents(); }
   function tab() { return document.querySelector('.tabs [aria-selected=true]').dataset.tab; }
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
@@ -247,7 +267,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   document.querySelectorAll('.tabs button').forEach(function (b) {
     b.addEventListener('click', function () {
       document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
-      ['prices', 'photos', 'videos'].forEach(function (t) { $('tab-' + t).hidden = b.dataset.tab !== t; });
+      ['prices', 'photos', 'videos', 'events'].forEach(function (t) { $('tab-' + t).hidden = b.dataset.tab !== t; });
       show($('msg'), '', '');
       updateBar();
     });
@@ -317,14 +337,17 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   }
   function updateBar() {
     if (tab() === 'videos') return updateVideoBar();
+    if (tab() === 'events') return updateEventBar();
+    if (tab() === 'photos') { $('bar').classList.remove('on'); return; }
     var n = edits ? count() : 0;
     $('bar').classList.toggle('on', (n > 0 || (edits && edits.bad > 0)) && tab() === 'prices');
     $('barWhat').textContent = edits && edits.bad ? 'В поле не число, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние цены';
     $('publish').disabled = !!(edits && edits.bad) || busy;
   }
-  $('undo').addEventListener('click', function () { if (tab() === 'videos') renderVideos(); else renderPrices(); show($('msg'), '', ''); });
+  $('undo').addEventListener('click', function () { if (tab() === 'videos') renderVideos(); else if (tab() === 'events') renderEvents(); else renderPrices(); show($('msg'), '', ''); });
   $('publish').addEventListener('click', function () {
     if (tab() === 'videos') return publishVideos();
+    if (tab() === 'events') return publishEvents();
     if (busy || edits.bad) return;
     busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
     call({ action: 'prices', halls: edits.halls, items: edits.items }).then(function (d) {
@@ -393,6 +416,99 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     }).catch(function (e) {
       if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Ролики не опубликованы.');
       show($('msg'), 'err', 'Не опубликовано: ' + e.message); window.scrollTo(0, 0);
+    }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
+  }
+
+  // ---------- announcements ----------
+  var evDirty = false, evPics = {}, evPicFor = null, evSeq = 0;
+  function evCard(e) {
+    var key = e.id || ('new' + (++evSeq));
+    var pic = evPics[key] ? URL.createObjectURL(evPics[key]) : (e.photo && manifest.versions[e.photo] ? '/photos/' + e.photo + '.jpg?v=' + manifest.versions[e.photo] : '');
+    return '<div class="evc' + (e.id ? '' : ' dirty') + '" data-key="' + esc(key) + '" data-id="' + esc(e.id || '') + '">' +
+      '<div><div class="pic">' + (pic ? '<img src="' + esc(pic) + '" alt="">' : 'нет фото') + '</div><button class="small-btn" type="button" data-evpic>Фото</button></div>' +
+      '<div class="f">' +
+      '<label>Дата<input type="date" name="date" value="' + esc(e.date || '') + '"></label>' +
+      '<label>Время<input name="time" value="' + esc(e.time || '') + '" placeholder="19:00"></label>' +
+      (e.date || !e.day ? '' : '<label class="w">Старая дата без года: «' + esc(e.day) + '». Укажите дату выше, если знаете год.</label>') +
+      '<label>Вид<input name="kind" value="' + esc(e.kind || '') + '" placeholder="Мастер-класс"></label>' +
+      '<label>Название<input name="title" value="' + esc(e.title || '') + '" placeholder="Love-Story"></label>' +
+      '<label class="w">Описание<textarea name="text">' + esc(e.text || '') + '</textarea></label>' +
+      '<label class="w">Место<input name="place" value="' + esc(e.place || '') + '"></label>' +
+      '<div class="acts"><button class="small-btn" type="button" data-evmove="-1">↑</button><button class="small-btn" type="button" data-evmove="1">↓</button><button class="small-btn" type="button" data-evdel>Удалить</button></div>' +
+      '</div></div>';
+  }
+  function renderEvents() {
+    evPics = {}; evDirty = false;
+    $('evList').innerHTML = (C['events.json'] || []).map(evCard).join('') || '<p class="hint">Мероприятий пока нет.</p>';
+    updateBar();
+  }
+  function evMark(card) { if (card) card.classList.add('dirty'); evDirty = true; updateBar(); }
+  function updateEventBar() {
+    var n = document.querySelectorAll('#evList .evc.dirty').length, del = evDirty && !n;
+    $('bar').classList.toggle('on', evDirty);
+    $('barWhat').textContent = n ? n + ' ' + plural(n, 'мероприятие изменено', 'мероприятия изменены', 'мероприятий изменено') + ', на сайте пока прежняя афиша' : del ? 'Есть изменения, на сайте пока прежняя афиша' : '';
+    $('publish').disabled = busy;
+  }
+  $('evAdd').addEventListener('click', function () {
+    var first = (C['events.json'] || [])[0];
+    $('evList').insertAdjacentHTML('afterbegin', evCard({ place: first ? first.place : '' }));
+    var hint = $('evList').querySelector('p.hint'); if (hint) hint.remove();
+    evMark(null);
+    $('evList').querySelector('.evc input[name=date]').focus();
+  });
+  $('evList').addEventListener('input', function (ev) { evMark(ev.target.closest('.evc')); });
+  $('evList').addEventListener('click', function (ev) {
+    var card = ev.target.closest('.evc'); if (!card) return;
+    if (ev.target.closest('[data-evdel]')) {
+      var t = card.querySelector('[name=title]').value || 'это мероприятие';
+      if (confirm('Удалить «' + t + '» из афиши?')) { card.remove(); evMark(null); }
+    } else if (ev.target.closest('[data-evmove]')) {
+      var d = +ev.target.closest('[data-evmove]').dataset.evmove, sib = d < 0 ? card.previousElementSibling : card.nextElementSibling;
+      if (sib) { d < 0 ? sib.before(card) : sib.after(card); evMark(null); }
+    } else if (ev.target.closest('[data-evpic]')) {
+      evPicFor = card.dataset.key; $('evFile').value = ''; $('evFile').click();
+    }
+  });
+  $('evFile').addEventListener('change', function () {
+    var f = $('evFile').files[0], key = evPicFor;
+    if (!f || !key) return;
+    shrink(f).then(function (res) {
+      evPics[key] = res.blob;
+      var card = document.querySelector('.evc[data-key="' + key + '"]');
+      card.querySelector('.pic').innerHTML = '<img src="' + URL.createObjectURL(res.blob) + '" alt="">';
+      evMark(card);
+    }).catch(function () { show($('msg'), 'err', 'Этот файл не открылся. Подойдёт JPEG, PNG или снимок с телефона.'); window.scrollTo(0, 0); });
+  });
+  function publishEvents() {
+    if (busy) return;
+    var cards = [].slice.call(document.querySelectorAll('#evList .evc'));
+    var list = cards.map(function (c) {
+      var v = function (n) { return c.querySelector('[name=' + n + ']').value; };
+      var old = (C['events.json'] || []).filter(function (e) { return e.id === c.dataset.id; })[0] || {};
+      return { id: c.dataset.id || undefined, date: v('date'), day: old.day, time: v('time'), kind: v('kind'), title: v('title'), text: v('text'), place: v('place') };
+    });
+    var keys = cards.map(function (c) { return c.dataset.key; });
+    busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
+    var done = [];
+    call({ action: 'events', events: list }).then(function (d) {
+      done = d.changes || [];
+      return load().then(function () {
+        // photos go after the list is saved: a new announcement gets its photo place only then
+        var jobs = keys.map(function (k, i) { return evPics[k] ? { blob: evPics[k], ev: C['events.json'][i] } : null; }).filter(Boolean);
+        return jobs.reduce(function (p, j) {
+          return p.then(function () {
+            return base64(j.blob).then(function (data) { return call({ action: 'photo', slot: j.ev.photo, data: data }); })
+              .then(function () { done.push('Фото: ' + j.ev.kind + ' ' + j.ev.title); });
+          });
+        }, Promise.resolve());
+      });
+    }).then(load).then(function () {
+      renderEvents();
+      show($('msg'), 'ok', done.length ? 'Опубликовано:\n' + done.join('\n') : 'Всё и так совпадало с сайтом, ничего не поменялось.');
+      window.scrollTo(0, 0);
+    }).catch(function (e) {
+      if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Афиша не опубликована.');
+      show($('msg'), 'err', (done.length ? 'Опубликовано частично:\n' + done.join('\n') + '\n\n' : '') + 'Не опубликовано: ' + e.message); window.scrollTo(0, 0);
     }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
   }
 

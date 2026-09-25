@@ -22,3 +22,4 @@ Append-only: date · decision · why.
 - 2026-09-25 · Photo school events stay, past ones too. Alexey: «мероприятия обновляются, это были готовые формы, куда вносятся анонсы, даже по прошедшим мероприятиям новые посетители видят, что школа живет и проводит встречи». → events are edited by Alexey (admin), past events remain visible. Supersedes the entry above that left the May events out.
 - 2026-09-25 · Feedback: «для обратной связи нужна форма и письмо мне на почту». The Vigbo forms come back as a form whose submissions are emailed to Alexey.
 - 2026-09-25 · Contacts: «в контактах WhatsApp, VK, Инстаграм, Телеграм, Макс, все нужно».
+- 2026-09-25 · Photo school page opens with the big Vigbo banner again (4 photos from practice + round «СФЕРА фотошкола» mark + slogan + mission). Alexey: «вот этот огромный банер важен, он встречает учеников стилем, тем, что мы делаем на уроках, это фото с практик, это почерк школы».

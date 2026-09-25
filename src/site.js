@@ -18,6 +18,14 @@
     vd.querySelector('.vd-x').addEventListener('click',function(){vd.close()});
     vd.addEventListener('click',function(e){if(!e.target.closest('.vd-frame')&&!e.target.closest('.vd-title'))vd.close()});
   }
+  // photo school announcements: upcoming first (soonest on top), then past ones marked «прошло»
+  var evl=document.querySelector('.ev-list');
+  if(evl){
+    var today=new Date().toISOString().slice(0,10);
+    var evs=[].slice.call(evl.children).map(function(el,i){var d=el.dataset.date||'';return{el:el,d:d,past:!d||d<today,i:i}});
+    evs.sort(function(a,b){if(a.past!==b.past)return a.past?1:-1;if(a.past)return(b.d||'').localeCompare(a.d||'')||a.i-b.i;return a.d.localeCompare(b.d)});
+    evs.forEach(function(e){e.el.classList.toggle('past',e.past);evl.appendChild(e.el)});
+  }
   var lb=document.querySelector('dialog.lb');
   if(!lb)return;
   var items=[].slice.call(document.querySelectorAll('.gallery .open')),i=0,img=lb.querySelector('img');

@@ -260,25 +260,36 @@ ${pageHead('Услуги', c)}
 
 function schoolPage() {
   const c = C['fotosfera.json'];
+  const events = C['events.json'] || [];
+  // announcements: the page lists them in the order saved; site.js moves past ones down and marks them
+  const eventCard = (e) => `<article class="ev" id="${esc(e.id)}"${e.date ? ` data-date="${esc(e.date)}"` : ' data-past'}>
+${e.photo && versions[e.photo] ? `<figure class="ph" style="--r:1/1"><img src="/photos/${e.photo}.jpg?v=${versions[e.photo]}" alt="${esc(e.kind + ' ' + e.title)}" loading="lazy" decoding="async"></figure>` : ''}
+<div class="ev-b"><p class="ev-when"><b>${esc(e.day)}</b> ${esc(e.time || '')}<span class="ev-past">прошло</span></p>
+<h3><span>${esc(e.kind)}</span> ${esc(e.title)}</h3><p>${esc(e.text)}</p><p class="ev-place">${esc(e.place)}</p></div>
+</article>`;
+  const strip = (slots) => `<section class="wrap strip">${slots.map((s) => photo(s)).join('')}</section>`;
   const course = (k, i) => `<article class="course${i % 2 ? ' flip' : ''}">
 ${photo(k.photo)}
 <div class="course-b"><span class="label">${esc(k.kicker)}</span><h2>${esc(k.name)}</h2>${k.text.map((t) => `<p>${esc(t)}</p>`).join('')}
 <details class="program"><summary>Программа курса · ${k.program.length} ${k.program.length % 10 === 1 && k.program.length % 100 !== 11 ? 'тема' : 'тем'}</summary><ol>${k.program.map((t) => `<li>${esc(t)}</li>`).join('')}</ol></details></div>
 </article>`;
   const body = `<main>
-<div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / Фотошкола</span></div>
-<section class="wrap school-cover">
-<div class="t"><h1>${esc(c.heading)}</h1><p class="lede-s">${esc(c.lede)}</p><div class="actions"><a class="btn solid" href="#zapis">Записаться</a><a class="btn" href="#kursy">Курсы и цены</a></div></div>
-${photo(c.photo, { eager: true })}
+<section class="school-banner" style="--bg:url('/photos/${c.banner}.jpg?v=${versions[c.banner]}')" role="img" aria-label="${esc(photos[c.banner].alt)}">
+<div class="sb-in"><img class="sb-logo" src="/img/sfera-logo.png" alt="" width="300" height="300"><h1 class="sr">${esc(c.heading)}</h1>
+<p class="sb-lede">${esc(c.lede)}</p><p class="sb-mission">${esc(c.mission)}</p>
+<div class="actions"><a class="btn solid" href="#zapis">Записаться</a><a class="btn light" href="#kursy">Курсы и цены</a></div></div>
 </section>
-<section class="wrap mission"><blockquote><p>${esc(c.mission)}</p></blockquote></section>
+${events.length ? `<section class="wrap events" id="afisha"><div class="sec-head"><h2>${esc(c.eventsTitle)}</h2><span class="label">${esc(c.eventsNote)}</span></div>
+<div class="ev-list">${events.map(eventCard).join('')}</div></section>` : ''}
 <section class="wrap courses" id="kursy">${c.courses.map(course).join('')}</section>
+${strip(c.strips[0])}
 <section class="wrap learn"><div><h2>${esc(c.learnTitle)}</h2><ul>${c.learn.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div><div class="vision">${c.vision.map((t) => `<p>${esc(t)}</p>`).join('')}</div></section>
 <section class="wrap packs"><div class="sec-head" style="padding-top:0"><h2>Стоимость</h2><span class="label">Рассрочка — раз в неделю</span></div>
 <div class="pack-grid">${c.packages.map((k) => `<article class="pack"><span class="label">${esc(k.kicker)}</span><h3>${esc(k.name)}</h3><p class="pack-price">${priceStr(k.price)}</p><p class="pack-n">${esc(k.lessons)}</p><ul>${k.notes.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></article>`).join('')}</div></section>
+${strip(c.strips[1])}
 <section class="wrap faq"><h2>Вопрос — ответ</h2>${c.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</section>
 <section class="wrap teacher"><span class="label">Преподаватель</span><h2>${esc(c.teacher.name)}</h2><p>${esc(c.teacher.text)}</p></section>
-<section class="school-cta" id="zapis"><div class="wrap"><h2>${esc(c.contact.cta)}</h2><p class="cta-phone">${telLink(c.contact.phoneHref, c.contact.phone)}</p><p>${esc(c.contact.address)}</p></div></section>
+<section class="school-cta" id="zapis"><div class="wrap cta-grid"><div><h2>${esc(c.contact.cta)}</h2><p class="cta-phone">${telLink(c.contact.phoneHref, c.contact.phone)}</p><p>${esc(c.contact.address)}</p></div>${photo(c.contact.photo)}</div></section>
 <section class="wrap gallery"><div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">${esc(c.galleryNote)}</span></div>${galleryBlock(c.gallery)}</section>
 </main>
 ${LIGHTBOX}`;
@@ -317,12 +328,13 @@ export function vkEmbed(input) {
 // Lives here, next to the pages, so a new kind of edit ships with a normal deploy instead of a
 // new function version. Returns { changes: [text], files: [content files that changed] };
 // throws an Error with .user = true for a mistake Alexey can fix himself.
-export const ADMIN_FILES = ['prices.json', 'videos.json'];
+export const ADMIN_FILES = ['prices.json', 'videos.json', 'events.json'];
 const userError = (msg) => Object.assign(new Error(msg), { user: true });
 
 export function adminEdit(C, req) {
   if (req.action === 'prices') return editPrices(C, req);
   if (req.action === 'videos') return editVideos(C, req);
+  if (req.action === 'events') return editEvents(C, req);
   throw userError('нет такого действия');
 }
 
@@ -372,4 +384,55 @@ function editVideos(C, req) {
     if (videos[id] !== keep) { changes.push(`${it.name}: ${videos[id] ? 'ролик заменён' : 'ролик добавлен'}`); videos[id] = keep; }
   }
   return { changes, files: changes.length ? ['videos.json'] : [] };
+}
+
+// Places a photo can be uploaded to from the admin: page slots plus one per announcement.
+export function photoSlotOk(C, slot) {
+  return !!C['photos.json'][slot] || (C['events.json'] || []).some((e) => e.photo === slot);
+}
+
+const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+export const eventDay = (iso) => { const [, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]}`; };
+
+// Announcements of the photo school. The admin sends the whole list; ids of new ones are made here.
+function editEvents(C, req) {
+  const old = C['events.json'] || [];
+  const byId = Object.fromEntries(old.map((e) => [e.id, e]));
+  const text = (v, max, label, need) => {
+    const t = String(v ?? '').replace(/\s+/g, ' ').trim();
+    if (need && !t) throw userError(`${label}: заполните поле`);
+    if (t.length > max) throw userError(`${label}: слишком длинно, до ${max} знаков`);
+    return t;
+  };
+  if (!Array.isArray(req.events) || req.events.length > 60) throw userError('список мероприятий не прочитался, обновите страницу');
+  const used = new Set();
+  const list = req.events.map((e, i) => {
+    const title = text(e.title, 80, `Мероприятие ${i + 1}, название`, true);
+    const date = String(e.date || '');
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw userError(`${title}: дата не прочиталась`);
+    let id = byId[e.id] ? e.id : `ev-${(date || 'b-d').replace(/-/g, '')}-${Math.random().toString(36).slice(2, 6)}`;
+    if (used.has(id)) throw userError('два мероприятия с одним номером, обновите страницу');
+    used.add(id);
+    const prev = byId[id] || {};
+    return {
+      id, date,
+      day: date ? eventDay(date) : text(prev.day || e.day, 30, `${title}, дата`, true),
+      time: text(e.time, 30, `${title}, время`),
+      kind: text(e.kind, 40, `${title}, вид`),
+      title,
+      text: text(e.text, 600, `${title}, описание`),
+      place: text(e.place, 120, `${title}, место`),
+      photo: prev.photo || (id.startsWith('ev-') ? id : ''),
+    };
+  });
+  const changes = [];
+  for (const e of list) {
+    const p = byId[e.id];
+    if (!p) changes.push(`Добавлено: ${e.kind} ${e.title}`);
+    else if (JSON.stringify(p) !== JSON.stringify(e)) changes.push(`Изменено: ${e.kind} ${e.title}`);
+  }
+  for (const p of old) if (!used.has(p.id)) changes.push(`Удалено: ${p.kind} ${p.title}`);
+  if (!changes.length && list.map((e) => e.id).join() !== old.map((e) => e.id).join()) changes.push('Изменён порядок');
+  C['events.json'] = list;
+  return { changes, files: changes.length ? ['events.json'] : [], ids: list.map((e) => e.id) };
 }

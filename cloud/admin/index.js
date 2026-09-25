@@ -59,7 +59,7 @@ function bucket(token) {
     // keeps the previous version of a file before it is overwritten
     archive: (key, stamp) => call('PUT', `_src/archive/${stamp}/${key}`, {
       headers: { 'x-amz-copy-source': `/${BUCKET}/${key.split('/').map(encodeURIComponent).join('/')}` },
-    }),
+    }).catch((e) => { if (!/ 404 /.test(e.message)) throw e; }), // nothing to keep yet: first photo of a new place
   };
 }
 
@@ -89,8 +89,8 @@ async function publishPages(b, C, manifest, mod) {
 
 async function saveEdit(b, req, stamp) {
   const [{ manifest, C }, mod] = await Promise.all([loadContent(b), siteModule(b)]);
-  const { changes, files } = mod.adminEdit(C, req);
-  if (!files.length) return { changes };
+  const { changes, files, ...extra } = mod.adminEdit(C, req);
+  if (!files.length) return { changes, ...extra };
   const isNew = (f) => !manifest.content.includes(f);
   await Promise.all(files.filter((f) => !isNew(f)).map((f) => b.archive(`_src/content/${f}`, stamp)));
   const pages = await publishPages(b, C, manifest, mod); // pages first: if rendering fails, content stays as it was
@@ -99,13 +99,14 @@ async function saveEdit(b, req, stamp) {
     manifest.content.push(...files.filter(isNew));
     await b.put('_src/manifest.json', JSON.stringify(manifest, null, 2) + '\n', 'application/json');
   }
-  return { changes, pages };
+  return { changes, pages, ...extra };
 }
 
 async function savePhoto(b, req, stamp) {
-  const { manifest, C } = await loadContent(b);
+  const [{ manifest, C }, mod] = await Promise.all([loadContent(b), siteModule(b)]);
   const slot = String(req.slot || '');
-  if (!C['photos.json'][slot]) throw new UserError('нет такого места для фото');
+  const ok = mod.photoSlotOk ? mod.photoSlotOk(C, slot) : !!C['photos.json'][slot];
+  if (!ok || !/^[a-z0-9-]{1,60}$/.test(slot)) throw new UserError('нет такого места для фото');
   const jpeg = Buffer.from(String(req.data || ''), 'base64');
   if (jpeg.length < 1000 || jpeg[0] !== 0xff || jpeg[1] !== 0xd8 || jpeg[2] !== 0xff) throw new UserError('файл не похож на JPEG');
   if (jpeg.length > MAX_PHOTO) throw new UserError('фото больше 2,5 МБ после сжатия');
@@ -113,7 +114,7 @@ async function savePhoto(b, req, stamp) {
   await b.archive(key, stamp);
   await b.put(key, jpeg, 'image/jpeg');
   manifest.versions[slot] = crypto.createHash('md5').update(jpeg).digest('hex').slice(0, 8);
-  const pages = await publishPages(b, C, manifest);
+  const pages = await publishPages(b, C, manifest, mod);
   await b.put('_src/manifest.json', JSON.stringify(manifest, null, 2) + '\n', 'application/json');
   return { changes: [`Фото ${slot} заменено`], pages, version: manifest.versions[slot] };
 }
