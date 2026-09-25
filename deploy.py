@@ -121,6 +121,8 @@ def pull(keys, dry):
         body = remote_get(rel, keys)
         if body is None or hashlib.md5(body).hexdigest()[:8] != v:
             sys.exit(f"stop: {rel} on the site does not match its version {v}; run again in a minute")
+        if blob_id(body) in known_versions(rel):
+            continue  # an older publish of this photo: the local one is newer (or was removed on purpose)
         plan.append((rel, body))
     for rel, body in plan:
         if uncommitted(rel):
