@@ -7,11 +7,9 @@ hosted in Yandex Cloud (bucket `tomson`, https://tomson.website.yandexcloud.net,
 mirrors). Context: memory `tomson-site-migration`, `ws:30_agents/_all.md` («Yandex Cloud и сайт студии»).
 
 ## Status
-Local git only (no GitHub), domains still on Vigbo. Built and deployed to the test address: home, `zal-edison`, `zal-sfera`, `zal-vegas`,
-`oborudovanie`, `pravila_i_cena` (same slugs as the old site; slash-less URLs 302 to them).
-Admin `/admin/` works (prices, photos, equipment videos; Alexey's password). Not built: contacts (`kak-najti`), photo school, services, schedule. Nav links to pages that are not ported point to the old site
-(`content/site.json` → `oldSite`); `build.mjs` switches a hall link to the new
-page when `content/zal-<name>.json` exists.
+Local git only (no GitHub), domains still on Vigbo. All 11 pages built and live on the test address
+(home, 3 halls, equipment, rules, kak-najti, fotosfera, sertifikaty, raspisanie; old slugs kept).
+No links to the old site remain. Admin `/admin/` works (prices, photos, equipment videos; Alexey's password).
 
 ## The site is the main copy of prices and photos
 Alexey edits them in `/admin/` (any device). The page reads `/_src/…` and posts to the cloud
