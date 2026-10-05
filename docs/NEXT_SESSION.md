@@ -75,7 +75,8 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
 5. Phone check (Alexey walks all 11 pages on his phone) → numbered remarks list → one fix
    step per list, never inside the step that built the page. Known already: the photo school
    page is 404–412 px wide on a 375 px phone (caption under the poster), older than step 2.
-6. Domains RESEARCH (Opus 5.5, no changes in DNS): how to attach томсон.рф and
+6. RESEARCH DONE 2026-10-05 → `docs/STEP_6_DOMAINS_PLAN.md` (option A recommended; 4 questions
+   to Alexey; DNS sits on Vigbo NS incl. mail MX). Was: domains research (Opus 5.5, no changes in DNS): how to attach томсон.рф and
    novopashin.ru to the bucket (bucket name rule, certificate, CDN: from memory, NOT
    verified), keep the mail MX alive, redirects for old Vigbo links, rollback plan.
    Output: a plan with 2–3 options for Alexey. The switch itself = step 7.
