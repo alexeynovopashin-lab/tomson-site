@@ -42,6 +42,7 @@
       e.preventDefault();
       var v=function(n){return(rf.elements[n].value||'').trim()};
       if(!v('name')||(v('phone').match(/\d/g)||[]).length<5){say(rf.dataset.errFields,'bad');(v('name')?rf.elements.phone:rf.elements.name).focus();return}
+      if(rf.elements.agree&&!rf.elements.agree.checked){say(rf.dataset.errAgree,'bad');rf.elements.agree.focus();return}
       sb.disabled=true;sb.textContent=rf.dataset.sending;say('');
       var body={name:v('name'),phone:v('phone'),interest:v('interest'),message:v('message'),website:v('website'),elapsed:Date.now()-opened,page:location.pathname};
       post(body,true).then(function(r){

@@ -70,6 +70,12 @@ function contactsBlock() {
 </section>`;
 }
 
+// Privacy policy: on only once content/privacy.json names the operator; then the page, the footer
+// link and the consent tick-box in the request form all appear together.
+const privacy = C['privacy.json'];
+const privacyOn = !!(privacy && privacy.operator);
+const PRIVACY_URL = '/politika/';
+
 function shell({ title, description, body, current }) {
   const items = site.nav
     .map((n) => `<li><a href="${esc(navUrl(n))}"${current === n.label ? ' aria-current="page"' : ''}>${esc(n.label)}</a></li>`)
@@ -94,6 +100,7 @@ ${body}
 <div class="word">${esc(site.name)}</div>
 <div class="col"><span class="label">Адрес</span><p>${esc(site.city)}, ${esc(site.address)}</p></div>
 <div class="col"><span class="label">Телефон</span><p><a href="tel:${site.phoneHref}">${esc(site.phone)}</a></p></div>
+${privacyOn ? `<div class="col legal-link"><a href="${PRIVACY_URL}">${esc(privacy.footerLink)}</a></div>` : ''}
 ${channelLinks('channels') ? `<div class="col chan"><span class="label">Мессенджеры</span>${channelLinks('channels')}</div>` : ''}
 ${site.nav.some((n) => n.slug && !ported.has(n.slug)) ? `<p class="note">${esc(site.footerNote)}</p>` : ''}
 </div></footer>
@@ -112,13 +119,14 @@ function requestForm(preset) {
   const id = (k) => `rf-${k}`;
   return `<section class="wrap rform-sec" id="zayavka">
 <div class="rform-head"><span class="label">${esc(f.label)}</span><h2>${esc(f.title)}</h2><p>${esc(f.lead)}</p></div>
-<form class="rform" data-api="${esc(site.formApi)}" data-sending="${esc(f.sending)}" data-sent="${esc(f.sent)}" data-err-fields="${esc(f.errorFields)}" data-err-rate="${esc(f.errorRate)}" data-err="${esc(f.error)} ${esc(site.phone)}" novalidate>
+<form class="rform" data-api="${esc(site.formApi)}" data-sending="${esc(f.sending)}" data-sent="${esc(f.sent)}" data-err-fields="${esc(f.errorFields)}" data-err-rate="${esc(f.errorRate)}" data-err-agree="${esc(f.errorAgree || '')}" data-err="${esc(f.error)} ${esc(site.phone)}" novalidate>
 <div class="rf-row"><label for="${id('name')}">${esc(f.fields.name)}</label><input id="${id('name')}" name="name" autocomplete="name" maxlength="80" required></div>
 <div class="rf-row"><label for="${id('phone')}">${esc(f.fields.phone)}</label><input id="${id('phone')}" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" required></div>
 <div class="rf-row rf-wide"><label for="${id('interest')}">${esc(f.fields.interest)}</label><select id="${id('interest')}" name="interest">${opts}</select></div>
 <div class="rf-row rf-wide"><label for="${id('message')}">${esc(f.fields.message)}</label><textarea id="${id('message')}" name="message" rows="4" maxlength="2000" placeholder="${esc(f.messagePlaceholder)}"></textarea></div>
 <div class="rf-trap" aria-hidden="true"><label>Сайт<input name="website" tabindex="-1" autocomplete="off"></label></div>
-<div class="rf-foot rf-wide"><button class="btn solid" type="submit">${esc(f.button)}</button><p class="rf-consent">${esc(f.consent)}</p></div>
+${privacyOn ? `<div class="rf-row rf-wide rf-agree"><label><input type="checkbox" name="agree" required> <span>${esc(privacy.agree)} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">${esc(privacy.agreeLink)}</a></span></label></div>` : ''}
+<div class="rf-foot rf-wide"><button class="btn solid" type="submit">${esc(f.button)}</button>${privacyOn ? '' : `<p class="rf-consent">${esc(f.consent)}</p>`}</div>
 <p class="rf-status rf-wide" role="status" aria-live="polite"></p>
 </form>
 </section>`;
@@ -260,6 +268,19 @@ const telLink = (href, label) => `<a href="tel:${href}">${esc(label)}</a>`;
 const galleryBlock = (slots) => `<div class="cols">${slots.map((s) => `<button class="open" aria-label="Открыть фото" style="--r:${photos[s].ratio}">${photo(s)}</button>`).join('')}</div>`;
 const LIGHTBOX = '<dialog class="lb" aria-label="Просмотр фото"><div class="stage"><img alt=""></div><button class="x" aria-label="Закрыть">×</button><button class="p" aria-label="Назад">‹</button><button class="n" aria-label="Вперёд">›</button></dialog>';
 
+function privacyPage() {
+  const c = privacy;
+  const contact = `${c.email ? `письмом на ${c.email}, ` : ''}по телефону ${site.phone} или в мессенджеры, указанные на сайте`;
+  const fill = (t) => esc(t).replace('{operator}', esc(c.operator)).replace('{city}', esc(site.city)).replace('{address}', esc(site.address)).replace(/\{contact\}/g, esc(contact));
+  const body = `<main>
+${pageHead('Политика', c)}
+<section class="wrap legal">
+${c.sections.map((s) => `<h2>${esc(s.h)}</h2>${s.p.map((t) => `<p>${fill(t)}</p>`).join('')}`).join('\n')}
+</section>
+</main>`;
+  return { path: 'politika/index.html', html: shell({ title: c.title, description: c.description, body, current: '' }) };
+}
+
 function findPage() {
   const c = C['kak-najti.json'];
   const body = `<main>
@@ -349,6 +370,7 @@ ${LIGHTBOX}`;
   const files = [{ path: 'index.html', html: home() }];
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
   files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
+  if (privacyOn) files.push(privacyPage());
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   return { files, unused };
 }

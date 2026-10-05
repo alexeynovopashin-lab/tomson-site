@@ -422,3 +422,13 @@ footer .channels a:hover{color:var(--paper)}
 .contacts-line a{text-decoration:none}.contacts-line a:hover{color:var(--accent)}
 .contacts-addr{margin:8px 0 22px;color:var(--muted)}
 @media (max-width:900px){.contacts-head,.contacts-body{grid-column:1/-1}}
+
+/* privacy policy + consent tick-box */
+.legal{max-width:760px;padding-block:clamp(8px,2vw,24px) clamp(40px,6vw,80px)}
+.legal h2{margin:2em 0 .5em;font:500 clamp(22px,2.4vw,30px)/1.2 var(--serif)}
+.legal p{margin:.6em 0}
+footer .legal-link{grid-column:1/-1}
+footer .legal-link a{font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+.rf-agree label{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.rf-agree input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent)}
+.rf-agree a{border-bottom:1px solid currentColor}
