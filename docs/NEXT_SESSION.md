@@ -1,14 +1,15 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-05 (launch split into steps; Alexey chose «Сначала сайт» before platform stage 1).
+Last rewrite: 2026-10-05 (step 2 accepted; PR with the form into main; step 3 prompt ready).
 
 ## Now
 All 11 pages are live on the test address https://tomson.website.yandexcloud.net
 (home, 3 halls, equipment with pictures and VK videos, rules, kak-najti, fotosfera
 with announcements, sertifikaty, raspisanie). Admin `/admin/` works: tabs Цены, Фото,
 Ролики, Афиша; password is Alexey's own. Domains томсон.рф and novopashin.ru are
-still on Vigbo. Booking = AppEvent iframe.
+still on Vigbo. Booking = AppEvent iframe. Request form (home + photo school) → cloud
+function `tomsonform` → email to Alexey's Yandex mailbox; first real letter arrived 2026-10-05.
 
 ## Platform (since 2026-10-05)
 The site becomes a platform for photo studios and schools on the Event OS core:
@@ -27,8 +28,8 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
 
 ## Waiting for Alexey
 1. (done 2026-10-05) GitHub repo exists and the Project sees it.
-2. Mail for the form (needed for step 2): which address receives requests, which Yandex
-   mailbox sends. He types the Yandex app password into the function settings himself.
+2. (done 2026-10-05) Mail for the form: his Yandex mailbox sends to itself (option A);
+   Postbox (option C) after the step 7 switch — only function settings change then.
 3. Telegram and Max links (step 3). Known: Instagram `studiotomson`, VK `williamthomson`,
    WhatsApp `wa.me/79618878078`.
 4. Is the entrance via «Метрофитнес» still closed? (page «Как найти» says so + photo)
@@ -39,15 +40,23 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
 
 ## Launch steps (one at a time, Mac, sizes are guesses)
 1. DONE. GitHub: history pushed, repo connected to the Project.
-2. NEXT. Feedback form + email via the cloud function (cloud, mail, secrets: Opus 5.5).
-   ~4 files. Starting prompt: `docs/STEP_2_FORM_PROMPT.md`. Needs answer 2 (the step asks
-   him first if he has not given it). Live only on the test address.
-3. Contacts block + footer with 5 messengers (code, Sonnet 5.5). ~4 files. Needs answer 3.
+2. DONE 2026-10-05. Request form + email. Function `tomsonform` (folder tomson, public,
+   one instance; env SMTP_USER / SMTP_PASSWORD typed by Alexey). Code `cloud/form/index.js`
+   ships as a new version via console editor or `yc ... version create` WITH the same env
+   (a version without env breaks the form). Accepted by the orchestrator
+   2026-10-05 (letter received; trap and empty form make no mail; rate limit proven only on
+   the bench). The form code reaches main by PR (branch `claude/step2-form`): until it is
+   merged a deploy from main would drop the form.
+3a. Privacy-policy page (name + phone are collected, 152-ФЗ): ASKED Alexey 2026-10-05,
+   default = write it before the switch (data/documents, Sonnet 5.5). Waiting for his answer.
+3. NEXT. Contacts block + footer with 5 messengers (code, Sonnet 5.5). ~4 files. Needs answer 3.
+   Starting prompt: `docs/STEP_3_CONTACTS_PROMPT.md`.
    Does not depend on step 2: may go first if the mail answer is late.
 4. Content checks before the switch (data, Sonnet 5.5): answers 4–6 into the content.
    Small; skip if Alexey has no answers yet, the switch does not wait for them unless he says.
-5. Phone check (Alexey walks all 11 pages on his phone) → numbered remarks list →
-   one fix step per list, never inside the step that built the page.
+5. Phone check (Alexey walks all 11 pages on his phone) → numbered remarks list → one fix
+   step per list, never inside the step that built the page. Known already: the photo school
+   page is 404–412 px wide on a 375 px phone (caption under the poster), older than step 2.
 6. Domains RESEARCH (Opus 5.5, no changes in DNS): how to attach томсон.рф and
    novopashin.ru to the bucket (bucket name rule, certificate, CDN: from memory, NOT
    verified), keep the mail MX alive, redirects for old Vigbo links, rollback plan.

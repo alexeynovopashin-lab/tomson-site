@@ -382,3 +382,26 @@ dialog.vd::backdrop{background:rgba(12,10,8,.88)}
 .cta-grid{display:grid;grid-template-columns:7fr 5fr;gap:var(--gap);align-items:center}
 .cta-grid .ph{max-width:420px;justify-self:end;width:100%}
 @media (max-width:700px){.strip{grid-template-columns:1fr 1fr}.strip .ph:nth-child(3){display:none}.cta-grid{grid-template-columns:1fr}.cta-grid .ph{justify-self:start;max-width:260px}}
+/* request form */
+.rform-sec{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gap);padding-block:clamp(48px,7vw,104px);border-top:1px solid var(--line)}
+.rform-head{grid-column:1/6}
+.rform-head h2{margin:8px 0 14px;font:500 clamp(36px,5vw,72px)/1 var(--serif)}
+.rform-head p{margin:0;max-width:40ch;color:var(--muted)}
+.rform{grid-column:7/13;display:grid;grid-template-columns:1fr 1fr;gap:18px var(--gap);min-width:0}
+.rf-row{display:flex;flex-direction:column;gap:8px;min-width:0}
+.rf-wide{grid-column:1/-1}
+.rform label{font:600 11px/1.3 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.rform input,.rform select,.rform textarea{width:100%;min-width:0;box-sizing:border-box;padding:13px 14px;border:1px solid var(--line);border-radius:10px;background:#fffdf9;color:var(--ink);font:400 16px/1.4 var(--sans)}
+.rform textarea{resize:vertical}
+.rform input:focus,.rform select:focus,.rform textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.rf-trap{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.rf-foot{display:flex;flex-wrap:wrap;align-items:center;gap:14px 22px}
+.rf-foot .btn{cursor:pointer}
+.rf-foot .btn:disabled{opacity:.6;cursor:wait}
+.rf-consent{margin:0;flex:1 1 220px;font-size:12.5px;color:var(--muted)}
+.rf-status{margin:0;font-weight:600}
+.rf-status:empty{display:none}
+.rf-status.good{color:#2f6b3a}
+.rf-status.bad{color:var(--accent)}
+@media (max-width:900px){.rform-head,.rform{grid-column:1/-1}}
+@media (max-width:520px){.rform{grid-template-columns:1fr}}

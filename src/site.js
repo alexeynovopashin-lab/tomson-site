@@ -26,6 +26,30 @@
     evs.sort(function(a,b){if(a.past!==b.past)return a.past?1:-1;if(a.past)return(b.d||'').localeCompare(a.d||'')||a.i-b.i;return a.d.localeCompare(b.d)});
     evs.forEach(function(e){e.el.classList.toggle('past',e.past);evl.appendChild(e.el)});
   }
+  // request form: sends to the form function, shows «sent» or the error in place
+  var rf=document.querySelector('form.rform');
+  if(rf){
+    var opened=Date.now(),st=rf.querySelector('.rf-status'),sb=rf.querySelector('button[type=submit]'),label=sb.textContent;
+    function say(t,cls){st.textContent=t;st.className='rf-status rf-wide '+(cls||'')}
+    function post(body,again){
+      return fetch(rf.dataset.api,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(body)}).then(function(r){
+        // one instance serves the form: a simultaneous request may be turned away once, try again
+        if(r.status===429&&again)return new Promise(function(ok){setTimeout(ok,2500)}).then(function(){return post(body,false)});
+        return r;
+      });
+    }
+    rf.addEventListener('submit',function(e){
+      e.preventDefault();
+      var v=function(n){return(rf.elements[n].value||'').trim()};
+      if(!v('name')||(v('phone').match(/\d/g)||[]).length<5){say(rf.dataset.errFields,'bad');(v('name')?rf.elements.phone:rf.elements.name).focus();return}
+      sb.disabled=true;sb.textContent=rf.dataset.sending;say('');
+      var body={name:v('name'),phone:v('phone'),interest:v('interest'),message:v('message'),website:v('website'),elapsed:Date.now()-opened,page:location.pathname};
+      post(body,true).then(function(r){
+        if(r.ok){rf.reset();rf.classList.add('done');say(rf.dataset.sent,'good');return}
+        say(r.status===429?rf.dataset.errRate:r.status===400?rf.dataset.errFields:rf.dataset.err,'bad');
+      }).catch(function(){say(rf.dataset.err,'bad')}).then(function(){sb.disabled=false;sb.textContent=label});
+    });
+  }
   var lb=document.querySelector('dialog.lb');
   if(!lb)return;
   var items=[].slice.call(document.querySelectorAll('.gallery .open')),i=0,img=lb.querySelector('img');

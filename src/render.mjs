@@ -77,6 +77,27 @@ ${site.nav.some((n) => n.slug && !ported.has(n.slug)) ? `<p class="note">${esc(s
 `;
 }
 
+// Request form: posts to the form cloud function (site.json → formApi), texts in form.json.
+// preset = the «interest» option chosen in advance (the photo school page picks the school).
+function requestForm(preset) {
+  const f = C['form.json'];
+  if (!f || !site.formApi) return '';
+  const opts = f.interests.map((t) => `<option${t === preset ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  const id = (k) => `rf-${k}`;
+  return `<section class="wrap rform-sec" id="zayavka">
+<div class="rform-head"><span class="label">${esc(f.label)}</span><h2>${esc(f.title)}</h2><p>${esc(f.lead)}</p></div>
+<form class="rform" data-api="${esc(site.formApi)}" data-sending="${esc(f.sending)}" data-sent="${esc(f.sent)}" data-err-fields="${esc(f.errorFields)}" data-err-rate="${esc(f.errorRate)}" data-err="${esc(f.error)} ${esc(site.phone)}" novalidate>
+<div class="rf-row"><label for="${id('name')}">${esc(f.fields.name)}</label><input id="${id('name')}" name="name" autocomplete="name" maxlength="80" required></div>
+<div class="rf-row"><label for="${id('phone')}">${esc(f.fields.phone)}</label><input id="${id('phone')}" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" required></div>
+<div class="rf-row rf-wide"><label for="${id('interest')}">${esc(f.fields.interest)}</label><select id="${id('interest')}" name="interest">${opts}</select></div>
+<div class="rf-row rf-wide"><label for="${id('message')}">${esc(f.fields.message)}</label><textarea id="${id('message')}" name="message" rows="4" maxlength="2000" placeholder="${esc(f.messagePlaceholder)}"></textarea></div>
+<div class="rf-trap" aria-hidden="true"><label>Сайт<input name="website" tabindex="-1" autocomplete="off"></label></div>
+<div class="rf-foot rf-wide"><button class="btn solid" type="submit">${esc(f.button)}</button><p class="rf-consent">${esc(f.consent)}</p></div>
+<p class="rf-status rf-wide" role="status" aria-live="polite"></p>
+</form>
+</section>`;
+}
+
 function hallCard(h) {
   return `<article class="hall">
 ${photo(h.photo)}
@@ -109,6 +130,7 @@ ${Object.values(halls).map(hallCard).join('\n')}
 </section>
 <section class="band">${photo(c.band.photo)}<blockquote><div class="wrap"><p>${esc(c.band.quote)}</p><cite>${esc(c.band.by)}</cite></div></blockquote></section>
 <section class="wrap visit"><h2>${esc(c.visit.title)}</h2><div class="info"><p>${esc(c.visit.text)}</p><a class="btn" href="${slugUrl('kak-najti')}">Схема проезда</a></div></section>
+${requestForm()}
 </main>`;
   return shell({ title: c.title, description: c.description, body });
 }
@@ -290,6 +312,7 @@ ${strip(c.strips[1])}
 <section class="wrap faq"><h2>Вопрос — ответ</h2>${c.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</section>
 <section class="wrap teacher"><span class="label">Преподаватель</span><h2>${esc(c.teacher.name)}</h2><p>${esc(c.teacher.text)}</p></section>
 <section class="school-cta" id="zapis"><div class="wrap cta-grid"><div><h2>${esc(c.contact.cta)}</h2><p class="cta-phone">${telLink(c.contact.phoneHref, c.contact.phone)}</p><p>${esc(c.contact.address)}</p></div>${photo(c.contact.photo)}</div></section>
+${requestForm(C['form.json'] && C['form.json'].schoolPreset)}
 <section class="wrap gallery"><div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">${esc(c.galleryNote)}</span></div>${galleryBlock(c.gallery)}</section>
 </main>
 ${LIGHTBOX}`;
