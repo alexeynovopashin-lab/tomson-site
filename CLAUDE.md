@@ -39,6 +39,8 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
 - `photos/<slot>.jpg` — one file per place on a page (slot); replaced from the admin (shrunk to
   1800 px in the browser), layout unchanged (ratio in `content/photos.json`, `object-fit: cover`).
   Pages link `?v=<md5 8>` so a new photo shows at once.
+- Request form: `content/form.json` (texts), `site.json` → `formApi`, cloud function `tomsonform` (`cloud/form/index.js`,
+  public, one instance, env SMTP_*: Alexey types them, never ask). Without `formApi` the form is hidden; keep it in `site.json`.
 - `src/` — `style.css`, `site.js`, self-hosted fonts (Playfair Display, Manrope).
 - `build.mjs` — `node build.mjs` → `dist/` (static, root-absolute paths) + `dist/_src/` for the function.
 - Deploy: `python3 deploy.py [--dry-run] [--pull-only]` uploads changed files of `dist/` to bucket
