@@ -41,6 +41,8 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
    Remarks so far (2026-10-05, phone, screenshot of the photo school page header):
    1. Phone header: the bar with «МЕНЮ» has a lot of empty space on the right; put buttons there
       (which ones is not decided yet: see options asked in chat).
+   2. Desktop, home «Залы»: the hall photo and the hall name must be links too, same address as
+      the «Смотреть зал» button (they duplicate it). Alexey walked all pages on the phone: «все ок».
 
 ## Launch steps (one at a time, Mac, sizes are guesses)
 1. DONE. GitHub: history pushed, repo connected to the Project.
