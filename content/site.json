@@ -15,6 +15,15 @@
     { "label": "Услуги", "slug": "sertifikaty" },
     { "label": "Как найти", "slug": "kak-najti" }
   ],
+  "contactsTitle": "Контакты",
+  "contactsLead": "Пишите в любой удобный мессенджер — отвечаем там же.",
+  "channels": [
+    { "id": "whatsapp", "label": "WhatsApp", "href": "https://wa.me/79618878078" },
+    { "id": "telegram", "label": "Telegram", "href": "https://t.me/studiotomson" },
+    { "id": "max", "label": "Max", "href": "https://max.ru/u/f9LHodD0cOJ1KqGFpSHGfkGG-7hNMJcvtZs2M9d5rgtn10AmmB512SkO-Us" },
+    { "id": "vk", "label": "VK", "href": "https://vk.com/studiotomson" },
+    { "id": "instagram", "label": "Instagram", "href": "https://www.instagram.com/studiotomson" }
+  ],
   "adminApi": "https://functions.yandexcloud.net/d4epbmr3i7lmo39rpsf2",
   "formApi": "https://functions.yandexcloud.net/d4ej4fel9tp674rm39u9",
   "footerNote": "Страницы без своей версии пока открываются на прежнем сайте студии."

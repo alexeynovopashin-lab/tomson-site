@@ -1,7 +1,7 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-05 (step 2 accepted; PR with the form into main; step 3 prompt ready).
+Last rewrite: 2026-10-05 (step 3 built and live on the test address; waiting for Alexey's «ок» and the Max check).
 
 ## Now
 All 11 pages are live on the test address https://tomson.website.yandexcloud.net
@@ -30,8 +30,9 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
 1. (done 2026-10-05) GitHub repo exists and the Project sees it.
 2. (done 2026-10-05) Mail for the form: his Yandex mailbox sends to itself (option A);
    Postbox (option C) after the step 7 switch — only function settings change then.
-3. Telegram and Max links (step 3). Known: Instagram `studiotomson`, VK `williamthomson`,
-   WhatsApp `wa.me/79618878078`.
+3. (done 2026-10-05) Channel links given: WhatsApp `wa.me/79618878078`, Telegram `t.me/studiotomson`,
+   Max (profile link), VK `vk.com/studiotomson`, Instagram `instagram.com/studiotomson`.
+   Open: open the Max link on his phone (curl gets 403 from Max, not verified).
 4. Is the entrance via «Метрофитнес» still closed? (page «Как найти» says so + photo)
 5. Prices marked `check` in the admin: DP600II 50, SL200III 300, Spotlight 26° 300,
    certificate rent 1 h/2 h/3 h (1 500/3 000/4 500); photographer 5 500 and 3 000/h.
@@ -49,9 +50,11 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
    merged a deploy from main would drop the form.
 3a. Privacy-policy page (name + phone are collected, 152-ФЗ): ASKED Alexey 2026-10-05,
    default = write it before the switch (data/documents, Sonnet 5.5). Waiting for his answer.
-3. NEXT. Contacts block + footer with 5 messengers (code, Sonnet 5.5). ~4 files. Needs answer 3.
-   Starting prompt: `docs/STEP_3_CONTACTS_PROMPT.md`.
-   Does not depend on step 2: may go first if the mail answer is late.
+3. BUILT 2026-10-05, on the test address; waiting for Alexey's «ок». «Контакты» block on the home
+   page (before the form) + «Мессенджеры» row in the footer of all 10 pages. Links live in
+   `content/site.json` → `channels` (empty `href` = icon not shown); glyphs are own outlines in
+   `src/render.mjs` (`CHANNEL_ICONS`), style at the end of `src/style.css`. Each link opens in
+   a new tab and has a text label. Branch `claude/step3-contacts`, no PR yet (his word).
 4. Content checks before the switch (data, Sonnet 5.5): answers 4–6 into the content.
    Small; skip if Alexey has no answers yet, the switch does not wait for them unless he says.
 5. Phone check (Alexey walks all 11 pages on his phone) → numbered remarks list → one fix

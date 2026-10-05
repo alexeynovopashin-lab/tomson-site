@@ -45,6 +45,31 @@ function photo(slot, { eager = false, cls = '' } = {}) {
   return `<figure class="ph ${cls}" style="--r:${p.ratio}"><img src="/photos/${slot}.jpg?v=${v}" alt="${esc(p.alt)}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
 }
 
+// Messenger glyphs: own simple outlines (no brand artwork); a channel with an empty href is not shown.
+const CHANNEL_ICONS = {
+  whatsapp: '<path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8L3.5 20.5l4.3-1.1A8.5 8.5 0 1 0 12 3.5z"/><path d="M9 8.5c-.3 1.6 1.6 4.6 4.5 5.7.8.3 1.7-.3 1.9-1l-1.8-1-.8.7c-.9-.4-1.8-1.3-2.2-2.2l.7-.8-1-1.8c-.5.1-1.1.2-1.3.4z"/>',
+  telegram: '<path d="M20.5 4 3.5 10.6l5.2 1.9 1.9 5.6 2.7-3.3 4.6 3.4z"/><path d="m8.7 12.5 11-7.3-8.4 9.3"/>',
+  max: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8 16V8.5l4 4.5 4-4.5V16"/>',
+  vk: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M7 9l2.2 5.2M12 14.2V9m0 3 3-3m-3 3 3.2 2.2"/>',
+  instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".6"/>',
+};
+function channelLinks(cls) {
+  const list = (site.channels || []).filter((ch) => ch.href && CHANNEL_ICONS[ch.id]);
+  if (!list.length) return '';
+  return `<ul class="${cls}">${list
+    .map((ch) => `<li><a href="${esc(ch.href)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(ch.label)} (откроется в новой вкладке)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${CHANNEL_ICONS[ch.id]}</svg><span>${esc(ch.label)}</span></a></li>`)
+    .join('')}</ul>`;
+}
+
+function contactsBlock() {
+  const links = channelLinks('channels');
+  if (!links) return '';
+  return `<section class="wrap contacts" id="kontakty">
+<div class="contacts-head"><span class="label">${esc(site.name)}</span><h2>${esc(site.contactsTitle)}</h2><p>${esc(site.contactsLead)}</p></div>
+<div class="contacts-body"><p class="contacts-line"><a href="tel:${site.phoneHref}">${esc(site.phone)}</a></p><p class="contacts-addr">${esc(site.city)}, ${esc(site.address)}</p>${links}</div>
+</section>`;
+}
+
 function shell({ title, description, body, current }) {
   const items = site.nav
     .map((n) => `<li><a href="${esc(navUrl(n))}"${current === n.label ? ' aria-current="page"' : ''}>${esc(n.label)}</a></li>`)
@@ -69,6 +94,7 @@ ${body}
 <div class="word">${esc(site.name)}</div>
 <div class="col"><span class="label">Адрес</span><p>${esc(site.city)}, ${esc(site.address)}</p></div>
 <div class="col"><span class="label">Телефон</span><p><a href="tel:${site.phoneHref}">${esc(site.phone)}</a></p></div>
+${channelLinks('channels') ? `<div class="col chan"><span class="label">Мессенджеры</span>${channelLinks('channels')}</div>` : ''}
 ${site.nav.some((n) => n.slug && !ported.has(n.slug)) ? `<p class="note">${esc(site.footerNote)}</p>` : ''}
 </div></footer>
 <script src="/site.js" defer></script>
@@ -130,6 +156,7 @@ ${Object.values(halls).map(hallCard).join('\n')}
 </section>
 <section class="band">${photo(c.band.photo)}<blockquote><div class="wrap"><p>${esc(c.band.quote)}</p><cite>${esc(c.band.by)}</cite></div></blockquote></section>
 <section class="wrap visit"><h2>${esc(c.visit.title)}</h2><div class="info"><p>${esc(c.visit.text)}</p><a class="btn" href="${slugUrl('kak-najti')}">Схема проезда</a></div></section>
+${contactsBlock()}
 ${requestForm()}
 </main>`;
   return shell({ title: c.title, description: c.description, body });
