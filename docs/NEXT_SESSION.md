@@ -1,7 +1,7 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-05 (step 2 accepted; PR with the form into main; step 3 prompt ready).
+Last rewrite: 2026-10-05 (step 3 built and live on the test address; step 3 accepted by Alexey).
 
 ## Now
 All 11 pages are live on the test address https://tomson.website.yandexcloud.net
@@ -30,8 +30,9 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
 1. (done 2026-10-05) GitHub repo exists and the Project sees it.
 2. (done 2026-10-05) Mail for the form: his Yandex mailbox sends to itself (option A);
    Postbox (option C) after the step 7 switch — only function settings change then.
-3. Telegram and Max links (step 3). Known: Instagram `studiotomson`, VK `williamthomson`,
-   WhatsApp `wa.me/79618878078`.
+3. (done 2026-10-05) Channel links given: WhatsApp `wa.me/79618878078`, Telegram `t.me/studiotomson`,
+   Max (profile link), VK `vk.com/studiotomson`, Instagram `instagram.com/studiotomson`.
+   All five links opened by Alexey 2026-10-05 («все ссылки рабочие»; Max gives 403 to curl, works in a browser).
 4. Is the entrance via «Метрофитнес» still closed? (page «Как найти» says so + photo)
 5. Prices marked `check` in the admin: DP600II 50, SL200III 300, Spotlight 26° 300,
    certificate rent 1 h/2 h/3 h (1 500/3 000/4 500); photographer 5 500 and 3 000/h.
@@ -47,13 +48,22 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
    2026-10-05 (letter received; trap and empty form make no mail; rate limit proven only on
    the bench). The form code reaches main by PR (branch `claude/step2-form`): until it is
    merged a deploy from main would drop the form.
-3a. Privacy-policy page (name + phone are collected, 152-ФЗ): ASKED Alexey 2026-10-05,
-   default = write it before the switch (data/documents, Sonnet 5.5). Waiting for his answer.
-3. NEXT. Contacts block + footer with 5 messengers (code, Sonnet 5.5). ~4 files. Needs answer 3.
-   Starting prompt: `docs/STEP_3_CONTACTS_PROMPT.md`.
-   Does not depend on step 2: may go first if the mail answer is late.
-4. Content checks before the switch (data, Sonnet 5.5): answers 4–6 into the content.
-   Small; skip if Alexey has no answers yet, the switch does not wait for them unless he says.
+3a. BUILT 2026-10-05 (Alexey: «сделать, у нас на нынешнем сайте есть»; operator = he as a
+   self-employed person, no INN for now — «добавим завтра, надо искать»). Page `/politika/`
+   from `content/privacy.json` (own text: the Vigbo one is a generic template with no operator,
+   no phone, no form), footer link on every page, required tick-box «согласен(на)» in both
+   forms (client-side only; the cloud function does not check it). Empty `operator` in
+   privacy.json = the whole thing is off. Open: INN (add to section 1), a lawyer's read before
+   the switch, retention has no number («пока нужна для ответа»), «серверы в России» not
+   claimed in the text. Contact email = studio mailbox (Alexey, 2026-10-05).
+3. DONE 2026-10-05 (Alexey: «устраивает»). On the test address. «Контакты» block on the home
+   page (before the form) + «Мессенджеры» row in the footer of all 10 pages. Links live in
+   `content/site.json` → `channels` (empty `href` = icon not shown); glyphs are own outlines in
+   `src/render.mjs` (`CHANNEL_ICONS`), style at the end of `src/style.css`. Each link opens in
+   a new tab and has a text label. Branch `claude/step3-contacts`, no PR yet (his word): until it is merged into main, a deploy from main would drop the contacts block.
+4. DONE 2026-10-05: content checks. Entrance via «Метрофитнес» still closed (text kept); prices
+   confirmed (DP600II 100, SL200III 300, Spotlight 300, certificates 1 600/3 200/4 800);
+   photographer 5 500/h only (3 000 was outdated); May events dated 2026.
 5. Phone check (Alexey walks all 11 pages on his phone) → numbered remarks list → one fix
    step per list, never inside the step that built the page. Known already: the photo school
    page is 404–412 px wide on a 375 px phone (caption under the poster), older than step 2.

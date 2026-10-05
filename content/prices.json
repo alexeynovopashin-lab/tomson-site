@@ -80,9 +80,8 @@
     "dp600": {
       "group": "Оборудование",
       "label": "Godox DP600II (3 шт)",
-      "price": 50,
-      "unit": "shoot",
-      "check": true
+      "price": 100,
+      "unit": "shoot"
     },
     "ad200": {
       "group": "Оборудование",
@@ -136,8 +135,7 @@
       "group": "Оборудование",
       "label": "Godox SL200III",
       "price": 300,
-      "unit": "shoot",
-      "check": true
+      "unit": "shoot"
     },
     "lp150r": {
       "group": "Оборудование",
@@ -179,8 +177,7 @@
       "group": "Оборудование",
       "label": "Aputure Spotlight 26° (спот-насадка)",
       "price": 300,
-      "unit": "shoot",
-      "check": true
+      "unit": "shoot"
     },
     "projector": {
       "group": "Оборудование",
@@ -241,13 +238,6 @@
       "label": "Фотограф студии",
       "price": 5500,
       "unit": "hour"
-    },
-    "photographer_alt": {
-      "group": "Услуги и доплаты",
-      "label": "Фотограф студии при переносе съёмки",
-      "price": 3000,
-      "unit": "hour",
-      "check": true
     },
     "pets": {
       "group": "Услуги и доплаты",
@@ -336,23 +326,20 @@
     "cert_rent_1": {
       "group": "Подарочные сертификаты",
       "label": "Сертификат на аренду, 1 час",
-      "price": 1500,
-      "unit": "each",
-      "check": true
+      "price": 1600,
+      "unit": "each"
     },
     "cert_rent_2": {
       "group": "Подарочные сертификаты",
       "label": "Сертификат на аренду, 2 часа",
-      "price": 3000,
-      "unit": "each",
-      "check": true
+      "price": 3200,
+      "unit": "each"
     },
     "cert_rent_3": {
       "group": "Подарочные сертификаты",
       "label": "Сертификат на аренду, 3 часа",
-      "price": 4500,
-      "unit": "each",
-      "check": true
+      "price": 4800,
+      "unit": "each"
     },
     "cert_photo": {
       "group": "Подарочные сертификаты",

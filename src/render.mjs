@@ -45,6 +45,37 @@ function photo(slot, { eager = false, cls = '' } = {}) {
   return `<figure class="ph ${cls}" style="--r:${p.ratio}"><img src="/photos/${slot}.jpg?v=${v}" alt="${esc(p.alt)}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
 }
 
+// Messenger glyphs: own simple outlines (no brand artwork); a channel with an empty href is not shown.
+const CHANNEL_ICONS = {
+  whatsapp: '<path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8L3.5 20.5l4.3-1.1A8.5 8.5 0 1 0 12 3.5z"/><path d="M9 8.5c-.3 1.6 1.6 4.6 4.5 5.7.8.3 1.7-.3 1.9-1l-1.8-1-.8.7c-.9-.4-1.8-1.3-2.2-2.2l.7-.8-1-1.8c-.5.1-1.1.2-1.3.4z"/>',
+  telegram: '<path d="M20.5 4 3.5 10.6l5.2 1.9 1.9 5.6 2.7-3.3 4.6 3.4z"/><path d="m8.7 12.5 11-7.3-8.4 9.3"/>',
+  max: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8 16V8.5l4 4.5 4-4.5V16"/>',
+  vk: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M7 9l2.2 5.2M12 14.2V9m0 3 3-3m-3 3 3.2 2.2"/>',
+  instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".6"/>',
+};
+function channelLinks(cls) {
+  const list = (site.channels || []).filter((ch) => ch.href && CHANNEL_ICONS[ch.id]);
+  if (!list.length) return '';
+  return `<ul class="${cls}">${list
+    .map((ch) => `<li><a href="${esc(ch.href)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(ch.label)} (откроется в новой вкладке)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${CHANNEL_ICONS[ch.id]}</svg><span>${esc(ch.label)}</span></a></li>`)
+    .join('')}</ul>`;
+}
+
+function contactsBlock() {
+  const links = channelLinks('channels');
+  if (!links) return '';
+  return `<section class="wrap contacts" id="kontakty">
+<div class="contacts-head"><span class="label">${esc(site.name)}</span><h2>${esc(site.contactsTitle)}</h2><p>${esc(site.contactsLead)}</p></div>
+<div class="contacts-body"><p class="contacts-line"><a href="tel:${site.phoneHref}">${esc(site.phone)}</a></p><p class="contacts-addr">${esc(site.city)}, ${esc(site.address)}</p>${links}</div>
+</section>`;
+}
+
+// Privacy policy: on only once content/privacy.json names the operator; then the page, the footer
+// link and the consent tick-box in the request form all appear together.
+const privacy = C['privacy.json'];
+const privacyOn = !!(privacy && privacy.operator);
+const PRIVACY_URL = '/politika/';
+
 function shell({ title, description, body, current }) {
   const items = site.nav
     .map((n) => `<li><a href="${esc(navUrl(n))}"${current === n.label ? ' aria-current="page"' : ''}>${esc(n.label)}</a></li>`)
@@ -69,6 +100,8 @@ ${body}
 <div class="word">${esc(site.name)}</div>
 <div class="col"><span class="label">Адрес</span><p>${esc(site.city)}, ${esc(site.address)}</p></div>
 <div class="col"><span class="label">Телефон</span><p><a href="tel:${site.phoneHref}">${esc(site.phone)}</a></p></div>
+${privacyOn ? `<div class="col legal-link"><a href="${PRIVACY_URL}">${esc(privacy.footerLink)}</a></div>` : ''}
+${channelLinks('channels') ? `<div class="col chan"><span class="label">Мессенджеры</span>${channelLinks('channels')}</div>` : ''}
 ${site.nav.some((n) => n.slug && !ported.has(n.slug)) ? `<p class="note">${esc(site.footerNote)}</p>` : ''}
 </div></footer>
 <script src="/site.js" defer></script>
@@ -86,13 +119,14 @@ function requestForm(preset) {
   const id = (k) => `rf-${k}`;
   return `<section class="wrap rform-sec" id="zayavka">
 <div class="rform-head"><span class="label">${esc(f.label)}</span><h2>${esc(f.title)}</h2><p>${esc(f.lead)}</p></div>
-<form class="rform" data-api="${esc(site.formApi)}" data-sending="${esc(f.sending)}" data-sent="${esc(f.sent)}" data-err-fields="${esc(f.errorFields)}" data-err-rate="${esc(f.errorRate)}" data-err="${esc(f.error)} ${esc(site.phone)}" novalidate>
+<form class="rform" data-api="${esc(site.formApi)}" data-sending="${esc(f.sending)}" data-sent="${esc(f.sent)}" data-err-fields="${esc(f.errorFields)}" data-err-rate="${esc(f.errorRate)}" data-err-agree="${esc(f.errorAgree || '')}" data-err="${esc(f.error)} ${esc(site.phone)}" novalidate>
 <div class="rf-row"><label for="${id('name')}">${esc(f.fields.name)}</label><input id="${id('name')}" name="name" autocomplete="name" maxlength="80" required></div>
 <div class="rf-row"><label for="${id('phone')}">${esc(f.fields.phone)}</label><input id="${id('phone')}" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" required></div>
 <div class="rf-row rf-wide"><label for="${id('interest')}">${esc(f.fields.interest)}</label><select id="${id('interest')}" name="interest">${opts}</select></div>
 <div class="rf-row rf-wide"><label for="${id('message')}">${esc(f.fields.message)}</label><textarea id="${id('message')}" name="message" rows="4" maxlength="2000" placeholder="${esc(f.messagePlaceholder)}"></textarea></div>
 <div class="rf-trap" aria-hidden="true"><label>Сайт<input name="website" tabindex="-1" autocomplete="off"></label></div>
-<div class="rf-foot rf-wide"><button class="btn solid" type="submit">${esc(f.button)}</button><p class="rf-consent">${esc(f.consent)}</p></div>
+${privacyOn ? `<div class="rf-row rf-wide rf-agree"><label><input type="checkbox" name="agree" required> <span>${esc(privacy.agree)} <a href="${PRIVACY_URL}" target="_blank" rel="noopener">${esc(privacy.agreeLink)}</a></span></label></div>` : ''}
+<div class="rf-foot rf-wide"><button class="btn solid" type="submit">${esc(f.button)}</button>${privacyOn ? '' : `<p class="rf-consent">${esc(f.consent)}</p>`}</div>
 <p class="rf-status rf-wide" role="status" aria-live="polite"></p>
 </form>
 </section>`;
@@ -130,6 +164,7 @@ ${Object.values(halls).map(hallCard).join('\n')}
 </section>
 <section class="band">${photo(c.band.photo)}<blockquote><div class="wrap"><p>${esc(c.band.quote)}</p><cite>${esc(c.band.by)}</cite></div></blockquote></section>
 <section class="wrap visit"><h2>${esc(c.visit.title)}</h2><div class="info"><p>${esc(c.visit.text)}</p><a class="btn" href="${slugUrl('kak-najti')}">Схема проезда</a></div></section>
+${contactsBlock()}
 ${requestForm()}
 </main>`;
   return shell({ title: c.title, description: c.description, body });
@@ -233,6 +268,19 @@ const telLink = (href, label) => `<a href="tel:${href}">${esc(label)}</a>`;
 const galleryBlock = (slots) => `<div class="cols">${slots.map((s) => `<button class="open" aria-label="Открыть фото" style="--r:${photos[s].ratio}">${photo(s)}</button>`).join('')}</div>`;
 const LIGHTBOX = '<dialog class="lb" aria-label="Просмотр фото"><div class="stage"><img alt=""></div><button class="x" aria-label="Закрыть">×</button><button class="p" aria-label="Назад">‹</button><button class="n" aria-label="Вперёд">›</button></dialog>';
 
+function privacyPage() {
+  const c = privacy;
+  const contact = `${c.email ? `письмом на ${c.email}, ` : ''}по телефону ${site.phone} или в мессенджеры, указанные на сайте`;
+  const fill = (t) => esc(t).replace('{operator}', esc(c.operator)).replace('{city}', esc(site.city)).replace('{address}', esc(site.address)).replace(/\{contact\}/g, esc(contact));
+  const body = `<main>
+${pageHead('Политика', c)}
+<section class="wrap legal">
+${c.sections.map((s) => `<h2>${esc(s.h)}</h2>${s.p.map((t) => `<p>${fill(t)}</p>`).join('')}`).join('\n')}
+</section>
+</main>`;
+  return { path: 'politika/index.html', html: shell({ title: c.title, description: c.description, body, current: '' }) };
+}
+
 function findPage() {
   const c = C['kak-najti.json'];
   const body = `<main>
@@ -322,6 +370,7 @@ ${LIGHTBOX}`;
   const files = [{ path: 'index.html', html: home() }];
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
   files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
+  if (privacyOn) files.push(privacyPage());
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   return { files, unused };
 }
