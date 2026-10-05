@@ -10,6 +10,12 @@ with announcements, sertifikaty, raspisanie). Admin `/admin/` works: tabs Цен
 Ролики, Афиша; password is Alexey's own. Domains томсон.рф and novopashin.ru are
 still on Vigbo. Booking = AppEvent iframe.
 
+## Platform (since 2026-10-05)
+The site becomes a platform for photo studios and schools on the Event OS core:
+`docs/PLATFORM_ARCHITECTURE.md` (draft v0.1, decisions in DECISIONS.md). Open for
+Alexey: legal entity for subscriptions. Next platform step: stage 1, separate Tomson
+data from the engine (Opus, private repo to be created first).
+
 ## Decided (Alexey's words, see DECISIONS.md)
 - Prices only Alexey changes; admin on the site by password, works from any device.
 - Equipment: pictures on every item; demo videos on VK Video over a darkened page.
