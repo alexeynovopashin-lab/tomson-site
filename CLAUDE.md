@@ -9,7 +9,8 @@ mirrors). Context: memory `tomson-site-migration`, `ws:30_agents/_all.md` («Yan
 ## Status
 Local git only (no GitHub), domains still on Vigbo. All 11 pages built and live on the test address
 (home, 3 halls, equipment, rules, kak-najti, fotosfera, sertifikaty, raspisanie; old slugs kept).
-No links to the old site remain. Admin `/admin/` works (prices, photos, equipment videos; Alexey's password).
+No links to the old site remain. Work moves to a claude.ai Project (orchestrator scheme as Light Plan):
+`docs/orchestrator_project_instructions.md` (rules), `docs/NEXT_SESSION.md` (state), `docs/PROJECTS_SETUP.md` (setup). Admin `/admin/` works (prices, photos, equipment videos; Alexey's password).
 
 ## The site is the main copy of prices and photos
 Alexey edits them in `/admin/` (any device). The page reads `/_src/…` and posts to the cloud
