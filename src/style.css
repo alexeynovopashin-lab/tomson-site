@@ -37,7 +37,8 @@ nav.main a{display:block;padding:14px 0;text-decoration:none;font:600 11.5px/1 v
 nav.main a:hover,nav.main a[aria-current]{border-bottom-color:var(--accent)}
 .menu-btn{display:none}
 @media (max-width:820px){
-  nav.main .wrap{display:flex;align-items:center;justify-content:space-between}
+  nav.main .wrap{display:flex;align-items:center;gap:6px}
+  .menu-btn{flex:none;margin-right:6px}
   .menu-btn{display:block;background:none;border:0;padding:14px 0;font:600 11.5px/1 var(--sans);letter-spacing:.18em;text-transform:uppercase;color:inherit;cursor:pointer}
   nav.main ul{display:none;position:absolute;left:0;right:0;top:100%;background:var(--paper);border-bottom:1px solid var(--line);padding:6px var(--pad) 14px;flex-direction:column}
   nav.main.open ul{display:flex}
@@ -432,3 +433,19 @@ footer .legal-link a{font-size:12.5px;color:var(--muted);border-bottom:1px solid
 .rf-agree label{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
 .rf-agree input{flex:none;width:20px;height:20px;margin:1px 0 0;accent-color:var(--accent)}
 .rf-agree a{border-bottom:1px solid currentColor}
+
+/* phone header: sideways-scrolling strip next to «Меню» */
+.quick{display:none}
+@media (max-width:820px){
+  .quick{display:flex;align-items:center;flex:1 1 0;min-width:0;gap:20px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding-left:16px;border-left:1px solid var(--line);margin-left:4px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+  .quick::-webkit-scrollbar{display:none}
+  nav.main .quick a{flex:none;padding:14px 0;border-bottom:2px solid transparent;white-space:nowrap}
+  nav.main .quick .q-ic{display:inline-flex;align-items:center;padding:12px 2px;min-width:26px;justify-content:center}
+}
+
+/* hall photo and name are links to the hall page */
+.hall .ph .hall-link{display:block;height:100%}
+.hall .ph .hall-link img{transition:opacity .2s}
+.hall .ph .hall-link:hover img{opacity:.9}
+.hall h3 .hall-link{color:inherit}
+.hall h3 .hall-link:hover{color:var(--accent)}

@@ -61,6 +61,17 @@ function channelLinks(cls) {
     .join('')}</ul>`;
 }
 
+// Phone header: next to «Меню» a strip that scrolls sideways (like Kinfolk, Esquire): the pages
+// listed in site.json → quick, then the messengers as icons. Hidden on wide screens (full menu there).
+function quickStrip() {
+  const pages = (site.quick || []).map((slug) => site.nav.find((n) => n.slug === slug)).filter(Boolean)
+    .map((n) => `<a href="${esc(navUrl(n))}">${esc(n.label)}</a>`);
+  const chans = (site.channels || []).filter((ch) => ch.href && CHANNEL_ICONS[ch.id])
+    .map((ch) => `<a class="q-ic" href="${esc(ch.href)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(ch.label)} (откроется в новой вкладке)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${CHANNEL_ICONS[ch.id]}</svg></a>`);
+  const all = pages.concat(chans);
+  return all.length ? `<div class="quick" role="group" aria-label="Быстрые ссылки">${all.join('')}</div>` : '';
+}
+
 function contactsBlock() {
   const links = channelLinks('channels');
   if (!links) return '';
@@ -94,7 +105,7 @@ function shell({ title, description, body, current }) {
 <body>
 <div class="topline"><div class="wrap"><span>${esc(site.city)} · ${esc(site.address)}</span><a href="tel:${site.phoneHref}">${esc(site.phone)}</a></div></div>
 <header class="brand"><a href="/"><span class="label">${esc(site.tagline)}</span><span class="word">${esc(site.name)}</span></a></header>
-<nav class="main" aria-label="Основное меню"><div class="wrap"><button class="menu-btn" aria-expanded="false" aria-controls="menu">Меню</button><ul id="menu">${items}</ul></div></nav>
+<nav class="main" aria-label="Основное меню"><div class="wrap"><button class="menu-btn" aria-expanded="false" aria-controls="menu">Меню</button>${quickStrip()}<ul id="menu">${items}</ul></div></nav>
 ${body}
 <footer><div class="wrap">
 <div class="word">${esc(site.name)}</div>
@@ -133,11 +144,14 @@ ${privacyOn ? `<div class="rf-row rf-wide rf-agree"><label><input type="checkbox
 }
 
 function hallCard(h) {
+  const url = esc(hallUrl(h));
+  // photo and name lead to the hall page like the button does; the photo link is hidden from keyboard and screen readers (the name link is the same address)
+  const pic = photo(h.photo).replace(/(<img[^>]*>)/, `<a class="hall-link" href="${url}" tabindex="-1" aria-hidden="true">$1</a>`);
   return `<article class="hall">
-${photo(h.photo)}
+${pic}
 <div class="body">
 <span class="num">№ ${h.number}</span>
-<h3>${esc(h.name)}</h3>
+<h3><a class="hall-link" href="${url}">${esc(h.name)}</a></h3>
 <p class="label kicker">${esc(h.kicker)}</p>
 <p class="blurb">${esc(h.blurb)}</p>
 <dl class="specs"><div><dt>Площадь</dt><dd>${esc(h.area)}</dd></div><div><dt>Потолки</dt><dd>${esc(h.ceiling)}</dd></div><div><dt>Свет</dt><dd>${esc(h.light)}</dd></div></dl>
