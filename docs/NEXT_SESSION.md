@@ -1,7 +1,7 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-05 (step 3 built and live on the test address; waiting for Alexey's «ок» and the Max check).
+Last rewrite: 2026-10-05 (step 3 built and live on the test address; links confirmed by Alexey, waiting for his «ок» on the look).
 
 ## Now
 All 11 pages are live on the test address https://tomson.website.yandexcloud.net
@@ -32,7 +32,7 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
    Postbox (option C) after the step 7 switch — only function settings change then.
 3. (done 2026-10-05) Channel links given: WhatsApp `wa.me/79618878078`, Telegram `t.me/studiotomson`,
    Max (profile link), VK `vk.com/studiotomson`, Instagram `instagram.com/studiotomson`.
-   Open: open the Max link on his phone (curl gets 403 from Max, not verified).
+   All five links opened by Alexey 2026-10-05 («все ссылки рабочие»; Max gives 403 to curl, works in a browser).
 4. Is the entrance via «Метрофитнес» still closed? (page «Как найти» says so + photo)
 5. Prices marked `check` in the admin: DP600II 50, SL200III 300, Spotlight 26° 300,
    certificate rent 1 h/2 h/3 h (1 500/3 000/4 500); photographer 5 500 and 3 000/h.
