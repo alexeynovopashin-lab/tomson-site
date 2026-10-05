@@ -38,6 +38,9 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
    certificate rent 1 h/2 h/3 h (1 500/3 000/4 500); photographer 5 500 and 3 000/h.
 6. Years of the three May school events (without a year they always show as past).
 7. Phone check of all pages — his remarks go in ONE numbered list, a separate step.
+   Remarks so far (2026-10-05, phone, screenshot of the photo school page header):
+   1. Phone header: the bar with «МЕНЮ» has a lot of empty space on the right; put buttons there
+      (which ones is not decided yet: see options asked in chat).
 
 ## Launch steps (one at a time, Mac, sizes are guesses)
 1. DONE. GitHub: history pushed, repo connected to the Project.
