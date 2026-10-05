@@ -24,6 +24,7 @@
     { "id": "vk", "label": "VK", "href": "https://vk.com/studiotomson" },
     { "id": "instagram", "label": "Instagram", "href": "https://www.instagram.com/studiotomson" }
   ],
+  "quick": ["raspisanie", "kak-najti"],
   "adminApi": "https://functions.yandexcloud.net/d4epbmr3i7lmo39rpsf2",
   "formApi": "https://functions.yandexcloud.net/d4ej4fel9tp674rm39u9",
   "footerNote": "Страницы без своей версии пока открываются на прежнем сайте студии."
