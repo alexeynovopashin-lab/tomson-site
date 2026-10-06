@@ -11,7 +11,7 @@ changes meaning and photos can be cached for a year.
 
 Places: `fotograf` (the landing) and/or service slugs from content/services.json, e.g.
 --place=fotograf,semejnyj-portret. Alexey can change places later in the admin tab «Портфолио».
-Writes photos/p/<id>/<hash>.jpg, photos/p/<id>/t/<hash>.jpg and the series in content/portfolio.json
+Writes photos/p/<id>/alexey_novopashin-<hash>.jpg (+ t/ thumbnail) and the series in content/portfolio.json
 (an admin-owned file: run `python3 deploy.py --pull-only` BEFORE this, commit, then deploy).
 """
 import hashlib, io, json, os, re, sys
@@ -20,6 +20,7 @@ from PIL import Image, ImageOps
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FULL, THUMB, Q = 1600, 700, 82
+PREFIX = "alexey_novopashin-"
 EXT = (".jpg", ".jpeg", ".png", ".webp", ".heic")
 
 
@@ -67,9 +68,10 @@ def main():
         img = ImageOps.exif_transpose(Image.open(os.path.join(folder, n))).convert("RGB")
         full = shrink(img, FULL)
         h = hashlib.md5(full).hexdigest()[:10]
-        open(os.path.join(out, h + ".jpg"), "wb").write(full)
-        open(os.path.join(out, "t", h + ".jpg"), "wb").write(shrink(img, THUMB))
-        items.append({"f": h, "r": ratio(*img.size)})
+        n = PREFIX + h  # same name rule as render.mjs → PHOTO_PREFIX
+        open(os.path.join(out, n + ".jpg"), "wb").write(full)
+        open(os.path.join(out, "t", n + ".jpg"), "wb").write(shrink(img, THUMB))
+        items.append({"f": h, "n": n, "r": ratio(*img.size)})
     series = {"id": sid, "title": title, "alt": alt, "places": places or (old["places"] if old else []), "photos": items}
     data = [series if x is old else x for x in data] if old else data + [series]
     json.dump(data, open(pf, "w", encoding="utf-8"), ensure_ascii=False, indent=2)

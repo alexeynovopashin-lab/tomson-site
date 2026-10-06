@@ -555,7 +555,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       .concat(Object.keys(H).map(function (k, i) { return [H[k].pageSlug, 'Зал ' + H[k].name, i ? '' : 'Где снято']; }))
       .concat(((C['services.json'] || {}).locations || []).map(function (l) { return [l.slug, l.label, '']; }));
   }
-  function pfThumb(s, p) { return p.url || '/photos/p/' + s.id + '/t/' + p.f + '.jpg'; }
+  function pfThumb(s, p) { return p.url || '/photos/p/' + s.id + '/t/' + (p.n || p.f) + '.jpg'; }
   function renderPortfolio() {
     pf = JSON.parse(JSON.stringify(C['portfolio.json'] || []));
     pfDirty = false; drawPortfolio();
@@ -701,12 +701,12 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
         pfBusyMsg = 'Загружаю фото ' + (sent + 1) + ' из ' + jobs.length + '…'; updateBar();
         return Promise.all([base64(j.p.blob), base64(j.p.thumb)]).then(function (b) {
           return call({ action: 'pfile', series: j.s.id, full: b[0], thumb: b[1] });
-        }).then(function (d) { j.p.f = d.f; delete j.p.blob; delete j.p.thumb; sent++; });
+        }).then(function (d) { j.p.f = d.f; if (d.n) j.p.n = d.n; delete j.p.blob; delete j.p.thumb; sent++; });
       });
     }, Promise.resolve()).then(function () {
       pfBusyMsg = 'Сохраняю серии и обновляю страницы…'; updateBar();
       return call({ action: 'portfolio', series: pf.map(function (s) {
-        return { id: s.id, title: s.title, alt: s.alt, places: s.places, photos: s.photos.map(function (p) { return { f: p.f, r: p.r }; }) };
+        return { id: s.id, title: s.title, alt: s.alt, places: s.places, photos: s.photos.map(function (p) { return p.n ? { f: p.f, n: p.n, r: p.r } : { f: p.f, r: p.r }; }) };
       }) });
     }).then(function (d) {
       return load().then(function () {

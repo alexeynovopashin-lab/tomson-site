@@ -8,6 +8,7 @@
   "oldSite": "https://xn--l1acbbod.xn--p1ai",
   "siteUrl": "https://studiotomson.ru",
   "seoName": "Фотостудия Томсон",
+  "pinterestVerify": "",
   "nav": [
     { "label": "Залы", "href": "/#zaly" },
     { "label": "Расписание", "slug": "raspisanie" },

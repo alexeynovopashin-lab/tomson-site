@@ -132,7 +132,7 @@ function shell({ title, description, body, current, path, image, imageAbs, noind
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}<meta name="theme-color" content="#f5f1ea">
+${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}${site.pinterestVerify ? `<meta name="p:domain_verify" content="${esc(site.pinterestVerify)}">\n` : ''}<meta name="theme-color" content="#f5f1ea">
 <link rel="preload" href="/fonts/playfair-cyr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css">
 </head>
@@ -386,6 +386,7 @@ ${SVC ? `<section class="wrap" id="fotosemka"><div class="sec-head"><h2>${esc(SV
 // Portfolio series (portfolio.json, made by tools/portfolio.py) live outside photo slots:
 // hashed files under /photos/p/<series>/, thumbnails in t/, not replaced from the admin.
 const PORT_ON = !!C['portfolio.json'];
+
 const PORT = Object.fromEntries((C['portfolio.json'] || []).map((x) => [x.id, x]));
 // series shown in a place ('fotograf' or a service slug), in the order of portfolio.json
 const seriesIn = (place) => (C['portfolio.json'] || []).filter((x) => x.places.includes(place)).map((x) => x.id);
@@ -399,7 +400,7 @@ function pf(id, i, { eager = false } = {}) {
   const ser = PORT[id];
   if (!ser || !ser.photos[i]) throw new Error(`no portfolio photo: ${id} #${i}`);
   const p = ser.photos[i];
-  return `<figure class="ph" style="--r:${p.r}"><img src="/photos/p/${id}/t/${p.f}.jpg" data-full="/photos/p/${id}/${p.f}.jpg" alt="${esc(ser.alt)}, фото ${i + 1}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
+  return `<figure class="ph" style="--r:${p.r}"><img src="/photos/p/${id}/t/${pfName(p)}.jpg" data-full="/photos/p/${id}/${pfName(p)}.jpg" alt="${esc(ser.alt)}, фото ${i + 1}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
 }
 function seriesGallery(id, preview, { head = true } = {}) {
   const ser = PORT[id];
@@ -414,7 +415,7 @@ ${preview && n > preview ? `<button class="btn show-all" type="button">Пока�
 // genre card: the cover of the genre's first series, or an empty frame until there is one
 function svcCard(k) {
   const first = seriesIn(k.slug).find((id) => PORT[id].photos.length);
-  const pic = first ? `<img src="/photos/p/${first}/t/${PORT[first].photos[0].f}.jpg" alt="" loading="lazy" decoding="async">` : `<span class="svc-soon-l">${esc(SVC.soonShort)}</span>`;
+  const pic = first ? `<img src="/photos/p/${first}/t/${pfName(PORT[first].photos[0])}.jpg" alt="" loading="lazy" decoding="async">` : `<span class="svc-soon-l">${esc(SVC.soonShort)}</span>`;
   return `<a class="svc" href="${svcUrl(k)}"><span class="svc-pic">${pic}</span><span class="svc-n">${esc(k.name)}</span><span class="svc-t">${esc(k.short)}</span><span class="svc-go" aria-hidden="true">→</span></a>`;
 }
 // places a series can be pinned to (admin «Портфолио»): the landing, a service, a hall
@@ -426,7 +427,7 @@ const whereTags = (x) => x.places.map((pl) => (hallBySlug[pl] ? `зал ${hallBy
 function seriesCard(id) {
   const x = PORT[id];
   const tags = whereTags(x);
-  return `<a class="sc" href="${seriesUrl(id)}"><span class="sc-pic"><img src="/photos/p/${id}/t/${x.photos[0].f}.jpg" alt="${esc(x.alt)}" loading="lazy" decoding="async"></span><span class="sc-t">${esc(x.title)}</span><span class="label">${x.photos.length} фото${tags.length ? ' · ' + esc(tags.join(', ')) : ''}</span></a>`;
+  return `<a class="sc" href="${seriesUrl(id)}"><span class="sc-pic"><img src="/photos/p/${id}/t/${pfName(x.photos[0])}.jpg" alt="${esc(x.alt)}" loading="lazy" decoding="async"></span><span class="sc-t">${esc(x.title)}</span><span class="label">${x.photos.length} фото${tags.length ? ' · ' + esc(tags.join(', ')) : ''}</span></a>`;
 }
 function seriesBlock(ids, title, note) {
   ids = ids.filter((id) => PORT[id].photos.length);
@@ -459,7 +460,7 @@ ${contactsBlock()}
 ${requestForm(c.formPreset)}
 </main>
 ${LIGHTBOX}`;
-  return page('fotograf/index.html', { title: c.title, description: c.description, body, current: 'Фотограф', image: null, imageAbs: cover && `/photos/p/${cover.series}/${PORT[cover.series].photos[cover.index].f}.jpg` });
+  return page('fotograf/index.html', { title: c.title, description: c.description, body, current: 'Фотограф', image: null, imageAbs: cover && `/photos/p/${cover.series}/${pfName(PORT[cover.series].photos[cover.index])}.jpg` });
 }
 
 function servicePage(k) {
@@ -481,7 +482,7 @@ ${contactsBlock()}
 ${requestForm(k.name)}
 </main>
 ${LIGHTBOX}`;
-  return page(`${SVC.base}/${k.slug}/index.html`, { title: k.title, description: k.description, body, current: 'Фотограф', noindex: !series.length, imageAbs: series[0] && `/photos/p/${series[0]}/${PORT[series[0]].photos[0].f}.jpg` });
+  return page(`${SVC.base}/${k.slug}/index.html`, { title: k.title, description: k.description, body, current: 'Фотограф', noindex: !series.length, imageAbs: series[0] && `/photos/p/${series[0]}/${pfName(PORT[series[0]].photos[0])}.jpg` });
 }
 
 // One page per series (/raboty/<id>/): the whole shoot, then what such a shoot costs.
@@ -506,7 +507,7 @@ ${requestForm(svcs[0] ? svcs[0].name : FG.formPreset)}
 ${LIGHTBOX}`;
   const title = `${x.title} — ${svcs[0] ? svcs[0].name.toLowerCase() : 'фотосессия'}${where} | фотограф Алексей Новопашин, Томск`;
   const description = `${x.alt}: ${x.photos.length} фото. ${svcs[0] ? svcs[0].name : 'Фотосессия'} в Томске${where}, фотограф Алексей Новопашин. Стоимость съёмки и запись.`;
-  return page(`raboty/${x.id}/index.html`, { title, description, body, current: 'Фотограф', noindex: !x.photos.length, imageAbs: x.photos[0] && `/photos/p/${x.id}/${x.photos[0].f}.jpg` });
+  return page(`raboty/${x.id}/index.html`, { title, description, body, current: 'Фотограф', noindex: !x.photos.length, imageAbs: x.photos[0] && `/photos/p/${x.id}/${pfName(x.photos[0])}.jpg` });
 }
 
 function searchPage() {
@@ -717,6 +718,11 @@ function editEvents(C, req) {
 // Portfolio from the admin: the whole list of series in the order wanted. Photo files are uploaded
 // one by one before this (function action 'pfile' → photos/p/<series>/<hash>.jpg); here only the
 // list, titles and places change. Places: 'fotograf' (the landing) or a service slug.
+// File names of portfolio photos start with the photographer's name (Alexey 2026-10-06: «префикс для
+// фотографий alexey_novopashin» — image search reads file names). p.n = the file name without .jpg;
+// photos uploaded before the prefix have only the hash p.f.
+export const PHOTO_PREFIX = 'alexey_novopashin-';
+export const pfName = (p) => p.n || p.f;
 export const seriesIdOk = (id) => /^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$/.test(String(id));
 function editPortfolio(C, req) {
   const old = C['portfolio.json'] || [];
@@ -737,7 +743,7 @@ function editPortfolio(C, req) {
     if (!Array.isArray(x.photos) || x.photos.length > 400) throw userError(`${title}: список фото не прочитался`);
     const photos = x.photos.map((p) => {
       if (!/^[0-9a-f]{10}$/.test(p.f) || !/^\d{1,2}(\.\d{1,3})?\/\d{1,2}$/.test(p.r)) throw userError(`${title}: фото не прочиталось, обновите страницу`);
-      return { f: p.f, r: p.r };
+      return /^[a-z0-9_-]{1,80}$/.test(p.n || '') ? { f: p.f, n: p.n, r: p.r } : { f: p.f, r: p.r };
     });
     const places = [...new Set((x.places || []).filter((pl) => placesOk.has(pl)))];
     return { id: x.id, title, alt: text(x.alt || title, 120, `${title}, подпись`), places, photos };

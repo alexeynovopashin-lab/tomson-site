@@ -134,9 +134,11 @@ async function savePortfolioFile(b, req) {
   if (!isJpeg(full) || !isJpeg(thumb)) throw new UserError('файл не похож на JPEG');
   if (full.length > MAX_PHOTO || thumb.length > MAX_THUMB) throw new UserError('фото слишком большое после сжатия');
   const f = crypto.createHash('md5').update(full).digest('hex').slice(0, 10);
-  await b.put(`photos/p/${series}/${f}.jpg`, full, 'image/jpeg', YEAR);
-  await b.put(`photos/p/${series}/t/${f}.jpg`, thumb, 'image/jpeg', YEAR);
-  return { f };
+  const mod = await siteModule(b); // the name prefix lives in render.mjs, so it changes with a normal deploy
+  const n = String(mod.PHOTO_PREFIX || '').replace(/[^a-z0-9_-]/g, '') + f;
+  await b.put(`photos/p/${series}/${n}.jpg`, full, 'image/jpeg', YEAR);
+  await b.put(`photos/p/${series}/t/${n}.jpg`, thumb, 'image/jpeg', YEAR);
+  return { f, n };
 }
 
 // ---------- http ----------

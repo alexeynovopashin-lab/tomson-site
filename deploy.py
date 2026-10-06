@@ -143,7 +143,8 @@ def pull(keys, dry):
     if not dry and os.path.exists(pf):
         for ser in json.load(open(pf, encoding="utf-8")):
             for ph in ser["photos"]:
-                for rel in (f"photos/p/{ser['id']}/{ph['f']}.jpg", f"photos/p/{ser['id']}/t/{ph['f']}.jpg"):
+                name = ph.get("n") or ph["f"]
+                for rel in (f"photos/p/{ser['id']}/{name}.jpg", f"photos/p/{ser['id']}/t/{name}.jpg"):
                     path = os.path.join(PROJECT, rel)
                     if os.path.exists(path):
                         continue
