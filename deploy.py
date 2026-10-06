@@ -22,7 +22,8 @@ PROJECT = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(PROJECT, "dist")
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
          ".mjs": "text/javascript; charset=utf-8",
-         ".json": "application/json", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png", ".svg": "image/svg+xml"}
+         ".json": "application/json", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png", ".svg": "image/svg+xml",
+         ".txt": "text/plain; charset=utf-8", ".xml": "application/xml; charset=utf-8"}
 
 
 def load_keys():
@@ -168,7 +169,7 @@ def main():
         ctype = TYPES.get(ext) or mimetypes.guess_type(key)[0] or "application/octet-stream"
         if ext == ".woff2":
             cache = "public, max-age=31536000, immutable"
-        elif ext in (".html", ".json", ".mjs"):
+        elif ext in (".html", ".json", ".mjs", ".txt", ".xml"):
             cache = "no-cache"  # prices change from the admin: always ask the site if the page is still current
         elif key.startswith("photos/"):
             cache = "public, max-age=31536000"  # pages link photos with ?v=<hash>, a new photo gets a new address

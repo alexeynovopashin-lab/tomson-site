@@ -33,6 +33,14 @@ cpSync(join(root, 'photos'), join(dist, 'photos'), { recursive: true });
 for (const f of ['style.css', 'site.js']) cpSync(join(root, 'src', f), join(dist, f));
 for (const { path, html } of files) out(path, html);
 cpSync(join(root, 'admin/index.html'), join(dist, 'admin/index.html'));
+// files that must sit at the site root: Yandex Webmaster / Google Search Console ownership (copied from Vigbo)
+cpSync(join(root, 'src/root'), dist, { recursive: true });
+// robots.txt and sitemap.xml: built here, not in render.mjs — the admin function uploads render output as HTML,
+// and the page list does not change with prices or photos
+const siteUrl = C['site.json'].siteUrl;
+const pageUrls = files.map((f) => '/' + f.path.replace(/index\.html$/, '')).filter((u) => u !== '/poisk/');
+out('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /_src/\nDisallow: /poisk/\n${siteUrl ? `\nSitemap: ${siteUrl}/sitemap.xml\n` : ''}`);
+if (siteUrl) out('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pageUrls.map((u) => `<url><loc>${siteUrl}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 for (const [f, data] of Object.entries(C)) out(`_src/content/${f}`, JSON.stringify(data, null, 2) + '\n');
 out('_src/manifest.json', JSON.stringify({ content: Object.keys(C), adminFiles: ADMIN_FILES, versions }, null, 2) + '\n');
 cpSync(join(root, 'src/render.mjs'), join(dist, '_src/render.mjs'));

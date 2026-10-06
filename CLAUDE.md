@@ -42,6 +42,11 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
 - Request form: `content/form.json` (texts), `site.json` → `formApi`, cloud function `tomsonform` (`cloud/form/index.js`,
   public, one instance, env SMTP_*: Alexey types them, never ask). Without `formApi` the form is hidden; keep it in `site.json`.
 - `src/` — `style.css`, `site.js`, self-hosted fonts (Playfair Display, Manrope).
+- SEO / search (step 6b): `site.json` → `siteUrl` (main domain) drives canonical, og: tags, the
+  LocalBusiness card on home, `robots.txt` and `sitemap.xml` (both made in `build.mjs`, not in
+  `render.mjs`: the function uploads render output as HTML). `src/root/` = files copied to the site
+  root (Yandex/Google ownership, from Vigbo). Search page `/poisk/` (texts `site.json` → `search`):
+  `site.js` fetches the listed pages and searches their text in the browser — no index to keep fresh.
 - `build.mjs` — `node build.mjs` → `dist/` (static, root-absolute paths) + `dist/_src/` for the function.
 - Deploy: `python3 deploy.py [--dry-run] [--pull-only]` uploads changed files of `dist/` to bucket
   `tomson` (S3 API, keys in `~/.config/tomson/s3.env`, made by Alexey, never in a repo). No deletes.

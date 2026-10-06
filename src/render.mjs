@@ -68,7 +68,8 @@ function quickStrip() {
     .map((n) => `<a href="${esc(navUrl(n))}">${esc(n.label)}</a>`);
   const chans = (site.channels || []).filter((ch) => ch.href && CHANNEL_ICONS[ch.id])
     .map((ch) => `<a class="q-ic" href="${esc(ch.href)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(ch.label)} (откроется в новой вкладке)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${CHANNEL_ICONS[ch.id]}</svg></a>`);
-  const all = pages.concat(chans);
+  const find = SEARCH.title ? [`<a class="q-ic" href="${SEARCH_URL}" aria-label="${esc(SEARCH.title)}">${SEARCH_ICON}</a>`] : [];
+  const all = pages.concat(find, chans);
   return all.length ? `<div class="quick" role="group" aria-label="Быстрые ссылки">${all.join('')}</div>` : '';
 }
 
@@ -87,10 +88,42 @@ const privacy = C['privacy.json'];
 const privacyOn = !!(privacy && privacy.operator);
 const PRIVACY_URL = '/politika/';
 
-function shell({ title, description, body, current }) {
+// Search engines and link previews: canonical address, og: tags, the studio card on the home page.
+// All absolute URLs hang on site.json → siteUrl (the main domain); without it these tags are left out.
+const SEARCH = site.search || {};
+const SEARCH_URL = '/poisk/';
+const SEARCH_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg>';
+const pagesSeen = []; // { url, title } of every page rendered so far: the search page reads them
+const urlOf = (path) => '/' + path.replace(/index\.html$/, '');
+function seoHead({ title, description, url, image }) {
+  if (!site.siteUrl) return '';
+  const abs = site.siteUrl + url;
+  if (!image) image = C['home.json'].cover.photo; // pages without a picture of their own share the home cover
+  const img = image && versions[image] ? `${site.siteUrl}/photos/${image}.jpg?v=${versions[image]}` : '';
+  const tags = [`<link rel="canonical" href="${esc(abs)}">`,
+    `<meta property="og:type" content="website">`, `<meta property="og:locale" content="ru_RU">`,
+    `<meta property="og:site_name" content="${esc(site.seoName || site.name)}">`,
+    `<meta property="og:title" content="${esc(title)}">`, `<meta property="og:description" content="${esc(description)}">`,
+    `<meta property="og:url" content="${esc(abs)}">`];
+  if (img) tags.push(`<meta property="og:image" content="${esc(img)}">`, `<meta name="twitter:card" content="summary_large_image">`);
+  if (url === '/') {
+    // the studio card for Yandex / Google: name, address, phone, messengers
+    const card = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: site.seoName || site.name, url: site.siteUrl + '/',
+      telephone: site.phoneHref, image: img || undefined,
+      address: { '@type': 'PostalAddress', streetAddress: site.address, addressLocality: site.city, addressCountry: 'RU' },
+      sameAs: (site.channels || []).filter((ch) => ch.href).map((ch) => ch.href) };
+    tags.push(`<script type="application/ld+json">${JSON.stringify(card).replace(/</g, '\\u003c')}</script>`);
+  }
+  return tags.join('\n') + '\n';
+}
+const page = (path, o) => ({ path, html: shell({ ...o, path }) });
+
+function shell({ title, description, body, current, path, image }) {
+  const url = urlOf(path);
+  pagesSeen.push({ url, title });
   const items = site.nav
     .map((n) => `<li><a href="${esc(navUrl(n))}"${current === n.label ? ' aria-current="page"' : ''}>${esc(n.label)}</a></li>`)
-    .join('');
+    .join('') + (SEARCH.title ? `<li class="nav-search"><a href="${SEARCH_URL}"${current === 'search' ? ' aria-current="page"' : ''} aria-label="${esc(SEARCH.title)}">${SEARCH_ICON}<span>${esc(SEARCH.menu)}</span></a></li>` : '');
   return `<!doctype html>
 <html lang="ru">
 <head>
@@ -98,7 +131,7 @@ function shell({ title, description, body, current }) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<meta name="theme-color" content="#f5f1ea">
+${seoHead({ title, description, url, image })}<meta name="theme-color" content="#f5f1ea">
 <link rel="preload" href="/fonts/playfair-cyr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css">
 </head>
@@ -181,7 +214,7 @@ ${Object.values(halls).map(hallCard).join('\n')}
 ${contactsBlock()}
 ${requestForm()}
 </main>`;
-  return shell({ title: c.title, description: c.description, body });
+  return shell({ title: c.title, description: c.description, body, path: 'index.html', image: c.cover.photo });
 }
 
 function hallPage(file) {
@@ -212,7 +245,7 @@ ${g.closing ? `<button class="open wide" aria-label="Открыть фото">${
 </div></section>
 </main>
 <dialog class="lb" aria-label="Просмотр фото"><div class="stage"><img alt=""></div><button class="x" aria-label="Закрыть">×</button><button class="p" aria-label="Назад">‹</button><button class="n" aria-label="Вперёд">›</button></dialog>`;
-  return { path: `${h.pageSlug}/index.html`, html: shell({ title: c.title, description: c.description, body, current: 'Залы' }) };
+  return page(`${h.pageSlug}/index.html`, { title: c.title, description: c.description, body, current: 'Залы', image: c.photo });
 }
 
 function tierTable(h) {
@@ -254,7 +287,7 @@ function equipmentPage() {
 <div class="wrap"><nav class="chips-nav" aria-label="Разделы">${chips}</nav>${groups}</div>
 </main>
 <dialog class="vd" aria-label="Видео"><div class="vd-box"><div class="vd-head"><span class="vd-title"></span><button class="vd-x" aria-label="Закрыть">×</button></div><div class="vd-frame"></div></div></dialog>`;
-  return { path: 'oborudovanie/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Оборудование' }) };
+  return page('oborudovanie/index.html', { title: c.title, description: c.description, body, current: 'Оборудование' });
 }
 
 function rulesPage() {
@@ -272,7 +305,7 @@ function rulesPage() {
 <section class="wrap page-title"><h1>${esc(c.heading)}</h1><div class="pt-side"><p class="lede-s">${esc(c.lede)}</p></div></section>
 <div class="wrap rules">${secs}</div>
 </main>`;
-  return { path: 'pravila_i_cena/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Правила' }) };
+  return page('pravila_i_cena/index.html', { title: c.title, description: c.description, body, current: 'Правила' });
 }
 
 
@@ -292,7 +325,7 @@ ${pageHead('Политика', c)}
 ${c.sections.map((s) => `<h2>${esc(s.h)}</h2>${s.p.map((t) => `<p>${fill(t)}</p>`).join('')}`).join('\n')}
 </section>
 </main>`;
-  return { path: 'politika/index.html', html: shell({ title: c.title, description: c.description, body, current: '' }) };
+  return page('politika/index.html', { title: c.title, description: c.description, body, current: '' });
 }
 
 function findPage() {
@@ -311,7 +344,7 @@ ${pageHead('Как найти', c)}
 </section>
 <section class="wrap find-photos">${c.photos.map((p) => `<figure class="find-ph">${photo(p.slot)}<figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</section>
 </main>`;
-  return { path: 'kak-najti/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Как найти' }) };
+  return page('kak-najti/index.html', { title: c.title, description: c.description, body, current: 'Как найти' });
 }
 
 function schedulePage() {
@@ -323,7 +356,7 @@ ${pageHead('Расписание', c)}
 <div class="frame"><iframe src="${esc(c.widget)}" title="Календарь бронирования залов" height="${c.height}" loading="lazy"></iframe></div>
 </div></section>
 </main>`;
-  return { path: 'raspisanie/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Расписание' }) };
+  return page('raspisanie/index.html', { title: c.title, description: c.description, body, current: 'Расписание' });
 }
 
 function servicesPage() {
@@ -339,7 +372,24 @@ ${pageHead('Услуги', c)}
 <section class="wrap certs">${cards}</section>
 <section class="wrap cert-buy"><p>${esc(c.buy)}</p><a class="btn solid" href="tel:${site.phoneHref}">${esc(site.phone)}</a></section>
 </main>`;
-  return { path: 'sertifikaty/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Услуги' }) };
+  return page('sertifikaty/index.html', { title: c.title, description: c.description, body, current: 'Услуги' });
+}
+
+// Site search: no service and no index file. site.js loads the pages listed here when someone
+// searches and looks through their text, so prices and announcements edited in the admin are found at once.
+function searchPage() {
+  const list = pagesSeen.filter((p) => p.url !== SEARCH_URL);
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / ${esc(SEARCH.title)}</span></div>
+<section class="wrap page-title"><h1>${esc(SEARCH.title)}</h1><div class="pt-side"><p class="lede-s">${esc(SEARCH.lede)}</p></div></section>
+<section class="wrap search">
+<form class="sform" role="search" action="${SEARCH_URL}" method="get"><label class="sr" for="sq">${esc(SEARCH.title)}</label><input id="sq" type="search" name="q" placeholder="${esc(SEARCH.placeholder)}" autocomplete="off" enterkeyhint="search"><button class="btn solid" type="submit">${esc(SEARCH.button)}</button></form>
+<p class="s-status" aria-live="polite" data-none="${esc(SEARCH.none)}" data-found="${esc(SEARCH.found)}" data-loading="${esc(SEARCH.loading)}" data-err="${esc(SEARCH.error)}"></p>
+<ol class="s-results" data-pages="${esc(JSON.stringify(list))}"></ol>
+<noscript><p>${esc(SEARCH.noscript)}</p></noscript>
+</section>
+</main>`;
+  return page('poisk/index.html', { title: SEARCH.pageTitle, description: SEARCH.description, body, current: 'search' });
 }
 
 function schoolPage() {
@@ -378,13 +428,14 @@ ${requestForm(C['form.json'] && C['form.json'].schoolPreset)}
 <section class="wrap gallery"><div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">${esc(c.galleryNote)}</span></div>${galleryBlock(c.gallery)}</section>
 </main>
 ${LIGHTBOX}`;
-  return { path: 'fotosfera/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Фотошкола' }) };
+  return page('fotosfera/index.html', { title: c.title, description: c.description, body, current: 'Фотошкола', image: c.banner });
 }
 
   const files = [{ path: 'index.html', html: home() }];
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
   files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
   if (privacyOn) files.push(privacyPage());
+  if (SEARCH.title) files.push(searchPage()); // last: it lists every page rendered before it
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   return { files, unused };
 }
