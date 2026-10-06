@@ -84,7 +84,18 @@ Listed for completeness; not advised.
    (the 7 pages: weddings, portraits, couples, cameras, Light Plan)?
 2. The 7 not-ported pages: redirect to the home page, keep a 404, or port them?
 3. Vigbo: when does the paid period end? It is the rollback.
-4. Who does reg.ru: you in the reg.ru panel (NS change takes 2 minutes), I prepare the rest.
+
+## Must reach the new site before the switch (Vigbo panel screenshots, 2026-10-06)
+Alexey set up both domains himself since 2016; NS change in reg.ru is his.
+- Search-console ownership files (мерено, 200 on Vigbo today), copy as-is to the root:
+  `google7017d5d62dacd9f9.html` = `google-site-verification: google7017d5d62dacd9f9.html`;
+  `yandex_6603d0dceed155fb.html` = HTML with `Verification: 6603d0dceed155fb`.
+  Without them Yandex Webmaster / Google Search Console lose the site after the switch.
+- `robots.txt` (Vigbo: allow all, `Host: xn--l1acbbod.xn--p1ai`) and a `sitemap.xml` —
+  the new build has neither (из кода: no robots/sitemap in `build.mjs`).
+- Vigbo «Сторонний код» is empty: no counters (Metrika etc.) to carry over.
+- Vigbo DNS for novopashin.ru holds exactly TXT (SPF), MX, A — matches dig, nothing hidden.
+  `alexeynovopashin.ru` is listed in Vigbo as «не зарегистрирован» — not part of this.
 
 ## Not part of the switch, noticed
 - No own 404 page (bare English bucket error). Small, before the switch.
