@@ -109,13 +109,18 @@ h3{font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;c
 .pf-places{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0}
 .pf-grp{flex-basis:100%;font:600 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 .pf-places label{flex-direction:row;align-items:center;gap:6px;font-size:14px;color:var(--ink)}
-.pf-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
-.pf-ph{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--paper-2)}
+.pf-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.pf-ph{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--paper-2);cursor:grab}
+.pf-ph.drag{opacity:.35}.pf-ph.over{outline:3px solid var(--accent);outline-offset:-3px}
 .pf-ph img{width:100%;height:100%;object-fit:cover;display:block}
 .pf-ph.new{outline:2px solid var(--accent);outline-offset:-2px}
-.pf-ph:first-child::after{content:"обложка";position:absolute;left:4px;bottom:4px;font-size:10px;font-weight:700;background:var(--ink);color:var(--paper);border-radius:999px;padding:1px 6px}
-.pf-ph button{position:absolute;top:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;font-size:14px;line-height:1;padding:0}
-.pf-ph [data-pfdel]{right:4px}.pf-ph [data-pffirst]{left:4px}
+.pf-ph button{position:absolute;border:0;background:rgba(0,0,0,.62);color:#fff;cursor:pointer;line-height:1;padding:0;border-radius:999px}
+.pf-ph [data-pfdel]{top:5px;right:5px;width:28px;height:28px;font-size:16px}
+.pf-ph .cover,.pf-ph [data-pffirst]{top:5px;left:5px;font:700 11px/1 var(--sans);padding:6px 9px}
+.pf-ph .cover{position:absolute;background:var(--accent);color:var(--accent-ink);border-radius:999px}
+.pf-ph [data-pfmv]{bottom:5px;width:34px;height:30px;font-size:18px}
+.pf-ph [data-pfmv="-1"]{left:5px}.pf-ph [data-pfmv="1"]{right:5px}
+.pf-ph .num{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font:700 11px/1 var(--sans);color:#fff;text-shadow:0 0 3px rgba(0,0,0,.8)}
 .pfc .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
 .pfc .acts .n{color:var(--muted);font-size:13px;margin-right:auto}
 @media (max-width:560px){.pfc .f{grid-template-columns:1fr}}
@@ -187,7 +192,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     </section>
     <section id="tab-portfolio" hidden>
       <h2>Портфолио</h2>
-      <p class="hint">Серии фотографий для страницы фотографа и страниц услуг. Создайте серию, добавьте фото (можно сразу много, прямо с телефона — они уменьшатся до размера сайта, данные о месте съёмки удалятся) и отметьте, где её показывать: на странице фотографа, в жанре и в зале, где снимали — на странице зала появится превью съёмки с ценой. Первое фото серии — обложка. Страница услуги появляется в поиске Яндекса и Google, как только на ней есть хотя бы одна серия.</p>
+      <p class="hint">Серии фотографий для страницы фотографа и страниц услуг. Создайте серию, добавьте фото (можно сразу много, прямо с телефона — они уменьшатся до размера сайта, данные о месте съёмки удалятся) и отметьте, где её показывать: на странице фотографа, в жанре и в зале, где снимали — на странице зала появится превью съёмки с ценой. Первое фото серии — обложка: нажмите «в обложку» на любом фото. Порядок — стрелками ‹ › под фото, на компьютере можно перетаскивать мышкой. Страница услуги появляется в поиске Яндекса и Google, как только на ней есть хотя бы одна серия.</p>
       <p><button class="btn" id="pfAdd" type="button">+ Новая серия</button></p>
       <div id="pfList"></div>
       <input type="file" id="pfFile" accept="image/*" multiple hidden>
@@ -563,8 +568,13 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
           return (pl[2] ? '<span class="pf-grp">' + esc(pl[2]) + '</span>' : '') + '<label><input type="checkbox" value="' + esc(pl[0]) + '"' + (s.places.indexOf(pl[0]) >= 0 ? ' checked' : '') + '> ' + esc(pl[1]) + '</label>';
         }).join('') + '</div>' +
         '<div class="pf-photos">' + s.photos.map(function (p, pi) {
-          return '<div class="pf-ph' + (p.blob ? ' new' : '') + '" data-pi="' + pi + '"><img loading="lazy" src="' + esc(pfThumb(s, p)) + '" alt="">' +
-            (pi ? '<button type="button" data-pffirst title="Сделать обложкой">★</button>' : '') + '<button type="button" data-pfdel title="Убрать фото">×</button></div>';
+          var last = pi === s.photos.length - 1;
+          return '<div class="pf-ph' + (p.blob ? ' new' : '') + '" data-pi="' + pi + '" draggable="true"><img loading="lazy" src="' + esc(pfThumb(s, p)) + '" alt="" draggable="false">' +
+            (pi ? '<button type="button" data-pffirst title="Поставить первым: это фото станет обложкой серии">в обложку</button>' : '<span class="cover">обложка</span>') +
+            '<button type="button" data-pfdel title="Убрать фото из серии" aria-label="Убрать фото">×</button>' +
+            (pi ? '<button type="button" data-pfmv="-1" title="Сдвинуть раньше" aria-label="Сдвинуть раньше">‹</button>' : '') +
+            '<span class="num">' + (pi + 1) + '</span>' +
+            (last ? '' : '<button type="button" data-pfmv="1" title="Сдвинуть дальше" aria-label="Сдвинуть дальше">›</button>') + '</div>';
         }).join('') + '</div>' +
         '<div class="acts"><span class="n">' + s.photos.length + ' фото</span><button class="small-btn" type="button" data-pfphotos>+ Фото</button>' +
         '<button class="small-btn" type="button" data-pfmove="-1">↑</button><button class="small-btn" type="button" data-pfmove="1">↓</button>' +
@@ -596,6 +606,10 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     var si = +card.dataset.si, s = pf[si], ph = ev.target.closest('.pf-ph'), pi = ph ? +ph.dataset.pi : -1;
     if (ev.target.closest('[data-pfdel]')) { s.photos.splice(pi, 1); pfMark(si); drawPortfolio(); }
     else if (ev.target.closest('[data-pffirst]')) { s.photos.unshift(s.photos.splice(pi, 1)[0]); pfMark(si); drawPortfolio(); }
+    else if (ev.target.closest('[data-pfmv]')) {
+      var to = pi + +ev.target.closest('[data-pfmv]').dataset.pfmv;
+      if (to >= 0 && to < s.photos.length) { s.photos.splice(to, 0, s.photos.splice(pi, 1)[0]); pfMark(si); drawPortfolio(); }
+    }
     else if (ev.target.closest('[data-pfphotos]')) { pfFor = s; $('pfFile').value = ''; $('pfFile').click(); }
     else if (ev.target.closest('[data-pfmove]')) {
       var to = si + +ev.target.closest('[data-pfmove]').dataset.pfmove;
@@ -604,6 +618,29 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       if (confirm('Убрать серию «' + (s.title || 'без названия') + '» с сайта? Сами фото останутся в хранилище.')) { pf.splice(si, 1); pfMark(null); drawPortfolio(); }
     }
   });
+  // computer: drag a photo onto another one to put it in that place (phone: the ‹ › buttons)
+  var pfDrag = null;
+  $('pfList').addEventListener('dragstart', function (ev) {
+    var ph = ev.target.closest && ev.target.closest('.pf-ph'); if (!ph) return;
+    pfDrag = { si: +ph.closest('.pfc').dataset.si, pi: +ph.dataset.pi };
+    ph.classList.add('drag'); ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', '');
+  });
+  $('pfList').addEventListener('dragover', function (ev) {
+    var ph = ev.target.closest && ev.target.closest('.pf-ph');
+    if (!pfDrag || !ph || +ph.closest('.pfc').dataset.si !== pfDrag.si) return;
+    ev.preventDefault();
+    [].forEach.call(document.querySelectorAll('.pf-ph.over'), function (x) { if (x !== ph) x.classList.remove('over'); });
+    ph.classList.add('over');
+  });
+  $('pfList').addEventListener('drop', function (ev) {
+    var ph = ev.target.closest && ev.target.closest('.pf-ph');
+    if (!pfDrag || !ph || +ph.closest('.pfc').dataset.si !== pfDrag.si) return;
+    ev.preventDefault();
+    var s = pf[pfDrag.si], to = +ph.dataset.pi;
+    if (to !== pfDrag.pi) { s.photos.splice(to, 0, s.photos.splice(pfDrag.pi, 1)[0]); pfMark(pfDrag.si); }
+    pfDrag = null; drawPortfolio();
+  });
+  $('pfList').addEventListener('dragend', function () { pfDrag = null; [].forEach.call(document.querySelectorAll('.pf-ph.drag,.pf-ph.over'), function (x) { x.classList.remove('drag', 'over'); }); });
   $('pfFile').addEventListener('change', function () {
     var files = [].slice.call($('pfFile').files), s = pfFor, bad = 0, i = 0;
     if (!files.length || !s) return;
