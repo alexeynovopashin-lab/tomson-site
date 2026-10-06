@@ -32,7 +32,9 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 ## Waiting for Alexey
 1. Say «да» to merging the step 6 PR (until merged, a Mac session that starts from `main` would
    have OLD code: single bucket, no photographer pages. Do not deploy from such a checkout).
-2. Buy studiotomson.ru (main domain; tags and sitemap already use it).
+2. Buy studiotomson.ru (he buys today, 2026-10-06; main domain; tags and sitemap already use it).
+2b. novopashin.ru home now shows the studio home; he calls it «сайт фотографа». Propose redirect of its root
+   to `/fotograf/` (his earlier wish) — needs his word, asked 2026-10-06.
 3. Genre «Свадебная фотосессия»: mark it in «Портфолио» or decide to drop the genre.
 4. Pinterest code for the place prepared in the page.
 5. First school videos in the admin (no videos = no «Видео» block on the page).
@@ -49,7 +51,10 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 
 ## Launch steps still open
 7. The switch of the main domain (Opus 5.5), night window announced by Alexey, date open.
-   Starting prompt: `docs/STEP_7_SWITCH_PROMPT.md` (asks him: studiotomson.ru bought? which night?).
+   Starting prompt: `docs/STEP_7_SWITCH_PROMPT.md`. Alexey 2026-10-06: studiotomson.ru bought today = MAIN;
+   томсон.рф → 301 to it; novopashin.ru = photographer's site; no mail arrives on томсон.рф, the AppEvent
+   widget is what matters. Step must check the widget loads on the new domain (not verified, may be
+   bound to the address); which night is still open.
    Advice in it: change NS in reg.ru a day or two BEFORE the night, the night itself is one record.
    Needs item 2 of «Waiting» (or a decision to keep томсон.рф as main) and the checklist above. Rollback ready (plan doc). Postbox for the form mail after it.
 8. Optional after launch: admin hardening (lockout, access log; Opus), housekeeping (INDEX
