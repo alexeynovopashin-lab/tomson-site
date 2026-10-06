@@ -420,9 +420,12 @@ function svcCard(k) {
 // places a series can be pinned to (admin «Портфолио»): the landing, a service, a hall
 const hallBySlug = Object.fromEntries(Object.values(halls).map((h) => [h.pageSlug, h]));
 const seriesUrl = (id) => `/raboty/${id}/`;
+const locLabel = Object.fromEntries((SVC.locations || []).map((l) => [l.slug, l.label]));
+// «где снято» as words: «зал Сфера», «на улице»
+const whereTags = (x) => x.places.map((pl) => (hallBySlug[pl] ? `зал ${hallBySlug[pl].name}` : locLabel[pl] ? locLabel[pl].toLowerCase() : null)).filter(Boolean);
 function seriesCard(id) {
   const x = PORT[id];
-  const tags = x.places.filter((pl) => hallBySlug[pl]).map((pl) => `зал ${hallBySlug[pl].name}`);
+  const tags = whereTags(x);
   return `<a class="sc" href="${seriesUrl(id)}"><span class="sc-pic"><img src="/photos/p/${id}/t/${x.photos[0].f}.jpg" alt="${esc(x.alt)}" loading="lazy" decoding="async"></span><span class="sc-t">${esc(x.title)}</span><span class="label">${x.photos.length} фото${tags.length ? ' · ' + esc(tags.join(', ')) : ''}</span></a>`;
 }
 function seriesBlock(ids, title, note) {
@@ -485,10 +488,12 @@ ${LIGHTBOX}`;
 function seriesPage(x) {
   const svcs = SVC.list.filter((k) => x.places.includes(k.slug));
   const hs = x.places.filter((pl) => hallBySlug[pl]).map((pl) => hallBySlug[pl]);
-  const tagLinks = [...svcs.map((k) => `<a href="${svcUrl(k)}">${esc(k.name)}</a>`), ...hs.map((h) => `<a href="${esc(hallUrl(h))}">Зал ${esc(h.name)}</a>`)];
-  const where = hs.length ? ` в зале ${hs.map((h) => h.name).join(' / ')}` : '';
+  const away = x.places.filter((pl) => locLabel[pl]);
+  const tagLinks = [...svcs.map((k) => `<a href="${svcUrl(k)}">${esc(k.name)}</a>`), ...hs.map((h) => `<a href="${esc(hallUrl(h))}">Зал ${esc(h.name)}</a>`), ...away.map((pl) => esc(locLabel[pl]))];
+  const where = hs.length ? ` в зале ${hs.map((h) => h.name).join(' / ')}` : away.length ? ` — ${locLabel[away[0]].toLowerCase()}` : '';
   const offer = `<section class="wrap offer"><div><span class="label">${esc(SVC.offerLabel)}</span><h2>${esc(SVC.offerTitle)}</h2>
 <p class="offer-price"><b>${priceStr('photo_hour')}</b> ${esc(SVC.offerHour)}</p>
+${away.length ? `<p class="offer-hall">${esc(SVC.offerAway)}</p>` : ''}
 ${hs.map((h) => `<p class="offer-hall">${esc(SVC.offerHall.replace('{hall}', h.name))} <a href="${esc(hallUrl(h))}#bron">от ${money(fromPrice(h))} ₽ в час</a></p>`).join('')}</div>
 ${bookActions(svcs[0] ? `<a class="btn" href="${svcUrl(svcs[0])}">${esc(svcs[0].name)}</a>` : '')}</section>`;
   const body = `<main>
@@ -716,7 +721,7 @@ export const seriesIdOk = (id) => /^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$/.test(Strin
 function editPortfolio(C, req) {
   const old = C['portfolio.json'] || [];
   const byId = Object.fromEntries(old.map((x) => [x.id, x]));
-  const placesOk = new Set(['fotograf', ...(C['services.json'] ? C['services.json'].list.map((k) => k.slug) : []), ...Object.values(C['halls.json']).map((h) => h.pageSlug)]);
+  const placesOk = new Set(['fotograf', ...(C['services.json'] ? C['services.json'].list.map((k) => k.slug) : []), ...Object.values(C['halls.json']).map((h) => h.pageSlug), ...((C['services.json'] || {}).locations || []).map((l) => l.slug)]);
   const text = (v, max, label) => {
     const t = String(v ?? '').replace(/\s+/g, ' ').trim();
     if (!t) throw userError(`${label}: заполните поле`);
