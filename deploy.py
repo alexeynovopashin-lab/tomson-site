@@ -137,6 +137,26 @@ def pull(keys, dry):
             with open(os.path.join(PROJECT, rel), "wb") as f:
                 f.write(body)
         pulled.append(rel)
+    # portfolio photos uploaded in the admin tab «Портфолио» exist only in the bucket: bring them in,
+    # so the repo stays a full copy of the site (a new bucket at the domain switch is built from it)
+    pf = os.path.join(PROJECT, "content", "portfolio.json")
+    if not dry and os.path.exists(pf):
+        for ser in json.load(open(pf, encoding="utf-8")):
+            for ph in ser["photos"]:
+                for rel in (f"photos/p/{ser['id']}/{ph['f']}.jpg", f"photos/p/{ser['id']}/t/{ph['f']}.jpg"):
+                    path = os.path.join(PROJECT, rel)
+                    if os.path.exists(path):
+                        continue
+                    body = remote_get(rel, keys)
+                    if body is None:
+                        sys.exit(f"stop: {rel} is listed in portfolio.json but missing on the site")
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
+                    with open(path, "wb") as f:
+                        f.write(body)
+                    pulled.append(rel)
+        n = sum(1 for r in pulled if r.startswith("photos/p/"))
+        if n:
+            print(f"take {n} portfolio files from the admin")
     return pulled
 
 

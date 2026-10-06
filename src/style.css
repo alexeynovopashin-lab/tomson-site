@@ -514,3 +514,29 @@ nav.main .nav-search span{position:absolute;width:1px;height:1px;overflow:hidden
 .svc-soon p{margin:0;max-width:56ch}
 .svc-lede{margin:0 0 clamp(18px,2.4vw,30px);color:var(--muted);max-width:60ch}
 .sec-head{flex-wrap:wrap}
+/* series cards, genre previews, offer, booking actions (step 6c, part 2) */
+.svc{padding-top:18px}
+.svc-pic{display:block;aspect-ratio:4/3;overflow:hidden;background:var(--paper-2);margin-bottom:6px;position:relative}
+.svc-pic img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.svc:hover .svc-pic img{transform:scale(1.03)}
+.svc-soon-l{position:absolute;inset:auto auto 10px 12px;font:600 10.5px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.svc-grid{gap:0 var(--gap)}
+.svc-go{top:auto;bottom:26px}
+.sc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:clamp(20px,2.4vw,36px) var(--gap)}
+.sc{display:flex;flex-direction:column;gap:8px;text-decoration:none}
+.sc-pic{display:block;aspect-ratio:4/5;overflow:hidden;background:var(--paper-2)}
+.sc-pic img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.sc:hover .sc-pic img{transform:scale(1.03)}
+.sc-t{font:500 clamp(22px,2vw,28px)/1.15 var(--serif)}
+.sc:hover .sc-t{color:var(--accent)}
+.series-block{padding-bottom:clamp(24px,4vw,56px)}
+.offer{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--gap);border-top:1px solid var(--ink);padding-block:clamp(32px,5vw,64px)}
+.offer>div:first-child{grid-column:1/8}
+.offer h2{margin:10px 0 18px;font:500 clamp(34px,4.4vw,64px)/1 var(--serif)}
+.offer-price{margin:0 0 10px;color:var(--muted);max-width:56ch}
+.offer-price b{color:var(--ink);font:500 clamp(30px,3vw,40px)/1 var(--serif);margin-right:6px}
+.offer-hall{margin:0;color:var(--muted)}
+.offer .actions{grid-column:9/13;align-self:end}
+@media (max-width:900px){.offer>div:first-child,.offer .actions{grid-column:1/-1}}
+.actions.book{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.actions.book .book-ch{flex-basis:100%;margin:4px 0 0}
