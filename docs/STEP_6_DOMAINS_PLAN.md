@@ -97,6 +97,21 @@ Alexey set up both domains himself since 2016; NS change in reg.ru is his.
 - Vigbo DNS for novopashin.ru holds exactly TXT (SPF), MX, A — matches dig, nothing hidden.
   `alexeynovopashin.ru` is listed in Vigbo as «не зарегистрирован» — not part of this.
 
+## Parity with Vigbo — Alexey's requirement (2026-10-06)
+«чтобы те функции, которые были у Vigbo, были и на нашем новом сайте: SEO, https, поиск по сайту».
+| Vigbo | Now on Vigbo (мерено) | New site today | To do |
+|---|---|---|---|
+| HTTPS | on, http → 301 https | test address answers plain http 200 | step 7: LE cert in Certificate Manager; docs: http→https redirect turns on by itself once HTTPS is set up (док); auto-renewal — из памяти, не мерено |
+| Title/description per page | home «Залы» / «Аренда от 1500₽», Edison «Стоимость аренды:» | own, full sentences on all 11 pages (мерено) | — already better |
+| og: tags (preview in messengers) | yes | none | add to every page |
+| robots.txt, main mirror | yes, Host томсон.рф | none | add + redirects of www/novopashin.ru (option A) |
+| sitemap.xml | 17 URLs | none | generate in `build.mjs` |
+| Ownership files Yandex/Google | 2 files | none | copy |
+| Site search | setting exists, **switched off** (`mod--search-disable` on the live page) | none | own search over the 11 pages (index built by `build.mjs`, no service, free) — Alexey to confirm he wants it on |
+| Vigbo «SEO-оптимизация» | a paid service by Vigbo staff, not a feature | — | out of scope |
+Beyond Vigbo, cheap: canonical link, schema.org LocalBusiness (address, phone, hours) for Yandex/Google cards.
+Proposed as a separate step before the switch (step 6b), on the test address.
+
 ## Not part of the switch, noticed
 - No own 404 page (bare English bucket error). Small, before the switch.
 - No DKIM/DMARC on mail: letters may land in spam. Can be added in Cloud DNS later.
