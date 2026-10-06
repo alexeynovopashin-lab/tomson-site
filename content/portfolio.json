@@ -4,9 +4,16 @@
     "title": "Семейная фотосессия",
     "alt": "Семейная фотосессия",
     "places": [
-      "semejnyj-portret"
+      "fotograf",
+      "semejnyj-portret",
+      "zal-sfera"
     ],
     "photos": [
+      {
+        "f": "35dd3428c0",
+        "r": "3/2",
+        "n": "alexey_novopashin-35dd3428c0"
+      },
       {
         "f": "e1b16ae45a",
         "r": "3/2",
@@ -16,11 +23,6 @@
         "f": "c02aae823b",
         "r": "2/3",
         "n": "alexey_novopashin-c02aae823b"
-      },
-      {
-        "f": "35dd3428c0",
-        "r": "3/2",
-        "n": "alexey_novopashin-35dd3428c0"
       },
       {
         "f": "7e17829662",
@@ -43,14 +45,14 @@
         "n": "alexey_novopashin-ba438328f5"
       },
       {
-        "f": "8f8cc3bf25",
-        "r": "2/3",
-        "n": "alexey_novopashin-8f8cc3bf25"
-      },
-      {
         "f": "d9c4851ffb",
         "r": "3/2",
         "n": "alexey_novopashin-d9c4851ffb"
+      },
+      {
+        "f": "8f8cc3bf25",
+        "r": "2/3",
+        "n": "alexey_novopashin-8f8cc3bf25"
       },
       {
         "f": "dbe905d70b",
@@ -75,7 +77,8 @@
     "alt": "Свадьба Лёши и Кати",
     "places": [
       "fotograf",
-      "svadebnaya-fotosessiya"
+      "love-story",
+      "drugaya-studiya"
     ],
     "photos": [
       {
@@ -536,7 +539,8 @@
     "alt": "Свадьба Пети и Юли",
     "places": [
       "fotograf",
-      "svadebnaya-fotosessiya"
+      "love-story",
+      "na-ulice"
     ],
     "photos": [
       {
@@ -880,14 +884,14 @@
     ],
     "photos": [
       {
-        "f": "d789651ebd",
-        "r": "2/3",
-        "n": "alexey_novopashin-d789651ebd"
-      },
-      {
         "f": "bf8dc71267",
         "r": "9/16",
         "n": "alexey_novopashin-bf8dc71267"
+      },
+      {
+        "f": "d789651ebd",
+        "r": "2/3",
+        "n": "alexey_novopashin-d789651ebd"
       },
       {
         "f": "20f6f8c475",
@@ -955,19 +959,9 @@
         "n": "alexey_novopashin-52ce1e53f4"
       },
       {
-        "f": "eb00cfd5c6",
-        "r": "2/3",
-        "n": "alexey_novopashin-eb00cfd5c6"
-      },
-      {
         "f": "910773c98a",
         "r": "2/3",
         "n": "alexey_novopashin-910773c98a"
-      },
-      {
-        "f": "2d64a933e3",
-        "r": "2/3",
-        "n": "alexey_novopashin-2d64a933e3"
       },
       {
         "f": "86b6560c1e",
@@ -1078,11 +1072,6 @@
         "f": "94357aa82f",
         "r": "3/2",
         "n": "alexey_novopashin-94357aa82f"
-      },
-      {
-        "f": "ac7b102ed6",
-        "r": "3/2",
-        "n": "alexey_novopashin-ac7b102ed6"
       }
     ]
   }
