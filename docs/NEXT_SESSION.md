@@ -7,7 +7,7 @@ Last rewrite: 2026-10-06 (after the step 6 report; novopashin.ru is already on t
 The new site is live on the test address https://tomson.website.yandexcloud.net and, since
 2026-10-06, on **novopashin.ru** (Alexey: «все шло с моего согласия, novopashin.ru работает»;
 mirror bucket `novopashin.ru`, `www` redirects 301, https certificate attached, MX/SPF kept in
-the new DNS zone). Domain томсон.рф is still on Vigbo (paid until June, rollback exists:
+the new DNS zone). Domain томсон.рф is still on Vigbo until the night switch Alexey announced («томсон.рф переедет ночью, когда город будет спать», 2026-10-06; date not given). Vigbo paid until June, rollback exists:
 `docs/STEP_6_DOMAINS_PLAN.md`). Main domain chosen: studiotomson.ru (Alexey has not bought it yet).
 Booking = AppEvent iframe. Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` has tabs
 Цены, Фото, Ролики, Афиша, Портфолио; `deploy.py` and the admin write to both buckets.
@@ -48,8 +48,10 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 - `CLAUDE.md` is 75 lines on the step 6 branch (rule: ≤ 60) — trim in the next Mac step.
 
 ## Launch steps still open
-7. The switch of the main domain (Opus 5.5): ONLY on Alexey's explicit word, after items 1–2 of
-   «Waiting» and the checklist above. Rollback ready (plan doc). Postbox for the form mail after it.
+7. The switch of the main domain (Opus 5.5), night window announced by Alexey, date open.
+   Starting prompt: `docs/STEP_7_SWITCH_PROMPT.md` (asks him: studiotomson.ru bought? which night?).
+   Advice in it: change NS in reg.ru a day or two BEFORE the night, the night itself is one record.
+   Needs item 2 of «Waiting» (or a decision to keep томсон.рф as main) and the checklist above. Rollback ready (plan doc). Postbox for the form mail after it.
 8. Optional after launch: admin hardening (lockout, access log; Opus), housekeeping (INDEX
    region-mirror row, cloud cost note for Alexey), mark the Vigbo plan end date (June).
 
