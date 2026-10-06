@@ -38,7 +38,7 @@ cpSync(join(root, 'src/root'), dist, { recursive: true });
 // robots.txt and sitemap.xml: built here, not in render.mjs — the admin function uploads render output as HTML,
 // and the page list does not change with prices or photos
 const siteUrl = C['site.json'].siteUrl;
-const pageUrls = files.map((f) => '/' + f.path.replace(/index\.html$/, '')).filter((u) => u !== '/poisk/');
+const pageUrls = files.filter((f) => !f.noindex).map((f) => '/' + f.path.replace(/index\.html$/, '')).filter((u) => u !== '/poisk/');
 out('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /_src/\nDisallow: /poisk/\n${siteUrl ? `\nSitemap: ${siteUrl}/sitemap.xml\n` : ''}`);
 if (siteUrl) out('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pageUrls.map((u) => `<url><loc>${siteUrl}${u}</loc></url>`).join('\n')}\n</urlset>\n`);
 for (const [f, data] of Object.entries(C)) out(`_src/content/${f}`, JSON.stringify(data, null, 2) + '\n');

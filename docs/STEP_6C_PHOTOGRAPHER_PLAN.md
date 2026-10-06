@@ -11,6 +11,16 @@
   поисковиками по запросам фотосессия томск, фотограф томск и тд.»
 - Earlier: svadby, portrety, lesha+katja, petja+julja → photographer page; novopashin.ru → it.
 
+## Decided 2026-10-06 (Alexey)
+«У каждой услуги своя страница» (fork 1 = A); «папки на mac и вкладка в админке» (fork 2 = both:
+folders now via `tools/portfolio.py`, admin tab «Портфолио» next — needs a new function version);
+«цены на свадьбы актуальны»; «41 фото из портретов в портреты» (series `portrety` on the landing);
+«продающий текст напиши и сразу размести, я исправлю если что».
+Built the same day, see CLAUDE.md. Assumptions in the copy for Alexey to check: other services
+show the studio photographer rate (5 500 ₽/h) «точную стоимость посчитаю по заявке»; corporate
+portrait says «приезжаю в офис»; the landing cover is portrety #1 (a client, not Alexey).
+The 7 other Vigbo wedding series had only one cover each — not imported.
+
 ## What Vigbo has (мерено 2026-10-06, saved in scratch, nothing downloaded to the repo)
 - `svadby`: heading «Свадебные серии» — 9 tiles (Костя+Аня, Саша+Алёна, Игорь+Аля, Вадим+Катя,
   Витя+Рената, Влад+Анна, Lovestory, Лёша+Катя, Петя+Юля); only the last two link to galleries.

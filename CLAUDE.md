@@ -42,6 +42,11 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
 - Request form: `content/form.json` (texts), `site.json` → `formApi`, cloud function `tomsonform` (`cloud/form/index.js`,
   public, one instance, env SMTP_*: Alexey types them, never ask). Without `formApi` the form is hidden; keep it in `site.json`.
 - `src/` — `style.css`, `site.js`, self-hosted fonts (Playfair Display, Manrope).
+- Photographer (step 6c): `/fotograf/` landing (`content/fotograf.json`), photo services
+  `/uslugi/<slug>/` from ONE list `content/services.json` (also shown on the studio «Услуги» page).
+  A service with `ready: false` is `noindex` and out of the sitemap — flip it once its portfolio is in.
+  Portfolio series = `content/portfolio.json` + `photos/p/<id>/` (hashed, `t/` = thumbnails), added
+  from a Mac folder with `python3 tools/portfolio.py <folder> <id> "<Title>" "<alt>"` (strips EXIF/GPS).
 - SEO / search (step 6b): `site.json` → `siteUrl` (main domain) drives canonical, og: tags, the
   LocalBusiness card on home, `robots.txt` and `sitemap.xml` (both made in `build.mjs`, not in
   `render.mjs`: the function uploads render output as HTML). `src/root/` = files copied to the site

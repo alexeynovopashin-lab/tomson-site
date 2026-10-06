@@ -12,6 +12,7 @@
     { "label": "Залы", "href": "/#zaly" },
     { "label": "Расписание", "slug": "raspisanie" },
     { "label": "Фотошкола", "slug": "fotosfera" },
+    { "label": "Фотограф", "slug": "fotograf" },
     { "label": "Правила", "slug": "pravila_i_cena" },
     { "label": "Оборудование", "slug": "oborudovanie" },
     { "label": "Услуги", "slug": "sertifikaty" },

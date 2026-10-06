@@ -113,9 +113,14 @@
   }
   var lb=document.querySelector('dialog.lb');
   if(!lb)return;
-  var items=[].slice.call(document.querySelectorAll('.gallery .open')),i=0,img=lb.querySelector('img');
-  function show(k){i=(k+items.length)%items.length;var s=items[i].querySelector('img');img.src=s.currentSrc||s.src;img.alt=s.alt}
-  items.forEach(function(b,k){b.addEventListener('click',function(){show(k);lb.showModal()})});
+  // portfolio series: the first photos show, «Показать все» opens the rest
+  [].forEach.call(document.querySelectorAll('.show-all'),function(b){b.addEventListener('click',function(){b.closest('.gallery').classList.add('all');b.remove()})});
+  // the lightbox walks through the gallery that was clicked (a page can hold several series)
+  var items=[],i=0,img=lb.querySelector('img');
+  function show(k){i=(k+items.length)%items.length;var s=items[i].querySelector('img');img.src=s.dataset.full||s.currentSrc||s.src;img.alt=s.alt}
+  [].forEach.call(document.querySelectorAll('.gallery .open'),function(b){b.addEventListener('click',function(){
+    var g=b.closest('.gallery');items=[].slice.call(g.querySelectorAll('.open')).filter(function(x){return g.classList.contains('all')||!x.classList.contains('more')});
+    show(items.indexOf(b));lb.showModal()})});
   lb.querySelector('.x').addEventListener('click',function(){lb.close()});
   lb.querySelector('.p').addEventListener('click',function(){show(i-1)});
   lb.querySelector('.n').addEventListener('click',function(){show(i+1)});

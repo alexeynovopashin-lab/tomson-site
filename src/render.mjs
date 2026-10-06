@@ -17,6 +17,7 @@ const fromPrice = (h) => Math.min(...h.tiers.map((t) => t.price));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const PAGE_FILES = Object.keys(C).filter((f) => f.startsWith('zal-') || ['oborudovanie.json', 'pravila_i_cena.json', 'kak-najti.json', 'fotosfera.json', 'sertifikaty.json', 'raspisanie.json'].includes(f));
 const ported = new Set(PAGE_FILES.map((f) => f.replace('.json', '')));
+if (C['fotograf.json']) ported.add('fotograf');
 const hallUrl = (h) => (ported.has(h.pageSlug) ? `/${h.pageSlug}/` : `${site.oldSite}/${h.pageSlug}`);
 const slugUrl = (slug) => (ported.has(slug) ? `/${slug}/` : `${site.oldSite}/${slug}`);
 const navUrl = (n) => (n.href ? n.href : slugUrl(n.slug));
@@ -95,11 +96,11 @@ const SEARCH_URL = '/poisk/';
 const SEARCH_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg>';
 const pagesSeen = []; // { url, title } of every page rendered so far: the search page reads them
 const urlOf = (path) => '/' + path.replace(/index\.html$/, '');
-function seoHead({ title, description, url, image }) {
+function seoHead({ title, description, url, image, imageAbs }) {
   if (!site.siteUrl) return '';
   const abs = site.siteUrl + url;
-  if (!image) image = C['home.json'].cover.photo; // pages without a picture of their own share the home cover
-  const img = image && versions[image] ? `${site.siteUrl}/photos/${image}.jpg?v=${versions[image]}` : '';
+  if (!image && !imageAbs) image = C['home.json'].cover.photo; // pages without a picture of their own share the home cover
+  const img = imageAbs ? site.siteUrl + imageAbs : image && versions[image] ? `${site.siteUrl}/photos/${image}.jpg?v=${versions[image]}` : '';
   const tags = [`<link rel="canonical" href="${esc(abs)}">`,
     `<meta property="og:type" content="website">`, `<meta property="og:locale" content="ru_RU">`,
     `<meta property="og:site_name" content="${esc(site.seoName || site.name)}">`,
@@ -116,9 +117,9 @@ function seoHead({ title, description, url, image }) {
   }
   return tags.join('\n') + '\n';
 }
-const page = (path, o) => ({ path, html: shell({ ...o, path }) });
+const page = (path, o) => ({ path, html: shell({ ...o, path }), ...(o.noindex ? { noindex: true } : {}) });
 
-function shell({ title, description, body, current, path, image }) {
+function shell({ title, description, body, current, path, image, imageAbs, noindex }) {
   const url = urlOf(path);
   pagesSeen.push({ url, title });
   const items = site.nav
@@ -131,7 +132,7 @@ function shell({ title, description, body, current, path, image }) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-${seoHead({ title, description, url, image })}<meta name="theme-color" content="#f5f1ea">
+${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}<meta name="theme-color" content="#f5f1ea">
 <link rel="preload" href="/fonts/playfair-cyr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css">
 </head>
@@ -159,7 +160,7 @@ ${site.nav.some((n) => n.slug && !ported.has(n.slug)) ? `<p class="note">${esc(s
 function requestForm(preset) {
   const f = C['form.json'];
   if (!f || !site.formApi) return '';
-  const opts = f.interests.map((t) => `<option${t === preset ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  const opts = (preset && !f.interests.includes(preset) ? [preset, ...f.interests] : f.interests).map((t) => `<option${t === preset ? ' selected' : ''}>${esc(t)}</option>`).join('');
   const id = (k) => `rf-${k}`;
   return `<section class="wrap rform-sec" id="zayavka">
 <div class="rform-head"><span class="label">${esc(f.label)}</span><h2>${esc(f.title)}</h2><p>${esc(f.lead)}</p></div>
@@ -371,12 +372,85 @@ ${k.text ? `<p>${esc(k.text)}</p>` : ''}</div>
 ${pageHead('Услуги', c)}
 <section class="wrap certs">${cards}</section>
 <section class="wrap cert-buy"><p>${esc(c.buy)}</p><a class="btn solid" href="tel:${site.phoneHref}">${esc(site.phone)}</a></section>
+${SVC ? `<section class="wrap" id="fotosemka"><div class="sec-head"><h2>${esc(SVC.studioBlockTitle)}</h2></div><p class="svc-lede">${esc(SVC.studioBlockLede)} <a href="/fotograf/">О фотографе</a></p>${svcGrid(SVC.list)}</section>` : ''}
 </main>`;
   return page('sertifikaty/index.html', { title: c.title, description: c.description, body, current: 'Услуги' });
 }
 
 // Site search: no service and no index file. site.js loads the pages listed here when someone
 // searches and looks through their text, so prices and announcements edited in the admin are found at once.
+// Photographer landing (/fotograf/) and photo services (/uslugi/<slug>/). One service list
+// (services.json) feeds the landing, each service page and the block on the studio «Услуги» page.
+// Portfolio series (portfolio.json, made by tools/portfolio.py) live outside photo slots:
+// hashed files under /photos/p/<series>/, thumbnails in t/, not replaced from the admin.
+const PORT = C['portfolio.json'] || {};
+const SVC = C['services.json'];
+const FG = C['fotograf.json'];
+const svcUrl = (k) => `/${SVC.base}/${k.slug}/`;
+function pf(id, i, { eager = false } = {}) {
+  const ser = PORT[id];
+  if (!ser || !ser.photos[i]) throw new Error(`no portfolio photo: ${id} #${i}`);
+  const p = ser.photos[i];
+  return `<figure class="ph" style="--r:${p.r}"><img src="/photos/p/${id}/t/${p.f}.jpg" data-full="/photos/p/${id}/${p.f}.jpg" alt="${esc(ser.alt)}, фото ${i + 1}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
+}
+function seriesGallery(id, preview) {
+  const ser = PORT[id];
+  if (!ser) throw new Error(`no portfolio series: ${id}`);
+  const n = ser.photos.length;
+  const btn = (p, i) => `<button class="open${preview && i >= preview ? ' more' : ''}" aria-label="Открыть фото ${i + 1}" style="--r:${p.r}">${pf(id, i)}</button>`;
+  return `<section class="wrap gallery series" id="${esc(id)}"><div class="sec-head" style="padding-top:clamp(28px,4vw,56px)"><h3 class="series-h">${esc(ser.title)}</h3><span class="label">${n} фото</span></div>
+<div class="cols">${ser.photos.map(btn).join('')}</div>
+${preview && n > preview ? `<button class="btn show-all" type="button">Показать все ${n} фото</button>` : ''}</section>`;
+}
+const svcCard = (k) => `<a class="svc" href="${svcUrl(k)}"><span class="svc-n">${esc(k.name)}</span><span class="svc-t">${esc(k.short)}</span><span class="svc-go" aria-hidden="true">→</span></a>`;
+const svcGrid = (list) => `<div class="svc-grid">${list.map(svcCard).join('')}</div>`;
+
+function fotografPage() {
+  const c = FG;
+  const h1 = c.headline.map((l, i) => (i === c.italicLine ? `<em>${esc(l)}</em>` : esc(l))).join('<br>');
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / ${esc(c.crumb)}</span></div>
+<section class="wrap cover">
+<div class="text"><div><span class="label">${esc(c.kicker)}</span><h1><span class="fg-name">${esc(c.name)}</span>${h1}</h1></div>
+<p class="lead">${esc(c.lead)}</p>
+<div class="actions"><a class="btn solid" href="#zayavka">${esc(c.ctaPrimary)}</a><a class="btn" href="#raboty">${esc(c.ctaSecondary)}</a></div></div>
+<div class="fig">${pf(c.cover.series, c.cover.index, { eager: true })}</div>
+</section>
+<div class="wrap"><div class="facts facts-3">${c.facts.map((f) => `<div><b>${esc(f.value)}</b><span class="label">${esc(f.label)}</span></div>`).join('')}</div></div>
+<section class="wrap fg-about"><h2>${esc(c.aboutTitle)}</h2><div>${c.about.map((t) => `<p>${esc(t)}</p>`).join('')}</div></section>
+<section class="wrap" id="uslugi"><div class="sec-head"><h2>${esc(c.servicesTitle)}</h2><span class="label">${esc(c.servicesNote)}</span></div>${svcGrid(SVC.list)}</section>
+<div id="raboty"><div class="wrap sec-head"><h2>${esc(c.seriesTitle)}</h2><span class="label">${esc(c.seriesNote)}</span></div>
+${c.series.map((id) => seriesGallery(id, c.seriesPreview)).join('\n')}</div>
+<section class="wrap fg-process"><h2>${esc(c.processTitle)}</h2><ol>${c.process.map((s) => `<li><b>${esc(s.h)}</b><p>${esc(s.t)}</p></li>`).join('')}</ol></section>
+<section class="wrap visit"><h2>${esc(c.studioTitle)}</h2><div class="info"><p>${esc(c.studioText)}</p><a class="btn" href="/#zaly">Залы студии</a></div></section>
+${contactsBlock()}
+${requestForm(c.formPreset)}
+</main>
+${LIGHTBOX}`;
+  return page('fotograf/index.html', { title: c.title, description: c.description, body, current: 'Фотограф', image: null, imageAbs: PORT[c.cover.series] && `/photos/p/${c.cover.series}/${PORT[c.cover.series].photos[c.cover.index].f}.jpg` });
+}
+
+function servicePage(k) {
+  const pkgs = k.packages ? `<section class="wrap pkgs"><div class="sec-head" style="padding-top:0"><h2>${esc(k.packagesTitle)}</h2><span class="label">${esc(k.packagesNote)}</span></div>
+<div class="pkg-grid">${k.packages.map((p) => `<article class="pkg"><h3>${esc(p.name)}</h3><p class="pkg-h">${esc(p.hours)} · ${esc(p.photos)}</p><ul>${p.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ul><p class="pkg-price">${priceStr(p.price)}</p></article>`).join('')}</div>
+<p class="pkg-foot">${esc(k.packagesFoot)}</p></section>` : '';
+  const price = k.price ? `<p class="svc-price"><b>${priceStr(k.price)}</b> — ${esc(SVC.priceNote)}</p>` : '';
+  const works = k.series.length ? k.series.map((id) => seriesGallery(id, FG.seriesPreview)).join('\n')
+    : `<section class="wrap svc-soon"><p>${esc(SVC.soon)}</p><a class="btn" href="/fotograf/#raboty">Работы фотографа</a></section>`;
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/fotograf/">${esc(FG.crumb)}</a> / ${esc(k.name)}</span></div>
+<section class="wrap page-title"><h1>${esc(k.h1)}</h1><div class="pt-side"><p class="lede-s">${esc(k.lede)}</p></div></section>
+<section class="wrap fg-about svc-about"><div>${k.text.map((t) => `<p>${esc(t)}</p>`).join('')}${price}</div><div class="actions"><a class="btn solid" href="#zayavka">Записаться</a><a class="btn" href="tel:${site.phoneHref}">${esc(site.phone)}</a></div></section>
+${pkgs}
+${works}
+<section class="wrap"><div class="sec-head"><h2>${esc(SVC.otherTitle)}</h2><a class="label" href="/fotograf/">Фотограф Алексей Новопашин</a></div>${svcGrid(SVC.list.filter((x) => x !== k))}</section>
+${contactsBlock()}
+${requestForm(k.name)}
+</main>
+${LIGHTBOX}`;
+  return page(`${SVC.base}/${k.slug}/index.html`, { title: k.title, description: k.description, body, current: 'Фотограф', noindex: !k.ready, imageAbs: k.series[0] && `/photos/p/${k.series[0]}/${PORT[k.series[0]].photos[0].f}.jpg` });
+}
+
 function searchPage() {
   const list = pagesSeen.filter((p) => p.url !== SEARCH_URL);
   const body = `<main>
@@ -435,6 +509,7 @@ ${LIGHTBOX}`;
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
   files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
   if (privacyOn) files.push(privacyPage());
+  if (FG && SVC) files.push(fotografPage(), ...SVC.list.map(servicePage));
   if (SEARCH.title) files.push(searchPage()); // last: it lists every page rendered before it
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   return { files, unused };
