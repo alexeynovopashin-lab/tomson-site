@@ -106,6 +106,18 @@ no photographer page yet (candidates = the 7 not-ported Vigbo pages: svadby, por
 lesha+katja, petja+julja, …). Bucket routing rule with a host + path redirect — док says
 redirect rules exist; a rule matching every path — не мерено, test on a scratch bucket first.
 
+## Alexey's words 2026-10-06 (pages and main domain)
+- «Свадьбы, портреты, петя юля, леша катя, это все надо поместить на страничку фотографа».
+- «vybor-kamery и camerateka, это проекты которые я запарковал на сайте студии для теста.
+  Вообще виджет "выбор камеры" — это внешняя встраиваемая функция, которая ведет на
+  камератеку, камератека отдельный сайт, но пока пусть будет запаркован на странице фотошколы.»
+- `light-plan`: not said yet.
+- .рф: «не везде работают, тот же инстаграм плохо переваривает их». Alexey: «думаю купить
+  сейчас домен tom-son.ru» (reg.ru cart: 169 ₽ first year, 226 ₽ without discount).
+  Registry 2026-10-06: tom-son.ru and studiotomson.ru free, tomson.ru taken since 2006.
+  If bought and made main: bucket name `tom-son.ru`; томсон.рф + www → redirect to it;
+  Yandex Webmaster / Google «переезд сайта»; CORS lists in both functions get the new origin.
+
 ## Parity with Vigbo — Alexey's requirement (2026-10-06)
 «чтобы те функции, которые были у Vigbo, были и на нашем новом сайте: SEO, https, поиск по сайту».
 | Vigbo | Now on Vigbo (мерено) | New site today | To do |
