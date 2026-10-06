@@ -84,8 +84,11 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
    `.claude/worktrees/step6b`): site search `/poisk/` (magnifier in menu and phone strip), og: tags,
    canonical, LocalBusiness card, robots.txt, sitemap.xml, Yandex/Google ownership files from Vigbo.
    Main domain in tags = studiotomson.ru (Alexey buys it). Waits for Alexey's phone check.
-6c. Photographer page (Alexey 2026-10-06): svadby, portrety, lesha+katja, petja+julja → one page;
-   novopashin.ru will lead to it. Camerateka / «выбор камеры» parked on the photo school page.
+6c. BUILT 2026-10-06, on the test address: `/fotograf/` landing + 7 service pages `/uslugi/…`
+   (plan and Alexey's words: `docs/STEP_6C_PHOTOGRAPHER_PLAN.md`), shoots 7 000 ₽/h with the hall
+   included. Admin tab «Портфолио» deployed; photo upload needs the NEW tomsonadmin version
+   (`tomsonadmin_2026-10-06.zip` in the project folder, not in git) — Alexey uploads it in the console.
+   Camerateka / «выбор камеры» parked on the photo school page — not done yet.
 7. The switch (Opus 5.5): only on his explicit word, with the rollback plan ready.
 8. Optional after launch: admin hardening (lockout, access log; Opus), housekeeping
    (INDEX region-mirror row, cloud cost note for Alexey).
