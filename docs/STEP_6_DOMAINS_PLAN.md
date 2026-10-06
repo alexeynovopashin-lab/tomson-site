@@ -142,3 +142,23 @@ Proposed as a separate step before the switch (step 6b), on the test address.
 - No DKIM/DMARC on mail: letters may land in spam. Can be added in Cloud DNS later.
 - Admin/form functions' CORS is fine for томсон.рф, but `https://www.…` must redirect,
   not serve, to keep one address.
+
+## novopashin.ru on the new site — done 2026-10-06 (Alexey: «пока novopashin.ru показывает тоже самое, что наш тестовый адрес»)
+- NS of novopashin.ru → `ns1/ns2.yandexcloud.net` (Alexey, reg.ru). Cloud DNS zone `novopashin-ru`:
+  MX 10 mx.yandex.ru, SPF TXT, A 158.255.3.212 (old Vigbo IP for now), www CNAME, 2 `_acme-challenge`
+  CNAMEs for the LE certificate `fpqttgcg5i4dhe1f8egl` (novopashin.ru + www).
+- Bucket `novopashin.ru` (public read, website) = a mirror: «Разрешаю доработку» (Alexey, option 1) →
+  `deploy.py` MIRRORS and the admin function (`MIRRORS`, default novopashin.ru, `-` = none) write every
+  file to both buckets; the main bucket first, a failed mirror write only logs. Function CORS lists
+  novopashin.ru and studiotomson.ru (+www) in code; the form function needs env
+  `ORIGINS=https://novopashin.ru,https://www.novopashin.ru` (Alexey, console).
+- API Gateway in front of `tomson` was tried and dropped: it cuts the trailing slash → 302 loop.
+- DNSSEC: off, keep it off (no DS at the registry; Cloud DNS zone is not signed — из памяти, не мерено).
+- Yandex serves the zone right (мерено 05:55Z via digwebinterface.com @ns1.yandexcloud.net: MX, A).
+  Local `dig` on Alexey's Mac is NOT a measurement: port 53 is intercepted (any server, even
+  a.dns.ripn.net, answers recursively, `id.server` = "fra10"). Use DoH (dns.google/resolve) or a web dig.
+  Google DNS still asked Vigbo (ns1.gophotoweb.com → NXDOMAIN) at 05:50Z: old delegation in caches,
+  so site and mail on novopashin.ru are dark for some resolvers until it expires.
+- 05:57Z: A 158.255.3.212 → ANAME `novopashin.ru.website.yandexcloud.net`; http served by the bucket
+  (200, мерено via `--resolve`). www.novopashin.ru has no bucket yet. HTTPS waits for the certificate
+  (VALIDATING), then `yc storage bucket set-https`.

@@ -18,6 +18,9 @@ Usage: python3 deploy.py [--dry-run] [--force] [--pull-only]
 import datetime, hashlib, hmac, json, mimetypes, os, subprocess, sys, urllib.error, urllib.parse, urllib.request
 
 BUCKET, HOST, REGION = "tomson", "storage.yandexcloud.net", "ru-central1"
+# buckets that get the same files: novopashin.ru shows the same site until the switch (Alexey, 2026-10-06).
+# The admin function writes to them too (cloud/admin/index.js → MIRRORS). Pull reads only BUCKET.
+MIRRORS = ["novopashin.ru"]
 PROJECT = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(PROJECT, "dist")
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
@@ -40,11 +43,11 @@ def sign(key, msg):
     return hmac.new(key, msg.encode(), hashlib.sha256).digest()
 
 
-def request(method, path, keys, body=b"", extra=None):
+def request(method, path, keys, body=b"", extra=None, bucket=BUCKET):
     ak, sk = keys
     now = datetime.datetime.now(datetime.timezone.utc)
     amz, day = now.strftime("%Y%m%dT%H%M%SZ"), now.strftime("%Y%m%d")
-    uri = "/" + BUCKET + "/" + urllib.parse.quote(path, safe="/-_.~")
+    uri = "/" + bucket + "/" + urllib.parse.quote(path, safe="/-_.~")
     payload = hashlib.sha256(body).hexdigest()
     headers = {"host": HOST, "x-amz-content-sha256": payload, "x-amz-date": amz}
     signed = ";".join(sorted(headers))
@@ -60,9 +63,9 @@ def request(method, path, keys, body=b"", extra=None):
     return urllib.request.urlopen(req, timeout=60)
 
 
-def remote_etag(path, keys):
+def remote_etag(path, keys, bucket=BUCKET):
     try:
-        return request("HEAD", path, keys).headers.get("ETag", "").strip('"')
+        return request("HEAD", path, keys, bucket=bucket).headers.get("ETag", "").strip('"')
     except urllib.error.HTTPError as e:
         if e.code == 404:
             return None
@@ -183,7 +186,9 @@ def main():
     up = same = 0
     for key, full in files:
         body = open(full, "rb").read()
-        if not force and remote_etag(key, keys) == hashlib.md5(body).hexdigest():
+        md5 = hashlib.md5(body).hexdigest()
+        targets = [b for b in [BUCKET] + MIRRORS if force or remote_etag(key, keys, b) != md5]
+        if not targets:
             same += 1
             continue
         ext = os.path.splitext(key)[1].lower()
@@ -196,9 +201,11 @@ def main():
             cache = "public, max-age=31536000"  # pages link photos with ?v=<hash>, a new photo gets a new address
         else:
             cache = "public, max-age=300"
-        print(("would upload " if dry else "upload ") + f"{key} ({len(body)//1024} KB, {ctype})")
+        where = "" if targets == [BUCKET] else " → " + ", ".join(targets)
+        print(("would upload " if dry else "upload ") + f"{key} ({len(body)//1024} KB, {ctype}){where}")
         if not dry:
-            request("PUT", key, keys, body, {"Content-Type": ctype, "Cache-Control": cache})
+            for b in targets:  # the main bucket first, it is the one the admin reads
+                request("PUT", key, keys, body, {"Content-Type": ctype, "Cache-Control": cache}, b)
         up += 1
     print(f"{'planned' if dry else 'uploaded'}={up} unchanged={same}")
     for name in ("prices.json", "videos.json"):

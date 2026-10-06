@@ -56,6 +56,8 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
   root (Yandex/Google ownership, from Vigbo). Search page `/poisk/` (texts `site.json` → `search`):
   `site.js` fetches the listed pages and searches their text in the browser — no index to keep fresh.
 - `build.mjs` — `node build.mjs` → `dist/` (static, root-absolute paths) + `dist/_src/` for the function.
+- Mirror: bucket `novopashin.ru` gets every file too (`deploy.py` MIRRORS, admin function env MIRRORS,
+  default novopashin.ru) — the second domain shows the same site until the switch (Alexey, 2026-10-06).
 - Deploy: `python3 deploy.py [--dry-run] [--pull-only]` uploads changed files of `dist/` to bucket
   `tomson` (S3 API, keys in `~/.config/tomson/s3.env`, made by Alexey, never in a repo). No deletes.
   HTML/JSON are `no-cache`, photos a year (versioned URLs).

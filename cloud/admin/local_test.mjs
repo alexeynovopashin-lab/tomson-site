@@ -14,14 +14,15 @@ const PORT = 8794;
 process.env.ADMIN_PASSWORD = 'localtest123';
 process.env.ORIGINS = `http://127.0.0.1:${PORT}`;
 delete process.env.AWS_ACCESS_KEY_ID;
+process.env.MIRRORS = 'testmirror'; // its copies land in <dir>/_mirror/
 
-// the bucket: storage.yandexcloud.net/tomson/<key> -> <dir>/<key>
+// the bucket: storage.yandexcloud.net/tomson/<key> -> <dir>/<key>, the mirror -> <dir>/_mirror/<key>
 const realFetch = globalThis.fetch;
 globalThis.fetch = async (url, opt = {}) => {
-  const m = String(url).match(/^https:\/\/storage\.yandexcloud\.net\/tomson\/(.+)$/);
+  const m = String(url).match(/^https:\/\/storage\.yandexcloud\.net\/(tomson|testmirror)\/(.+)$/);
   if (!m) return realFetch(url, opt);
-  const key = decodeURIComponent(m[1]);
-  const file = join(dir, key);
+  const key = decodeURIComponent(m[2]);
+  const file = m[1] === 'tomson' ? join(dir, key) : join(dir, '_mirror', key);
   const h = opt.headers || {};
   if (h['X-YaCloud-SubjectToken'] !== 'fake-token') return new Response('no token', { status: 403 });
   if (opt.method === 'GET') return existsSync(file) ? new Response(readFileSync(file)) : new Response('NoSuchKey', { status: 404 });
@@ -33,7 +34,7 @@ globalThis.fetch = async (url, opt = {}) => {
       if (!existsSync(from)) return new Response('NoSuchKey', { status: 404 });
       copyFileSync(from, file);
     } else writeFileSync(file, opt.body);
-    console.log('  PUT', key, src ? `(copy of ${src})` : '');
+    console.log('  PUT', m[1], key, src ? `(copy of ${src})` : '');
     return new Response('', { status: 200 });
   }
   return new Response('method', { status: 405 });
