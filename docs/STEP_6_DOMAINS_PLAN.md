@@ -97,6 +97,13 @@ Alexey set up both domains himself since 2016; NS change in reg.ru is his.
 - Vigbo DNS for novopashin.ru holds exactly TXT (SPF), MX, A — matches dig, nothing hidden.
   `alexeynovopashin.ru` is listed in Vigbo as «не зарегистрирован» — not part of this.
 
+## novopashin.ru — Alexey's words (2026-10-06)
+«novopashin.ru ведет на сайт студии. В идеале было бы так: novopashin.ru открывает сайт на
+странице фотографа, томсон.рф на странице студии.» Open: which option below; the new site has
+no photographer page yet (candidates = the 7 not-ported Vigbo pages: svadby, portrety,
+lesha+katja, petja+julja, …). Bucket routing rule with a host + path redirect — док says
+redirect rules exist; a rule matching every path — не мерено, test on a scratch bucket first.
+
 ## Parity with Vigbo — Alexey's requirement (2026-10-06)
 «чтобы те функции, которые были у Vigbo, были и на нашем новом сайте: SEO, https, поиск по сайту».
 | Vigbo | Now on Vigbo (мерено) | New site today | To do |
