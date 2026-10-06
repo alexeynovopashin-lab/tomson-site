@@ -169,5 +169,16 @@
       "fs-13",
       "fs-16"
     ]
-  ]
+  ],
+  "camera": {
+    "label": "Для учеников",
+    "title": "Выбор камеры",
+    "text": [
+      "Не знаете, какую камеру купить? Ответьте на несколько вопросов — сервис подскажет подходящие модели. Это отдельный проект, пока он живёт здесь."
+    ],
+    "widget": "https://alexeynovopashin-lab.github.io/CameraChange/",
+    "height": 640,
+    "linkText": "Камератека — каталог камер",
+    "link": "https://alexeynovopashin-lab.github.io/CameraChange/camerateka.html"
+  }
 }

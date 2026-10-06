@@ -564,6 +564,8 @@ ${strip(c.strips[1])}
 <section class="school-cta" id="zapis"><div class="wrap cta-grid"><div><h2>${esc(c.contact.cta)}</h2><p class="cta-phone">${telLink(c.contact.phoneHref, c.contact.phone)}</p><p>${esc(c.contact.address)}</p></div>${photo(c.contact.photo)}</div></section>
 ${requestForm(C['form.json'] && C['form.json'].schoolPreset)}
 <section class="wrap gallery"><div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">${esc(c.galleryNote)}</span></div>${galleryBlock(c.gallery)}</section>
+${c.camera ? `<section class="booking" id="kamera"><div class="wrap grid"><div class="intro"><span class="label">${esc(c.camera.label)}</span><h2>${esc(c.camera.title)}</h2>${c.camera.text.map((t) => `<p>${esc(t)}</p>`).join('')}<p><a class="btn light" href="${esc(c.camera.link)}" target="_blank" rel="noopener">${esc(c.camera.linkText)}</a></p></div>
+<div class="frame"><iframe src="${esc(c.camera.widget)}" title="${esc(c.camera.title)}" height="${c.camera.height}" loading="lazy"></iframe></div></div></section>` : ''}
 </main>
 ${LIGHTBOX}`;
   return page('fotosfera/index.html', { title: c.title, description: c.description, body, current: 'Фотошкола', image: c.banner });
