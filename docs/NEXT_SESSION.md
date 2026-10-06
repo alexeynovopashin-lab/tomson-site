@@ -80,6 +80,12 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
    novopashin.ru to the bucket (bucket name rule, certificate, CDN: from memory, NOT
    verified), keep the mail MX alive, redirects for old Vigbo links, rollback plan.
    Output: a plan with 2–3 options for Alexey. The switch itself = step 7.
+6b. BUILT 2026-10-06, live on the test address (branch `claude/step6b-seo`, worktree
+   `.claude/worktrees/step6b`): site search `/poisk/` (magnifier in menu and phone strip), og: tags,
+   canonical, LocalBusiness card, robots.txt, sitemap.xml, Yandex/Google ownership files from Vigbo.
+   Main domain in tags = studiotomson.ru (Alexey buys it). Waits for Alexey's phone check.
+6c. Photographer page (Alexey 2026-10-06): svadby, portrety, lesha+katja, petja+julja → one page;
+   novopashin.ru will lead to it. Camerateka / «выбор камеры» parked on the photo school page.
 7. The switch (Opus 5.5): only on his explicit word, with the rollback plan ready.
 8. Optional after launch: admin hardening (lockout, access log; Opus), housekeeping
    (INDEX region-mirror row, cloud cost note for Alexey).
