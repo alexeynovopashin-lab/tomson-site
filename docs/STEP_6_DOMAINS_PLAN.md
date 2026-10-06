@@ -77,6 +77,8 @@ Listed for completeness; not advised.
 - Fast (minutes): in Cloud DNS put back `A 158.255.3.212` instead of the ANAME — Vigbo
   serves the old site while it is paid and still has the domains attached.
 - Full (hours): NS back to `ns1/ns2.vigbo.site` in reg.ru.
+- Vigbo is paid «до июня» (Alexey, 2026-10-06; year not said, read as June 2027): the
+  rollback stays available ~8 months after a switch in October 2026.
 - Mail is untouched in every step as long as MX/SPF are copied before step 3.
 
 ## Questions for Alexey (his call)
