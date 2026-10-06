@@ -210,7 +210,7 @@ function home() {
 <div class="sec-head"><h2>${esc(c.hallsTitle)}</h2><span class="label">Выберите зал</span></div>
 ${Object.values(halls).map(hallCard).join('\n')}
 </section>
-${SVC ? `<section class="wrap" id="foto"><div class="sec-head"><h2>${esc(SVC.homeTitle)}</h2><a class="label" href="/fotograf/">${esc(SVC.homeLink)}</a></div><p class="svc-lede">${esc(SVC.homeLede)}</p>${svcGrid(SVC.list)}</section>` : ''}
+${SVC ? `<section class="wrap" id="foto"><div class="sec-head"><h2>${esc(SVC.homeTitle)}</h2><a class="label" href="/fotograf/">${esc(SVC.homeLink)}</a></div><p class="svc-lede">${esc(SVC.homeLede)}</p>${svcIndex(SVC.list)}</section>` : ''}
 <section class="band">${photo(c.band.photo)}<blockquote><div class="wrap"><p>${esc(c.band.quote)}</p><cite>${esc(c.band.by)}</cite></div></blockquote></section>
 <section class="wrap visit"><h2>${esc(c.visit.title)}</h2><div class="info"><p>${esc(c.visit.text)}</p><a class="btn" href="${slugUrl('kak-najti')}">Схема проезда</a></div></section>
 ${contactsBlock()}
@@ -374,7 +374,7 @@ ${k.text ? `<p>${esc(k.text)}</p>` : ''}</div>
 ${pageHead('Услуги', c)}
 <section class="wrap certs">${cards}</section>
 <section class="wrap cert-buy"><p>${esc(c.buy)}</p><a class="btn solid" href="tel:${site.phoneHref}">${esc(site.phone)}</a></section>
-${SVC ? `<section class="wrap" id="fotosemka"><div class="sec-head"><h2>${esc(SVC.studioBlockTitle)}</h2></div><p class="svc-lede">${esc(SVC.studioBlockLede)} <a href="/fotograf/">О фотографе</a></p>${svcGrid(SVC.list)}</section>` : ''}
+${SVC ? `<section class="wrap" id="fotosemka"><div class="sec-head"><h2>${esc(SVC.studioBlockTitle)}</h2></div><p class="svc-lede">${esc(SVC.studioBlockLede)} <a href="/fotograf/">О фотографе</a></p>${svcIndex(SVC.list)}</section>` : ''}
 </main>`;
   return page('sertifikaty/index.html', { title: c.title, description: c.description, body, current: 'Услуги' });
 }
@@ -435,6 +435,10 @@ function seriesBlock(ids, title, note) {
   return `<section class="wrap series-block"><div class="sec-head"><h2>${esc(title)}</h2>${note ? `<span class="label">${esc(note)}</span>` : ''}</div><div class="sc-grid">${ids.map(seriesCard).join('')}</div></section>`;
 }
 const svcGrid = (list) => `<div class="svc-grid">${list.map(svcCard).join('')}</div>`;
+// genres by group (services.json → groups): cards with covers, or a compact list of links
+const byGroup = (list) => (SVC.groups || [{ id: undefined, title: '' }]).map((g) => [g, list.filter((k) => k.group === g.id)]).filter(([, l]) => l.length);
+const svcGroups = (list) => byGroup(list).map(([g, l]) => `${g.title ? `<h3 class="svc-gh">${esc(g.title)}</h3>` : ''}${svcGrid(l)}`).join('');
+const svcIndex = (list) => `<div class="svc-index">${byGroup(list).map(([g, l]) => `<div><h3 class="svc-gh">${esc(g.title)}</h3><ul>${l.map((k) => `<li><a href="${svcUrl(k)}">${esc(k.name)}</a></li>`).join('')}</ul></div>`).join('')}</div>`;
 
 function fotografPage() {
   const c = FG;
@@ -452,7 +456,7 @@ function fotografPage() {
 </section>
 <div class="wrap"><div class="facts facts-3">${c.facts.map((f) => `<div><b>${esc(f.value)}</b><span class="label">${esc(f.label)}</span></div>`).join('')}</div></div>
 <section class="wrap fg-about"><h2>${esc(c.aboutTitle)}</h2><div>${c.about.map((t) => `<p>${esc(t)}</p>`).join('')}</div></section>
-<section class="wrap" id="uslugi"><div class="sec-head"><h2>${esc(c.servicesTitle)}</h2><span class="label">${esc(c.servicesNote)}</span></div>${svcGrid(SVC.list)}</section>
+<section class="wrap" id="uslugi"><div class="sec-head"><h2>${esc(c.servicesTitle)}</h2><span class="label">${esc(c.servicesNote)}</span></div>${svcGroups(SVC.list)}</section>
 <div id="raboty">${seriesBlock(landing, c.seriesTitle, c.seriesNote)}</div>
 <section class="wrap fg-process"><h2>${esc(c.processTitle)}</h2><ol>${c.process.map((s) => `<li><b>${esc(s.h)}</b><p>${esc(s.t)}</p></li>`).join('')}</ol></section>
 <section class="wrap visit"><h2>${esc(c.studioTitle)}</h2><div class="info"><p>${esc(c.studioText)}</p><a class="btn" href="/#zaly">Залы студии</a></div></section>
@@ -477,7 +481,8 @@ function servicePage(k) {
 <section class="wrap fg-about svc-about"><div>${k.text.map((t) => `<p>${esc(t)}</p>`).join('')}${price}</div>${bookActions()}</section>
 ${pkgs}
 ${works}
-<section class="wrap"><div class="sec-head"><h2>${esc(SVC.otherTitle)}</h2><a class="label" href="/fotograf/">Фотограф Алексей Новопашин</a></div>${svcGrid(SVC.list.filter((x) => x !== k))}</section>
+${(k.related || []).length ? `<section class="wrap related"><div class="sec-head"><h2>${esc(SVC.relatedTitle)}</h2></div>${svcGrid(SVC.list.filter((x) => k.related.includes(x.slug)))}</section>` : ''}
+<section class="wrap"><div class="sec-head"><h2>${esc(SVC.otherTitle)}</h2><a class="label" href="/fotograf/">Фотограф Алексей Новопашин</a></div>${svcIndex(SVC.list.filter((x) => x !== k))}</section>
 ${contactsBlock()}
 ${requestForm(k.name)}
 </main>

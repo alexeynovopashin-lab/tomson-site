@@ -540,3 +540,13 @@ nav.main .nav-search span{position:absolute;width:1px;height:1px;overflow:hidden
 @media (max-width:900px){.offer>div:first-child,.offer .actions{grid-column:1/-1}}
 .actions.book{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .actions.book .book-ch{flex-basis:100%;margin:4px 0 0}
+/* genre groups */
+.svc-gh{margin:clamp(28px,4vw,48px) 0 6px;font:600 11.5px/1.3 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.svc-gh:first-child{margin-top:0}
+.svc-index{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px var(--gap);border-top:1px solid var(--line);padding-top:clamp(18px,2.4vw,30px)}
+.svc-index .svc-gh{margin:0 0 8px}
+.svc-index ul{list-style:none;margin:0 0 18px;padding:0}
+.svc-index li{border-bottom:1px solid var(--line)}
+.svc-index a{display:block;padding:9px 0;text-decoration:none;font:500 19px/1.25 var(--serif)}
+.svc-index a:hover{color:var(--accent)}
+.related .svc-grid{max-width:900px}
