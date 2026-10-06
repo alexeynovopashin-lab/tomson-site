@@ -550,3 +550,17 @@ nav.main .nav-search span{position:absolute;width:1px;height:1px;overflow:hidden
 .svc-index a{display:block;padding:9px 0;text-decoration:none;font:500 19px/1.25 var(--serif)}
 .svc-index a:hover{color:var(--accent)}
 .related .svc-grid{max-width:900px}
+
+/* photo school videos: VK / YouTube switch */
+.svideo{padding-block:clamp(40px,6vw,88px)}
+.sv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:var(--gap)}
+.sv{margin:0}
+.sv-frame{aspect-ratio:16/9;background:var(--ink);border-radius:6px;overflow:hidden}
+.sv-frame iframe{display:block;width:100%;height:100%;border:0}
+.sv figcaption{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.sv figcaption b{font:500 18px/1.3 var(--serif)}
+.sv-tabs{display:inline-flex;border:1px solid currentColor;border-radius:999px;overflow:hidden}
+.sv-tab{font:600 12px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;background:none;border:0;color:inherit;cursor:pointer;opacity:.6}
+.sv-tab[aria-pressed="true"]{background:var(--ink);color:#f3eee5;opacity:1}
+.sv-hint{margin:8px 0 0;font-size:14px}
+.sv-hint button{font:inherit;color:inherit;text-decoration:underline;background:none;border:0;padding:0;cursor:pointer}

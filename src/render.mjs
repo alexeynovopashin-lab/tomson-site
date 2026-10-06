@@ -539,6 +539,13 @@ ${e.photo && versions[e.photo] ? `<figure class="ph" style="--r:1/1"><img src="/
 <div class="ev-b"><p class="ev-when"><b>${esc(e.day)}</b> ${esc(e.time || '')}<span class="ev-past">прошло</span></p>
 <h3><span>${esc(e.kind)}</span> ${esc(e.title)}</h3><p>${esc(e.text)}</p><p class="ev-place">${esc(e.place)}</p></div>
 </article>`;
+  const schoolVideos = (C['school_videos.json'] || []).filter((v) => v.vk || v.yt);
+  const schoolVideo = (v) => `<figure class="sv" data-title="${esc(v.title)}"${v.vk ? ` data-vk="${esc(v.vk)}&amp;hd=2"` : ''}${v.yt ? ` data-yt="${esc(ytEmbed(v.yt))}"` : ''}>
+<div class="sv-frame"></div>
+<figcaption><b>${esc(v.title)}</b>${v.vk && v.yt ? `<span class="sv-tabs" role="group" aria-label="Плеер"><button type="button" class="sv-tab" data-k="vk">VK Видео</button><button type="button" class="sv-tab" data-k="yt">YouTube</button></span>` : ''}</figcaption>
+<p class="sv-hint" hidden></p>
+<noscript><p>${v.vk ? `<a href="${esc(v.vk)}">Смотреть в VK Видео</a>` : ''} ${v.yt ? `<a href="https://www.youtube.com/watch?v=${esc(v.yt)}">Смотреть на YouTube</a>` : ''}</p></noscript>
+</figure>`;
   const strip = (slots) => `<section class="wrap strip">${slots.map((s) => photo(s)).join('')}</section>`;
   const course = (k, i) => `<article class="course${i % 2 ? ' flip' : ''}">
 ${photo(k.photo)}
@@ -562,6 +569,8 @@ ${strip(c.strips[1])}
 <section class="wrap faq"><h2>Вопрос — ответ</h2>${c.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</section>
 <section class="wrap teacher"><span class="label">Преподаватель</span><h2>${esc(c.teacher.name)}</h2><p>${esc(c.teacher.text)}</p></section>
 <section class="school-cta" id="zapis"><div class="wrap cta-grid"><div><h2>${esc(c.contact.cta)}</h2><p class="cta-phone">${telLink(c.contact.phoneHref, c.contact.phone)}</p><p>${esc(c.contact.address)}</p></div>${photo(c.contact.photo)}</div></section>
+${schoolVideos.length ? `<section class="wrap svideo" id="video"><div class="sec-head" style="padding-top:0"><h2>${esc(c.videoTitle || 'Видео')}</h2><span class="label">${esc(c.videoNote || 'Если один плеер не открывается, переключите на другой')}</span></div>
+<div class="sv-grid">${schoolVideos.map(schoolVideo).join('')}</div></section>` : ''}
 ${requestForm(C['form.json'] && C['form.json'].schoolPreset)}
 <section class="wrap gallery"><div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">${esc(c.galleryNote)}</span></div>${galleryBlock(c.gallery)}</section>
 ${c.camera ? `<section class="booking" id="kamera"><div class="wrap grid"><div class="intro"><span class="label">${esc(c.camera.label)}</span><h2>${esc(c.camera.title)}</h2>${c.camera.text.map((t) => `<p>${esc(t)}</p>`).join('')}<p><a class="btn light" href="${esc(c.camera.link)}" target="_blank" rel="noopener">${esc(c.camera.linkText)}</a></p></div>
@@ -608,17 +617,29 @@ export function vkEmbed(input) {
   return `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}${h}&hd=2&autoplay=1`;
 }
 
+// YouTube: accepts a page link (watch?v=, youtu.be/, /embed/, /shorts/, /live/) or the embed iframe;
+// returns the 11-character video id or null. The page embeds it from youtube-nocookie.com.
+export function ytId(input) {
+  let s = String(input || '').trim().replace(/&amp;/g, '&');
+  const src = s.match(/src=["']([^"']+)["']/);
+  if (src) s = src[1];
+  const m = s.match(/^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#\s]*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([\w-]{11})(?![\w-])/);
+  return m ? m[1] : null;
+}
+export const ytEmbed = (id) => `https://www.youtube-nocookie.com/embed/${id}?rel=0`;
+
 // Edits from the admin page, applied by the cloud function to content loaded from the bucket.
 // Lives here, next to the pages, so a new kind of edit ships with a normal deploy instead of a
 // new function version. Returns { changes: [text], files: [content files that changed] };
 // throws an Error with .user = true for a mistake Alexey can fix himself.
-export const ADMIN_FILES = ['prices.json', 'videos.json', 'events.json', 'portfolio.json'];
+export const ADMIN_FILES = ['prices.json', 'videos.json', 'events.json', 'portfolio.json', 'school_videos.json'];
 const userError = (msg) => Object.assign(new Error(msg), { user: true });
 
 export function adminEdit(C, req) {
   if (req.action === 'prices') return editPrices(C, req);
   if (req.action === 'videos') return editVideos(C, req);
   if (req.action === 'events') return editEvents(C, req);
+  if (req.action === 'schoolVideos') return editSchoolVideos(C, req);
   if (req.action === 'portfolio') return editPortfolio(C, req);
   throw userError('нет такого действия');
 }
@@ -669,6 +690,46 @@ function editVideos(C, req) {
     if (videos[id] !== keep) { changes.push(`${it.name}: ${videos[id] ? 'ролик заменён' : 'ролик добавлен'}`); videos[id] = keep; }
   }
   return { changes, files: changes.length ? ['videos.json'] : [] };
+}
+
+// Videos of the photo school: one title, up to two players (VK Video, YouTube) per video. The admin
+// sends the whole list in the order wanted; a link left empty keeps what is stored, a dash removes it.
+function editSchoolVideos(C, req) {
+  const old = C['school_videos.json'] || [];
+  const byId = Object.fromEntries(old.map((v) => [v.id, v]));
+  if (!Array.isArray(req.list) || req.list.length > 30) throw userError('список роликов не прочитался, обновите страницу');
+  const used = new Set();
+  const list = req.list.map((v, i) => {
+    const title = String(v.title ?? '').replace(/\s+/g, ' ').trim();
+    if (!title) throw userError(`Ролик ${i + 1}: заполните название`);
+    if (title.length > 100) throw userError(`${title}: название длиннее 100 знаков`);
+    const id = byId[v.id] ? v.id : `sv-${Math.random().toString(36).slice(2, 8)}`;
+    if (used.has(id)) throw userError('два ролика с одним номером, обновите страницу');
+    used.add(id);
+    const prev = byId[id] || {};
+    const pick = (raw, kept, parse, label) => {
+      const t = String(raw ?? '').trim();
+      if (t === '') return kept || '';
+      if (t === '-') return '';
+      const r = parse(t);
+      if (!r) throw userError(`${title}: не похоже на ссылку ${label}`);
+      return r;
+    };
+    const vk = pick(v.vk, prev.vk, (t) => { const u = vkEmbed(t); return u && u.replace(/&hd=2&autoplay=1$/, ''); }, 'VK Видео');
+    const yt = pick(v.yt, prev.yt, ytId, 'YouTube');
+    if (!vk && !yt) throw userError(`${title}: нужна хотя бы одна ссылка, VK Видео или YouTube`);
+    return { id, title, vk, yt };
+  });
+  const changes = [];
+  for (const v of list) {
+    const p = byId[v.id];
+    if (!p) changes.push(`Добавлен ролик: ${v.title}`);
+    else if (JSON.stringify(p) !== JSON.stringify(v)) changes.push(`Изменён ролик: ${v.title}`);
+  }
+  for (const p of old) if (!used.has(p.id)) changes.push(`Удалён ролик: ${p.title}`);
+  if (!changes.length && list.map((v) => v.id).join() !== old.map((v) => v.id).join()) changes.push('Изменён порядок');
+  C['school_videos.json'] = list;
+  return { changes, files: changes.length ? ['school_videos.json'] : [] };
 }
 
 // Places a photo can be uploaded to from the admin: page slots plus one per announcement.

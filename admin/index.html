@@ -95,6 +95,12 @@ h3{font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;c
 @media (max-width:560px){.evc{grid-template-columns:1fr}.evc .f{grid-template-columns:1fr}}
 .vrow input{width:100%;margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:14px}
 .vrow input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.svrow{display:block}
+.svrow input{width:100%;margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:14px;color:var(--ink)}
+.svrow input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.svrow.bad input.bad{border-color:var(--err)}
+.svrow.changed{background:var(--changed)}
+.svrow .sv-state{font-size:12px;color:var(--muted);margin-top:2px;display:block}
 .vstate{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:2px}
 .vstate a{color:inherit}
 .vrow.changed .vstate{color:var(--accent)}
@@ -179,7 +185,11 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <div id="items"></div>
     </section>
     <section id="tab-videos" hidden>
-      <h2>Ролики</h2>
+      <h2>Видео фотошколы</h2>
+      <p class="hint">Ролики внизу страницы «Фотошкола». К одному ролику можно дать две ссылки: на VK Видео и на YouTube. На странице появится переключатель, по умолчанию открывается VK; если он не загружается, сайт предложит переключить плеер. Достаточно одной ссылки. Чтобы убрать ссылку, впишите в её поле «-», чтобы убрать весь ролик, нажмите «убрать ролик».</p>
+      <p><button class="btn" id="svAdd" type="button">+ Добавить ролик</button></p>
+      <div class="card" id="svList"></div>
+      <h2 style="margin-top:44px">Ролики оборудования</h2>
       <p class="hint">Ролик с VK Видео у позиции оборудования. На сайте у неё появится кнопка «Смотреть в работе», ролик откроется поверх каталога. Надёжнее всего код из VK: под роликом «Поделиться» → «Экспортировать» → скопировать код. Обычная ссылка на ролик тоже подойдёт, но некоторые ролики без кода не показываются.</p>
       <div id="videoGroups"></div>
     </section>
@@ -254,9 +264,9 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   function load() {
     return getJson('/_src/manifest.json').then(function (m) {
       manifest = m;
-      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json', 'events.json', 'portfolio.json', 'services.json'].map(function (f) {
+      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json', 'events.json', 'portfolio.json', 'services.json', 'school_videos.json'].map(function (f) {
         return getJson('/_src/content/' + f).then(function (d) { C[f] = d; }, function (e) {
-          if (f === 'videos.json') C[f] = {}; else if (f === 'events.json') C[f] = []; else throw e;  // not published yet
+          if (f === 'videos.json') C[f] = {}; else if (f === 'events.json' || f === 'school_videos.json') C[f] = []; else throw e;  // not published yet
         });
       }).concat(import('/_src/render.mjs?t=' + Date.now()).then(function (m) { site = m; })));
     }).then(function () {
@@ -396,6 +406,65 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
   });
 
+  // ---------- school videos ----------
+  var svDirty = false, svSeq = 0;
+  function svRow(v) {
+    var id = v.id || '', key = id || ('new' + (++svSeq));
+    function st(has) { return has ? 'Ссылка есть · <a href="' + esc(has) + '" target="_blank" rel="noopener">посмотреть</a>. Вставьте новую, чтобы заменить, или «-», чтобы убрать' : 'Ссылки нет'; }
+    return '<div class="row svrow" data-id="' + esc(id) + '" data-key="' + esc(key) + '"><div class="name">' +
+      '<input type="text" class="sv-t" autocomplete="off" placeholder="Название ролика" value="' + esc(v.title || '') + '">' +
+      '<input type="text" class="sv-vk" inputmode="url" autocomplete="off" spellcheck="false" placeholder="' + (v.vk ? 'Новая ссылка или код VK Видео' : 'Ссылка или код VK Видео') + '">' +
+      '<span class="sv-state sv-vks">VK Видео: ' + (v.vk ? st(v.vk) : 'ссылки нет') + '</span>' +
+      '<input type="text" class="sv-yt" inputmode="url" autocomplete="off" spellcheck="false" placeholder="' + (v.yt ? 'Новая ссылка YouTube' : 'Ссылка YouTube') + '">' +
+      '<span class="sv-state sv-yts">YouTube: ' + (v.yt ? st('https://www.youtube.com/watch?v=' + v.yt) : 'ссылки нет') + '</span>' +
+      '</div><button class="link" type="button" data-svdel>убрать ролик</button></div>';
+  }
+  function renderSchoolVideos() {
+    var L = C['school_videos.json'] || [];
+    $('svList').innerHTML = L.map(svRow).join('') || '<p class="hint" style="padding:12px 16px;margin:0">Роликов пока нет.</p>';
+    svDirty = false;
+  }
+  function svRows() { return [].slice.call(document.querySelectorAll('#svList .svrow')); }
+  function svCheck() {
+    var bad = 0;
+    svRows().forEach(function (r) {
+      var t = r.querySelector('.sv-t').value.trim(), vk = r.querySelector('.sv-vk').value.trim(), yt = r.querySelector('.sv-yt').value.trim();
+      var old = (C['school_videos.json'] || []).filter(function (x) { return x.id === r.dataset.id; })[0] || {};
+      var vkOk = !vk || vk === '-' || !!site.vkEmbed(vk), ytOk = !yt || yt === '-' || !!site.ytId(yt);
+      var hasVk = vk === '-' ? false : (vk ? true : !!old.vk), hasYt = yt === '-' ? false : (yt ? true : !!old.yt);
+      var ok = !!t && vkOk && ytOk && (hasVk || hasYt);
+      r.classList.toggle('bad', !ok);
+      r.querySelector('.sv-vk').classList.toggle('bad', !vkOk);
+      r.querySelector('.sv-yt').classList.toggle('bad', !ytOk);
+      if (!ok) bad++;
+    });
+    return bad;
+  }
+  $('svAdd').addEventListener('click', function () {
+    var first = !svRows().length;
+    if (first) $('svList').innerHTML = '';
+    $('svList').insertAdjacentHTML('beforeend', svRow({}));
+    svRows().pop().classList.add('changed');
+    svDirty = true; updateBar();
+  });
+  document.addEventListener('input', function (ev) {
+    var row = ev.target.closest && ev.target.closest('.svrow');
+    if (!row) return;
+    row.classList.add('changed'); svDirty = true; updateBar();
+  });
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-svdel]');
+    if (!b) return;
+    b.closest('.svrow').remove(); svDirty = true;
+    if (!svRows().length) $('svList').innerHTML = '<p class="hint" style="padding:12px 16px;margin:0">Роликов пока нет.</p>';
+    updateBar();
+  });
+  function svPayload() {
+    return svRows().map(function (r) {
+      return { id: r.dataset.id, title: r.querySelector('.sv-t').value, vk: r.querySelector('.sv-vk').value, yt: r.querySelector('.sv-yt').value };
+    });
+  }
+
   // ---------- videos ----------
   function renderVideos() {
     var V = C['videos.json'] || {};
@@ -408,14 +477,15 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       }).join('') + '</div>';
     }).join('');
     vEdits = {};
+    renderSchoolVideos();
     updateBar();
   }
   function vBad() { return Object.keys(vEdits).filter(function (k) { return vEdits[k] && !site.vkEmbed(vEdits[k]); }).length; }
   function updateVideoBar() {
-    var n = Object.keys(vEdits).length, bad = vBad();
+    var n = Object.keys(vEdits).length + (svDirty ? 1 : 0), bad = vBad(), svBad = svDirty ? svCheck() : 0;
     $('bar').classList.toggle('on', n > 0);
-    $('barWhat').textContent = bad ? 'Одна из ссылок не с VK Видео, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние ролики';
-    $('publish').disabled = bad > 0 || busy;
+    $('barWhat').textContent = svBad ? 'В видео фотошколы что-то не заполнено или ссылка не подходит, исправьте' : bad ? 'Одна из ссылок не с VK Видео, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние ролики';
+    $('publish').disabled = bad > 0 || svBad > 0 || busy;
   }
   document.addEventListener('input', function (ev) {
     var row = ev.target.closest && ev.target.closest('.vrow');
@@ -437,12 +507,17 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     updateBar();
   });
   function publishVideos() {
-    if (busy || vBad()) return;
+    if (busy || vBad() || (svDirty && svCheck())) return;
     busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
-    call({ action: 'videos', videos: vEdits }).then(function (d) {
+    var changes = [];
+    (Object.keys(vEdits).length ? call({ action: 'videos', videos: vEdits }) : Promise.resolve({ changes: [] })).then(function (d) {
+      changes = changes.concat(d.changes || []);
+      return svDirty ? call({ action: 'schoolVideos', list: svPayload() }) : { changes: [] };
+    }).then(function (d) {
+      changes = changes.concat(d.changes || []);
       return load().then(function () {
         renderVideos();
-        var list = (d.changes || []).join('\n');
+        var list = changes.join('\n');
         show($('msg'), 'ok', list ? 'Опубликовано:\n' + list : 'Всё и так совпадало с сайтом, ничего не поменялось.');
         window.scrollTo(0, 0);
       });

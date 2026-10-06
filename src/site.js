@@ -18,6 +18,37 @@
     vd.querySelector('.vd-x').addEventListener('click',function(){vd.close()});
     vd.addEventListener('click',function(e){if(!e.target.closest('.vd-frame')&&!e.target.closest('.vd-title'))vd.close()});
   }
+  // photo school videos: VK Video by default, YouTube on the switch. The player loads when the video comes
+  // into view. A page that failed to open (VK is blocked in some places) still fires «load» and the
+  // address is cross-origin, so a failure can't be detected: the offer to switch is always shown.
+  var NAME={vk:'VK Видео',yt:'YouTube'},OTHER={vk:'yt',yt:'vk'};
+  function pref(){try{return localStorage.getItem('svKind')}catch(e){return null}}
+  function setPref(k){try{localStorage.setItem('svKind',k)}catch(e){}}
+  [].slice.call(document.querySelectorAll('.sv')).forEach(function(box){
+    var frame=box.querySelector('.sv-frame'),hint=box.querySelector('.sv-hint'),tabs=box.querySelectorAll('.sv-tab');
+    var kinds=['vk','yt'].filter(function(k){return box.dataset[k]});
+    function play(k){
+      var o=OTHER[k];
+      [].forEach.call(tabs,function(t){t.setAttribute('aria-pressed',String(t.dataset.k===k))});
+      var f=document.createElement('iframe');
+      f.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';f.allowFullscreen=true;f.title=box.dataset.title+' — '+NAME[k];
+      frame.innerHTML='';frame.appendChild(f);f.src=box.dataset[k];
+      if(box.dataset[o]){
+        hint.innerHTML='';
+        hint.appendChild(document.createTextNode('Не открывается или не грузится? '));
+        var b=document.createElement('button');b.type='button';b.textContent='Переключить на '+NAME[o];
+        b.addEventListener('click',function(){setPref(o);play(o)});
+        hint.appendChild(b);hint.hidden=false;
+      }
+    }
+    [].forEach.call(tabs,function(t){t.addEventListener('click',function(){setPref(t.dataset.k);play(t.dataset.k)})});
+    var first=kinds.indexOf(pref())>=0?pref():kinds[0];
+    [].forEach.call(tabs,function(t){t.setAttribute('aria-pressed',String(t.dataset.k===first))});
+    if('IntersectionObserver' in window){
+      var io=new IntersectionObserver(function(es){if(es[0].isIntersecting){io.disconnect();play(first)}},{rootMargin:'300px'});
+      io.observe(box);
+    }else play(first);
+  });
   // photo school announcements: upcoming first (soonest on top), then past ones marked «прошло»
   var evl=document.querySelector('.ev-list');
   if(evl){

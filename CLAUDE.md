@@ -17,7 +17,7 @@ Alexey edits them in `/admin/` (any device). The page reads `/_src/…` and post
 function `tomsonadmin` (`cloud/admin/index.js`, folder `tomson`, public, service account
 `deploytomson`, env `ADMIN_PASSWORD` — Alexey's own since 2026-09-25, never ask for it; its form in the
 console shows it in plain text: no screenshots below «Точка входа»). It writes admin-owned content
-(`render.mjs` → `ADMIN_FILES`: prices.json, videos.json) or `photos/<slot>.jpg`, re-renders pages
+(`render.mjs` → `ADMIN_FILES`: prices.json, videos.json, events.json, portfolio.json, school_videos.json) or `photos/<slot>.jpg`, re-renders pages
 with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<time>/`. So:
 - ALWAYS `python3 deploy.py` (pull → build → push), never upload `dist/` another way:
   a stale local `prices.json` would overwrite his prices. After a pull, commit the pulled files
