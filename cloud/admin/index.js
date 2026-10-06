@@ -55,7 +55,7 @@ function bucket(token) {
   return {
     getJson: async (key) => (await call('GET', key)).json(),
     getText: async (key) => (await call('GET', key)).text(),
-    put: (key, body, type) => call('PUT', key, { body, headers: { 'Content-Type': type, 'Cache-Control': NO_CACHE } }),
+    put: (key, body, type, cache = NO_CACHE) => call('PUT', key, { body, headers: { 'Content-Type': type, 'Cache-Control': cache } }),
     // keeps the previous version of a file before it is overwritten
     archive: (key, stamp) => call('PUT', `_src/archive/${stamp}/${key}`, {
       headers: { 'x-amz-copy-source': `/${BUCKET}/${key.split('/').map(encodeURIComponent).join('/')}` },
@@ -80,8 +80,9 @@ async function loadContent(b) {
 }
 
 async function publishPages(b, C, manifest, mod) {
-  const { files } = (mod || (await siteModule(b))).render(C, manifest.versions); // throws on a broken price key: nothing is uploaded
+  const { files, other } = (mod || (await siteModule(b))).render(C, manifest.versions); // throws on a broken price key: nothing is uploaded
   await Promise.all(files.map((f) => b.put(f.path, f.html, 'text/html; charset=utf-8')));
+  await Promise.all((other || []).map((o) => b.put(o.path, o.body, o.type))); // sitemap.xml (since 2026-10-06)
   return files.map((f) => f.path);
 }
 
@@ -117,6 +118,25 @@ async function savePhoto(b, req, stamp) {
   const pages = await publishPages(b, C, manifest, mod);
   await b.put('_src/manifest.json', JSON.stringify(manifest, null, 2) + '\n', 'application/json');
   return { changes: [`Фото ${slot} заменено`], pages, version: manifest.versions[slot] };
+}
+
+// Portfolio photo (version of 2026-10-06): the admin page sends the 1600 px photo and its 700 px
+// thumbnail, already shrunk (the canvas drops EXIF). The file name is the content hash, so the same
+// photo sent twice lands on the same file and a cached URL never shows a different picture. The
+// series list itself is saved afterwards by the 'portfolio' edit (render.mjs → editPortfolio).
+const MAX_THUMB = 600 * 1024;
+const YEAR = 'public, max-age=31536000, immutable';
+async function savePortfolioFile(b, req) {
+  const series = String(req.series || '');
+  if (!/^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$/.test(series)) throw new UserError('неверный номер серии');
+  const full = Buffer.from(String(req.full || ''), 'base64'), thumb = Buffer.from(String(req.thumb || ''), 'base64');
+  const isJpeg = (j) => j.length > 1000 && j[0] === 0xff && j[1] === 0xd8 && j[2] === 0xff;
+  if (!isJpeg(full) || !isJpeg(thumb)) throw new UserError('файл не похож на JPEG');
+  if (full.length > MAX_PHOTO || thumb.length > MAX_THUMB) throw new UserError('фото слишком большое после сжатия');
+  const f = crypto.createHash('md5').update(full).digest('hex').slice(0, 10);
+  await b.put(`photos/p/${series}/${f}.jpg`, full, 'image/jpeg', YEAR);
+  await b.put(`photos/p/${series}/t/${f}.jpg`, thumb, 'image/jpeg', YEAR);
+  return { f };
 }
 
 // ---------- http ----------
@@ -155,6 +175,7 @@ module.exports.handler = async (event, context) => {
     // login also proves the function can reach the bucket, so a broken setup shows up at once
     if (req.action === 'check') { await b.getJson('_src/manifest.json'); return reply(200, { ok: true }); }
     if (req.action === 'photo') return reply(200, { ok: true, ...(await savePhoto(b, req, stamp)) });
+    if (req.action === 'pfile') return reply(200, { ok: true, ...(await savePortfolioFile(b, req)) });
     return reply(200, { ok: true, ...(await saveEdit(b, req, stamp)) });
   } catch (e) {
     if (e.user) return reply(400, { error: e.message });

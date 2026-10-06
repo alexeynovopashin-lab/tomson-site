@@ -101,6 +101,23 @@ h3{font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;c
 .vrow.bad .vstate{color:var(--err)}
 .vrow.bad input{border-color:var(--err)}
 .ph .small-btn{margin:8px 10px 10px;align-self:flex-start}
+.pfc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.pfc.dirty{border-color:var(--accent)}
+.pfc .f{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pfc label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.pfc input[type=text]{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:15px;color:var(--ink)}
+.pf-places{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0}
+.pf-places label{flex-direction:row;align-items:center;gap:6px;font-size:14px;color:var(--ink)}
+.pf-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px}
+.pf-ph{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--paper-2)}
+.pf-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.pf-ph.new{outline:2px solid var(--accent);outline-offset:-2px}
+.pf-ph:first-child::after{content:"обложка";position:absolute;left:4px;bottom:4px;font-size:10px;font-weight:700;background:var(--ink);color:var(--paper);border-radius:999px;padding:1px 6px}
+.pf-ph button{position:absolute;top:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.6);color:#fff;cursor:pointer;font-size:14px;line-height:1;padding:0}
+.pf-ph [data-pfdel]{right:4px}.pf-ph [data-pffirst]{left:4px}
+.pfc .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.pfc .acts .n{color:var(--muted);font-size:13px;margin-right:auto}
+@media (max-width:560px){.pfc .f{grid-template-columns:1fr}}
 .login{max-width:380px;margin:12vh auto 0;padding:0 16px}
 .login h1{font:600 40px/1 var(--serif);margin:0 0 6px}
 .login form{display:flex;gap:8px;margin-top:18px}
@@ -140,6 +157,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <button role="tab" aria-selected="false" data-tab="photos">Фото</button>
       <button role="tab" aria-selected="false" data-tab="videos">Ролики</button>
       <button role="tab" aria-selected="false" data-tab="events">Афиша</button>
+      <button role="tab" aria-selected="false" data-tab="portfolio">Портфолио</button>
     </div>
     <a class="link" href="/" target="_blank" rel="noopener">Открыть сайт</a>
     <button class="link" id="logout">Выйти</button>
@@ -165,6 +183,13 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <p><button class="btn" id="evAdd" type="button">+ Добавить мероприятие</button></p>
       <div id="evList"></div>
       <input type="file" id="evFile" accept="image/*" hidden>
+    </section>
+    <section id="tab-portfolio" hidden>
+      <h2>Портфолио</h2>
+      <p class="hint">Серии фотографий для страницы фотографа и страниц услуг. Создайте серию, добавьте фото (можно сразу много, прямо с телефона — они уменьшатся до размера сайта, данные о месте съёмки удалятся) и отметьте, где её показывать. Первое фото серии — обложка. Страница услуги появляется в поиске Яндекса и Google, как только на ней есть хотя бы одна серия.</p>
+      <p><button class="btn" id="pfAdd" type="button">+ Новая серия</button></p>
+      <div id="pfList"></div>
+      <input type="file" id="pfFile" accept="image/*" multiple hidden>
     </section>
     <section id="tab-photos" hidden>
       <h2>Фото</h2>
@@ -223,7 +248,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   function load() {
     return getJson('/_src/manifest.json').then(function (m) {
       manifest = m;
-      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json', 'events.json'].map(function (f) {
+      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json', 'events.json', 'portfolio.json', 'services.json'].map(function (f) {
         return getJson('/_src/content/' + f).then(function (d) { C[f] = d; }, function (e) {
           if (f === 'videos.json') C[f] = {}; else if (f === 'events.json') C[f] = []; else throw e;  // not published yet
         });
@@ -253,7 +278,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     show($('loginMsg'), 'err', text || '');
     $('pw').focus();
   }
-  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); renderVideos(); renderEvents(); }
+  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); renderVideos(); renderEvents(); renderPortfolio(); }
   function tab() { return document.querySelector('.tabs [aria-selected=true]').dataset.tab; }
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
@@ -267,7 +292,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   document.querySelectorAll('.tabs button').forEach(function (b) {
     b.addEventListener('click', function () {
       document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
-      ['prices', 'photos', 'videos', 'events'].forEach(function (t) { $('tab-' + t).hidden = b.dataset.tab !== t; });
+      ['prices', 'photos', 'videos', 'events', 'portfolio'].forEach(function (t) { $('tab-' + t).hidden = b.dataset.tab !== t; });
       show($('msg'), '', '');
       updateBar();
     });
@@ -338,16 +363,18 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   function updateBar() {
     if (tab() === 'videos') return updateVideoBar();
     if (tab() === 'events') return updateEventBar();
+    if (tab() === 'portfolio') return updatePfBar();
     if (tab() === 'photos') { $('bar').classList.remove('on'); return; }
     var n = edits ? count() : 0;
     $('bar').classList.toggle('on', (n > 0 || (edits && edits.bad > 0)) && tab() === 'prices');
     $('barWhat').textContent = edits && edits.bad ? 'В поле не число, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние цены';
     $('publish').disabled = !!(edits && edits.bad) || busy;
   }
-  $('undo').addEventListener('click', function () { if (tab() === 'videos') renderVideos(); else if (tab() === 'events') renderEvents(); else renderPrices(); show($('msg'), '', ''); });
+  $('undo').addEventListener('click', function () { if (tab() === 'videos') renderVideos(); else if (tab() === 'events') renderEvents(); else if (tab() === 'portfolio') renderPortfolio(); else renderPrices(); show($('msg'), '', ''); });
   $('publish').addEventListener('click', function () {
     if (tab() === 'videos') return publishVideos();
     if (tab() === 'events') return publishEvents();
+    if (tab() === 'portfolio') return publishPortfolio();
     if (busy || edits.bad) return;
     busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
     call({ action: 'prices', halls: edits.halls, items: edits.items }).then(function (d) {
@@ -510,6 +537,147 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Афиша не опубликована.');
       show($('msg'), 'err', (done.length ? 'Опубликовано частично:\n' + done.join('\n') + '\n\n' : '') + 'Не опубликовано: ' + e.message); window.scrollTo(0, 0);
     }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
+  }
+
+  // ---------- portfolio ----------
+  // pf = working copy of portfolio.json; new photos carry their shrunk blobs until published
+  var pf = [], pfDirty = false, pfFor = null, pfBusyMsg = '';
+  function pfPlaces() {
+    return [['fotograf', 'Страница фотографа']].concat(((C['services.json'] || {}).list || []).map(function (k) { return [k.slug, k.name]; }));
+  }
+  function pfThumb(s, p) { return p.url || '/photos/p/' + s.id + '/t/' + p.f + '.jpg'; }
+  function renderPortfolio() {
+    pf = JSON.parse(JSON.stringify(C['portfolio.json'] || []));
+    pfDirty = false; drawPortfolio();
+  }
+  function drawPortfolio() {
+    $('pfList').innerHTML = pf.length ? pf.map(function (s, si) {
+      return '<div class="pfc' + (s.dirty ? ' dirty' : '') + '" data-si="' + si + '">' +
+        '<div class="f"><label>Название серии<input type="text" name="title" value="' + esc(s.title || '') + '" placeholder="Семья Ивановых"></label>' +
+        '<label>Подпись к фото (видят поисковики)<input type="text" name="alt" value="' + esc(s.alt || '') + '" placeholder="Семейная фотосессия в студии"></label></div>' +
+        '<div class="pf-places">' + pfPlaces().map(function (pl) {
+          return '<label><input type="checkbox" value="' + esc(pl[0]) + '"' + (s.places.indexOf(pl[0]) >= 0 ? ' checked' : '') + '> ' + esc(pl[1]) + '</label>';
+        }).join('') + '</div>' +
+        '<div class="pf-photos">' + s.photos.map(function (p, pi) {
+          return '<div class="pf-ph' + (p.blob ? ' new' : '') + '" data-pi="' + pi + '"><img loading="lazy" src="' + esc(pfThumb(s, p)) + '" alt="">' +
+            (pi ? '<button type="button" data-pffirst title="Сделать обложкой">★</button>' : '') + '<button type="button" data-pfdel title="Убрать фото">×</button></div>';
+        }).join('') + '</div>' +
+        '<div class="acts"><span class="n">' + s.photos.length + ' фото</span><button class="small-btn" type="button" data-pfphotos>+ Фото</button>' +
+        '<button class="small-btn" type="button" data-pfmove="-1">↑</button><button class="small-btn" type="button" data-pfmove="1">↓</button>' +
+        '<button class="small-btn" type="button" data-pfdelser>Убрать серию</button></div></div>';
+    }).join('') : '<p class="hint">Серий пока нет.</p>';
+    updateBar();
+  }
+  function pfMark(si) { if (si != null && pf[si]) pf[si].dirty = true; pfDirty = true; }
+  function updatePfBar() {
+    var n = 0; pf.forEach(function (s) { s.photos.forEach(function (p) { if (p.blob) n++; }); });
+    $('bar').classList.toggle('on', pfDirty || !!pfBusyMsg);
+    $('barWhat').textContent = pfBusyMsg || (n ? n + ' ' + plural(n, 'новое фото', 'новых фото', 'новых фото') + ' ждут публикации' : 'Есть изменения, на сайте пока прежнее портфолио');
+    $('publish').disabled = busy;
+  }
+  $('pfAdd').addEventListener('click', function () {
+    pf.unshift({ id: '', title: '', alt: '', places: [], photos: [], dirty: true, fresh: true });
+    pfDirty = true; drawPortfolio();
+    $('pfList').querySelector('input[name=title]').focus();
+  });
+  $('pfList').addEventListener('input', function (ev) {
+    var card = ev.target.closest('.pfc'); if (!card) return;
+    var s = pf[+card.dataset.si];
+    if (ev.target.name === 'title' || ev.target.name === 'alt') s[ev.target.name] = ev.target.value;
+    if (ev.target.type === 'checkbox') s.places = [].slice.call(card.querySelectorAll('.pf-places input:checked')).map(function (x) { return x.value; });
+    card.classList.add('dirty'); pfMark(+card.dataset.si); updateBar();
+  });
+  $('pfList').addEventListener('click', function (ev) {
+    var card = ev.target.closest('.pfc'); if (!card) return;
+    var si = +card.dataset.si, s = pf[si], ph = ev.target.closest('.pf-ph'), pi = ph ? +ph.dataset.pi : -1;
+    if (ev.target.closest('[data-pfdel]')) { s.photos.splice(pi, 1); pfMark(si); drawPortfolio(); }
+    else if (ev.target.closest('[data-pffirst]')) { s.photos.unshift(s.photos.splice(pi, 1)[0]); pfMark(si); drawPortfolio(); }
+    else if (ev.target.closest('[data-pfphotos]')) { pfFor = s; $('pfFile').value = ''; $('pfFile').click(); }
+    else if (ev.target.closest('[data-pfmove]')) {
+      var to = si + +ev.target.closest('[data-pfmove]').dataset.pfmove;
+      if (to >= 0 && to < pf.length) { pf.splice(to, 0, pf.splice(si, 1)[0]); pfMark(null); drawPortfolio(); }
+    } else if (ev.target.closest('[data-pfdelser]')) {
+      if (confirm('Убрать серию «' + (s.title || 'без названия') + '» с сайта? Сами фото останутся в хранилище.')) { pf.splice(si, 1); pfMark(null); drawPortfolio(); }
+    }
+  });
+  $('pfFile').addEventListener('change', function () {
+    var files = [].slice.call($('pfFile').files), s = pfFor, bad = 0, i = 0;
+    if (!files.length || !s) return;
+    busy = true;
+    files.reduce(function (p, f) {
+      return p.then(function () {
+        pfBusyMsg = 'Готовлю фото ' + (++i) + ' из ' + files.length + '…'; updateBar();
+        return shrink2(f).then(function (r) { s.photos.push(r); }, function () { bad++; });
+      });
+    }, Promise.resolve()).then(function () {
+      busy = false; pfBusyMsg = ''; s.dirty = true; pfDirty = true; drawPortfolio();
+      if (bad) { show($('msg'), 'err', bad + ' ' + plural(bad, 'файл не открылся', 'файла не открылись', 'файлов не открылись') + '. Подойдут JPEG, PNG или снимки с телефона.'); window.scrollTo(0, 0); }
+    });
+  });
+  // one decode, two sizes: 1600 px for the full view, 700 px for the gallery grid
+  function shrink2(file) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var sw = img.naturalWidth, sh = img.naturalHeight;
+        function at(side, q) {
+          var k = Math.min(1, side / Math.max(sw, sh)), cv = document.createElement('canvas');
+          cv.width = Math.round(sw * k); cv.height = Math.round(sh * k);
+          var cx = cv.getContext('2d'); cx.imageSmoothingQuality = 'high'; cx.drawImage(img, 0, 0, cv.width, cv.height);
+          return new Promise(function (ok, no) { cv.toBlob(function (b) { b ? ok(b) : no(new Error('toBlob')); }, 'image/jpeg', q); });
+        }
+        Promise.all([at(1600, 0.82), at(700, 0.8)]).then(function (b) {
+          URL.revokeObjectURL(url);
+          resolve({ blob: b[0], thumb: b[1], r: ratioOf(sw, sh), url: URL.createObjectURL(b[1]) });
+        }, reject);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  function ratioOf(w, h) {
+    var std = [[2, 3], [3, 2], [4, 5], [5, 4], [3, 4], [4, 3], [1, 1], [16, 9], [9, 16]];
+    for (var i = 0; i < std.length; i++) if (Math.abs(w / h - std[i][0] / std[i][1]) < 0.01) return std[i][0] + '/' + std[i][1];
+    return (Math.round(w / h * 1000) / 1000) + '/1';
+  }
+  var TR = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'j', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'ju', я: 'ja' };
+  function newId(title) {
+    var base = String(title).toLowerCase().split('').map(function (c) { return TR[c] != null ? TR[c] : c; }).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'seriya';
+    return base + '-' + Math.random().toString(36).slice(2, 6);
+  }
+  function publishPortfolio() {
+    if (busy) return;
+    var empty = pf.filter(function (s) { return !String(s.title).trim(); })[0];
+    if (empty) { show($('msg'), 'err', 'У серии нет названия — впишите его.'); window.scrollTo(0, 0); return; }
+    pf.forEach(function (s) { if (!s.id) s.id = newId(s.title); });
+    var jobs = [];
+    pf.forEach(function (s) { s.photos.forEach(function (p) { if (p.blob) jobs.push({ s: s, p: p }); }); });
+    busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
+    var sent = 0;
+    jobs.reduce(function (pr, j) {
+      return pr.then(function () {
+        pfBusyMsg = 'Загружаю фото ' + (sent + 1) + ' из ' + jobs.length + '…'; updateBar();
+        return Promise.all([base64(j.p.blob), base64(j.p.thumb)]).then(function (b) {
+          return call({ action: 'pfile', series: j.s.id, full: b[0], thumb: b[1] });
+        }).then(function (d) { j.p.f = d.f; delete j.p.blob; delete j.p.thumb; sent++; });
+      });
+    }, Promise.resolve()).then(function () {
+      pfBusyMsg = 'Сохраняю серии и обновляю страницы…'; updateBar();
+      return call({ action: 'portfolio', series: pf.map(function (s) {
+        return { id: s.id, title: s.title, alt: s.alt, places: s.places, photos: s.photos.map(function (p) { return { f: p.f, r: p.r }; }) };
+      }) });
+    }).then(function (d) {
+      return load().then(function () {
+        renderPortfolio();
+        var list = (d.changes || []).join('\n');
+        show($('msg'), 'ok', list ? 'Опубликовано:\n' + list : 'Всё и так совпадало с сайтом, ничего не поменялось.');
+        window.scrollTo(0, 0);
+      });
+    }).catch(function (e) {
+      // photos already sent keep their file name: «Опубликовать» again continues from where it stopped
+      if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Портфолио не опубликовано, загруженные фото сохранятся при следующей публикации.');
+      show($('msg'), 'err', 'Не опубликовано' + (sent ? ' (фото загружено: ' + sent + ' из ' + jobs.length + ')' : '') + ': ' + e.message + '\nНажмите «Опубликовать» ещё раз — продолжится с того же места.'); window.scrollTo(0, 0);
+    }).then(function () { busy = false; pfBusyMsg = ''; $('publish').textContent = 'Опубликовать'; updateBar(); });
   }
 
   // ---------- photos ----------

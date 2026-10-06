@@ -44,12 +44,15 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
 - `src/` — `style.css`, `site.js`, self-hosted fonts (Playfair Display, Manrope).
 - Photographer (step 6c): `/fotograf/` landing (`content/fotograf.json`), photo services
   `/uslugi/<slug>/` from ONE list `content/services.json` (also shown on the studio «Услуги» page).
-  A service with `ready: false` is `noindex` and out of the sitemap — flip it once its portfolio is in.
-  Portfolio series = `content/portfolio.json` + `photos/p/<id>/` (hashed, `t/` = thumbnails), added
-  from a Mac folder with `python3 tools/portfolio.py <folder> <id> "<Title>" "<alt>"` (strips EXIF/GPS).
+  A service page with no portfolio series is `noindex` and out of the sitemap; it opens by itself
+  once a series is placed on it. Portfolio = `content/portfolio.json` (ADMIN-OWNED: list of series,
+  each with `places`: 'fotograf' and/or service slugs) + `photos/p/<id>/` (hashed, `t/` = thumbnails).
+  Alexey edits it in the admin tab «Портфолио» (function action `pfile` uploads each photo, then the
+  `portfolio` edit saves the list); from a Mac folder: `deploy.py --pull-only`, then
+  `python3 tools/portfolio.py <folder> <id> "<Title>" "<alt>" --place=…` (strips EXIF/GPS).
+  `sitemap.xml` comes from render (`other`), so the function rewrites it too.
 - SEO / search (step 6b): `site.json` → `siteUrl` (main domain) drives canonical, og: tags, the
-  LocalBusiness card on home, `robots.txt` and `sitemap.xml` (both made in `build.mjs`, not in
-  `render.mjs`: the function uploads render output as HTML). `src/root/` = files copied to the site
+  LocalBusiness card on home, `robots.txt` (`build.mjs`) and `sitemap.xml` (`render.mjs` → `other`). `src/root/` = files copied to the site
   root (Yandex/Google ownership, from Vigbo). Search page `/poisk/` (texts `site.json` → `search`):
   `site.js` fetches the listed pages and searches their text in the browser — no index to keep fresh.
 - `build.mjs` — `node build.mjs` → `dist/` (static, root-absolute paths) + `dist/_src/` for the function.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Add a folder of photos to the site as a portfolio series (Alexey's «папки на Mac»).
 
-    python3 tools/portfolio.py <folder> <series-id> "<Title>" "<alt base>" [--replace]
+    python3 tools/portfolio.py <folder> <series-id> "<Title>" "<alt base>" [--place=<p>,<p>] [--replace]
 
 <series-id> is latin snake/kebab (`lesha-katja`), the alt base reads as «Свадьба Лёши и Кати»
 (each photo gets «…, фото N»). Photos are taken in name order, turned upright by EXIF, shrunk to
@@ -9,11 +9,12 @@
 (camera EXIF can carry GPS — the repo is public). File names are content hashes, so a URL never
 changes meaning and photos can be cached for a year.
 
-Writes photos/p/<id>/<hash>.jpg, photos/p/<id>/t/<hash>.jpg and the series in content/portfolio.json.
-Then: link the series from a service (content/services.json → series) or the landing
-(content/fotograf.json → series), `node build.mjs`, and deploy with `python3 deploy.py`.
+Places: `fotograf` (the landing) and/or service slugs from content/services.json, e.g.
+--place=fotograf,semejnyj-portret. Alexey can change places later in the admin tab «Портфолио».
+Writes photos/p/<id>/<hash>.jpg, photos/p/<id>/t/<hash>.jpg and the series in content/portfolio.json
+(an admin-owned file: run `python3 deploy.py --pull-only` BEFORE this, commit, then deploy).
 """
-import hashlib, io, json, os, sys
+import hashlib, io, json, os, re, sys
 from math import gcd
 from PIL import Image, ImageOps
 
@@ -45,11 +46,16 @@ def main():
     if len(args) != 4:
         sys.exit(__doc__)
     folder, sid, title, alt = args
-    if not sid.replace("-", "").replace("_", "").isalnum() or not sid.isascii():
-        sys.exit("series-id: latin letters, digits, - or _")
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,58}[a-z0-9]", sid):  # same rule as the admin (seriesIdOk)
+        sys.exit("series-id: small latin letters, digits and -, e.g. semja-ivanovyh")
+    places = [p for a in sys.argv if a.startswith("--place=") for p in a[8:].split(",") if p]
+    known = {"fotograf"} | {k["slug"] for k in json.load(open(os.path.join(ROOT, "content", "services.json"), encoding="utf-8"))["list"]}
+    if set(places) - known:
+        sys.exit(f"unknown place: {sorted(set(places) - known)}; known: {sorted(known)}")
     pf = os.path.join(ROOT, "content", "portfolio.json")
-    data = json.load(open(pf, encoding="utf-8")) if os.path.exists(pf) else {}
-    if sid in data and "--replace" not in sys.argv:
+    data = json.load(open(pf, encoding="utf-8")) if os.path.exists(pf) else []
+    old = next((x for x in data if x["id"] == sid), None)
+    if old and "--replace" not in sys.argv:
         sys.exit(f"series {sid} exists; add --replace to rebuild it")
     names = sorted(n for n in os.listdir(folder) if n.lower().endswith(EXT))
     if not names:
@@ -64,8 +70,9 @@ def main():
         open(os.path.join(out, h + ".jpg"), "wb").write(full)
         open(os.path.join(out, "t", h + ".jpg"), "wb").write(shrink(img, THUMB))
         items.append({"f": h, "r": ratio(*img.size)})
-    data[sid] = {"title": title, "alt": alt, "photos": items}
-    json.dump(data, open(pf, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    series = {"id": sid, "title": title, "alt": alt, "places": places or (old["places"] if old else []), "photos": items}
+    data = [series if x is old else x for x in data] if old else data + [series]
+    json.dump(data, open(pf, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     open(pf, "a").write("\n")
     kb = sum(os.path.getsize(os.path.join(dp, f)) for dp, _, fs in os.walk(out) for f in fs) // 1024
     print(f"{sid}: {len(items)} photos, {kb} KB in photos/p/{sid}/")
