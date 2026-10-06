@@ -19,7 +19,7 @@ for (const slot of Object.keys(C['photos.json'])) {
   versions[slot] = createHash('md5').update(readFileSync(join(root, 'photos', `${slot}.jpg`))).digest('hex').slice(0, 8);
 }
 
-const { files, unused } = render(C, versions);
+const { files, unused, other } = render(C, versions);
 
 const out = (path, data) => {
   mkdirSync(dirname(join(dist, path)), { recursive: true });
@@ -33,6 +33,13 @@ cpSync(join(root, 'photos'), join(dist, 'photos'), { recursive: true });
 for (const f of ['style.css', 'site.js']) cpSync(join(root, 'src', f), join(dist, f));
 for (const { path, html } of files) out(path, html);
 cpSync(join(root, 'admin/index.html'), join(dist, 'admin/index.html'));
+// files that must sit at the site root: Yandex Webmaster / Google Search Console ownership (copied from Vigbo)
+cpSync(join(root, 'src/root'), dist, { recursive: true });
+// robots.txt: built here, not in render.mjs (it never changes with content); sitemap.xml comes from render
+// (render → other), so the admin function rewrites it when a service page opens to search
+const siteUrl = C['site.json'].siteUrl;
+out('robots.txt', `User-agent: *\nDisallow: /admin/\nDisallow: /_src/\nDisallow: /poisk/\n${siteUrl ? `\nSitemap: ${siteUrl}/sitemap.xml\n` : ''}`);
+for (const o of other || []) out(o.path, o.body);
 for (const [f, data] of Object.entries(C)) out(`_src/content/${f}`, JSON.stringify(data, null, 2) + '\n');
 out('_src/manifest.json', JSON.stringify({ content: Object.keys(C), adminFiles: ADMIN_FILES, versions }, null, 2) + '\n');
 cpSync(join(root, 'src/render.mjs'), join(dist, '_src/render.mjs'));

@@ -17,6 +17,7 @@ const fromPrice = (h) => Math.min(...h.tiers.map((t) => t.price));
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const PAGE_FILES = Object.keys(C).filter((f) => f.startsWith('zal-') || ['oborudovanie.json', 'pravila_i_cena.json', 'kak-najti.json', 'fotosfera.json', 'sertifikaty.json', 'raspisanie.json'].includes(f));
 const ported = new Set(PAGE_FILES.map((f) => f.replace('.json', '')));
+if (C['fotograf.json']) ported.add('fotograf');
 const hallUrl = (h) => (ported.has(h.pageSlug) ? `/${h.pageSlug}/` : `${site.oldSite}/${h.pageSlug}`);
 const slugUrl = (slug) => (ported.has(slug) ? `/${slug}/` : `${site.oldSite}/${slug}`);
 const navUrl = (n) => (n.href ? n.href : slugUrl(n.slug));
@@ -68,7 +69,8 @@ function quickStrip() {
     .map((n) => `<a href="${esc(navUrl(n))}">${esc(n.label)}</a>`);
   const chans = (site.channels || []).filter((ch) => ch.href && CHANNEL_ICONS[ch.id])
     .map((ch) => `<a class="q-ic" href="${esc(ch.href)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(ch.label)} (откроется в новой вкладке)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${CHANNEL_ICONS[ch.id]}</svg></a>`);
-  const all = pages.concat(chans);
+  const find = SEARCH.title ? [`<a class="q-ic" href="${SEARCH_URL}" aria-label="${esc(SEARCH.title)}">${SEARCH_ICON}</a>`] : [];
+  const all = pages.concat(find, chans);
   return all.length ? `<div class="quick" role="group" aria-label="Быстрые ссылки">${all.join('')}</div>` : '';
 }
 
@@ -87,10 +89,42 @@ const privacy = C['privacy.json'];
 const privacyOn = !!(privacy && privacy.operator);
 const PRIVACY_URL = '/politika/';
 
-function shell({ title, description, body, current }) {
+// Search engines and link previews: canonical address, og: tags, the studio card on the home page.
+// All absolute URLs hang on site.json → siteUrl (the main domain); without it these tags are left out.
+const SEARCH = site.search || {};
+const SEARCH_URL = '/poisk/';
+const SEARCH_ICON = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg>';
+const pagesSeen = []; // { url, title } of every page rendered so far: the search page reads them
+const urlOf = (path) => '/' + path.replace(/index\.html$/, '');
+function seoHead({ title, description, url, image, imageAbs }) {
+  if (!site.siteUrl) return '';
+  const abs = site.siteUrl + url;
+  if (!image && !imageAbs) image = C['home.json'].cover.photo; // pages without a picture of their own share the home cover
+  const img = imageAbs ? site.siteUrl + imageAbs : image && versions[image] ? `${site.siteUrl}/photos/${image}.jpg?v=${versions[image]}` : '';
+  const tags = [`<link rel="canonical" href="${esc(abs)}">`,
+    `<meta property="og:type" content="website">`, `<meta property="og:locale" content="ru_RU">`,
+    `<meta property="og:site_name" content="${esc(site.seoName || site.name)}">`,
+    `<meta property="og:title" content="${esc(title)}">`, `<meta property="og:description" content="${esc(description)}">`,
+    `<meta property="og:url" content="${esc(abs)}">`];
+  if (img) tags.push(`<meta property="og:image" content="${esc(img)}">`, `<meta name="twitter:card" content="summary_large_image">`);
+  if (url === '/') {
+    // the studio card for Yandex / Google: name, address, phone, messengers
+    const card = { '@context': 'https://schema.org', '@type': 'LocalBusiness', name: site.seoName || site.name, url: site.siteUrl + '/',
+      telephone: site.phoneHref, image: img || undefined,
+      address: { '@type': 'PostalAddress', streetAddress: site.address, addressLocality: site.city, addressCountry: 'RU' },
+      sameAs: (site.channels || []).filter((ch) => ch.href).map((ch) => ch.href) };
+    tags.push(`<script type="application/ld+json">${JSON.stringify(card).replace(/</g, '\\u003c')}</script>`);
+  }
+  return tags.join('\n') + '\n';
+}
+const page = (path, o) => ({ path, html: shell({ ...o, path }), ...(o.noindex ? { noindex: true } : {}) });
+
+function shell({ title, description, body, current, path, image, imageAbs, noindex }) {
+  const url = urlOf(path);
+  pagesSeen.push({ url, title });
   const items = site.nav
     .map((n) => `<li><a href="${esc(navUrl(n))}"${current === n.label ? ' aria-current="page"' : ''}>${esc(n.label)}</a></li>`)
-    .join('');
+    .join('') + (SEARCH.title ? `<li class="nav-search"><a href="${SEARCH_URL}"${current === 'search' ? ' aria-current="page"' : ''} aria-label="${esc(SEARCH.title)}">${SEARCH_ICON}<span>${esc(SEARCH.menu)}</span></a></li>` : '');
   return `<!doctype html>
 <html lang="ru">
 <head>
@@ -98,7 +132,7 @@ function shell({ title, description, body, current }) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-<meta name="theme-color" content="#f5f1ea">
+${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}${site.pinterestVerify ? `<meta name="p:domain_verify" content="${esc(site.pinterestVerify)}">\n` : ''}<meta name="theme-color" content="#f5f1ea">
 <link rel="preload" href="/fonts/playfair-cyr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css">
 </head>
@@ -126,7 +160,7 @@ ${site.nav.some((n) => n.slug && !ported.has(n.slug)) ? `<p class="note">${esc(s
 function requestForm(preset) {
   const f = C['form.json'];
   if (!f || !site.formApi) return '';
-  const opts = f.interests.map((t) => `<option${t === preset ? ' selected' : ''}>${esc(t)}</option>`).join('');
+  const opts = (preset && !f.interests.includes(preset) ? [preset, ...f.interests] : f.interests).map((t) => `<option${t === preset ? ' selected' : ''}>${esc(t)}</option>`).join('');
   const id = (k) => `rf-${k}`;
   return `<section class="wrap rform-sec" id="zayavka">
 <div class="rform-head"><span class="label">${esc(f.label)}</span><h2>${esc(f.title)}</h2><p>${esc(f.lead)}</p></div>
@@ -176,12 +210,13 @@ function home() {
 <div class="sec-head"><h2>${esc(c.hallsTitle)}</h2><span class="label">Выберите зал</span></div>
 ${Object.values(halls).map(hallCard).join('\n')}
 </section>
+${SVC ? `<section class="wrap" id="foto"><div class="sec-head"><h2>${esc(SVC.homeTitle)}</h2><a class="label" href="/fotograf/">${esc(SVC.homeLink)}</a></div><p class="svc-lede">${esc(SVC.homeLede)}</p>${svcIndex(SVC.list)}</section>` : ''}
 <section class="band">${photo(c.band.photo)}<blockquote><div class="wrap"><p>${esc(c.band.quote)}</p><cite>${esc(c.band.by)}</cite></div></blockquote></section>
 <section class="wrap visit"><h2>${esc(c.visit.title)}</h2><div class="info"><p>${esc(c.visit.text)}</p><a class="btn" href="${slugUrl('kak-najti')}">Схема проезда</a></div></section>
 ${contactsBlock()}
 ${requestForm()}
 </main>`;
-  return shell({ title: c.title, description: c.description, body });
+  return shell({ title: c.title, description: c.description, body, path: 'index.html', image: c.cover.photo });
 }
 
 function hallPage(file) {
@@ -200,6 +235,7 @@ function hallPage(file) {
 <p class="lede">${esc(c.lede)}</p>
 <div class="side"><dl>${c.facts.map((f) => `<dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd>`).join('')}</dl><ul>${c.details.map((d) => `<li>${esc(d)}</li>`).join('')}</ul></div>
 </section>
+${PORT_ON ? seriesBlock(seriesIn(h.pageSlug), `Фотосессии в зале ${h.name}`, 'Смотреть съёмку и узнать цену') : ''}
 <section class="wrap gallery">
 <div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">Нажмите, чтобы увеличить</span></div>
 ${g.opening ? `<button class="open wide" aria-label="Открыть фото">${photo(g.opening, { cls: 'wide' })}</button>` : ''}
@@ -212,7 +248,7 @@ ${g.closing ? `<button class="open wide" aria-label="Открыть фото">${
 </div></section>
 </main>
 <dialog class="lb" aria-label="Просмотр фото"><div class="stage"><img alt=""></div><button class="x" aria-label="Закрыть">×</button><button class="p" aria-label="Назад">‹</button><button class="n" aria-label="Вперёд">›</button></dialog>`;
-  return { path: `${h.pageSlug}/index.html`, html: shell({ title: c.title, description: c.description, body, current: 'Залы' }) };
+  return page(`${h.pageSlug}/index.html`, { title: c.title, description: c.description, body, current: 'Залы', image: c.photo });
 }
 
 function tierTable(h) {
@@ -254,7 +290,7 @@ function equipmentPage() {
 <div class="wrap"><nav class="chips-nav" aria-label="Разделы">${chips}</nav>${groups}</div>
 </main>
 <dialog class="vd" aria-label="Видео"><div class="vd-box"><div class="vd-head"><span class="vd-title"></span><button class="vd-x" aria-label="Закрыть">×</button></div><div class="vd-frame"></div></div></dialog>`;
-  return { path: 'oborudovanie/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Оборудование' }) };
+  return page('oborudovanie/index.html', { title: c.title, description: c.description, body, current: 'Оборудование' });
 }
 
 function rulesPage() {
@@ -272,7 +308,7 @@ function rulesPage() {
 <section class="wrap page-title"><h1>${esc(c.heading)}</h1><div class="pt-side"><p class="lede-s">${esc(c.lede)}</p></div></section>
 <div class="wrap rules">${secs}</div>
 </main>`;
-  return { path: 'pravila_i_cena/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Правила' }) };
+  return page('pravila_i_cena/index.html', { title: c.title, description: c.description, body, current: 'Правила' });
 }
 
 
@@ -292,7 +328,7 @@ ${pageHead('Политика', c)}
 ${c.sections.map((s) => `<h2>${esc(s.h)}</h2>${s.p.map((t) => `<p>${fill(t)}</p>`).join('')}`).join('\n')}
 </section>
 </main>`;
-  return { path: 'politika/index.html', html: shell({ title: c.title, description: c.description, body, current: '' }) };
+  return page('politika/index.html', { title: c.title, description: c.description, body, current: '' });
 }
 
 function findPage() {
@@ -311,7 +347,7 @@ ${pageHead('Как найти', c)}
 </section>
 <section class="wrap find-photos">${c.photos.map((p) => `<figure class="find-ph">${photo(p.slot)}<figcaption>${esc(p.caption)}</figcaption></figure>`).join('')}</section>
 </main>`;
-  return { path: 'kak-najti/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Как найти' }) };
+  return page('kak-najti/index.html', { title: c.title, description: c.description, body, current: 'Как найти' });
 }
 
 function schedulePage() {
@@ -323,7 +359,7 @@ ${pageHead('Расписание', c)}
 <div class="frame"><iframe src="${esc(c.widget)}" title="Календарь бронирования залов" height="${c.height}" loading="lazy"></iframe></div>
 </div></section>
 </main>`;
-  return { path: 'raspisanie/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Расписание' }) };
+  return page('raspisanie/index.html', { title: c.title, description: c.description, body, current: 'Расписание' });
 }
 
 function servicesPage() {
@@ -338,8 +374,160 @@ ${k.text ? `<p>${esc(k.text)}</p>` : ''}</div>
 ${pageHead('Услуги', c)}
 <section class="wrap certs">${cards}</section>
 <section class="wrap cert-buy"><p>${esc(c.buy)}</p><a class="btn solid" href="tel:${site.phoneHref}">${esc(site.phone)}</a></section>
+${SVC ? `<section class="wrap" id="fotosemka"><div class="sec-head"><h2>${esc(SVC.studioBlockTitle)}</h2></div><p class="svc-lede">${esc(SVC.studioBlockLede)} <a href="/fotograf/">О фотографе</a></p>${svcIndex(SVC.list)}</section>` : ''}
 </main>`;
-  return { path: 'sertifikaty/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Услуги' }) };
+  return page('sertifikaty/index.html', { title: c.title, description: c.description, body, current: 'Услуги' });
+}
+
+// Site search: no service and no index file. site.js loads the pages listed here when someone
+// searches and looks through their text, so prices and announcements edited in the admin are found at once.
+// Photographer landing (/fotograf/) and photo services (/uslugi/<slug>/). One service list
+// (services.json) feeds the landing, each service page and the block on the studio «Услуги» page.
+// Portfolio series (portfolio.json, made by tools/portfolio.py) live outside photo slots:
+// hashed files under /photos/p/<series>/, thumbnails in t/, not replaced from the admin.
+const PORT_ON = !!C['portfolio.json'];
+
+const PORT = Object.fromEntries((C['portfolio.json'] || []).map((x) => [x.id, x]));
+// series shown in a place ('fotograf' or a service slug), in the order of portfolio.json
+const seriesIn = (place) => (C['portfolio.json'] || []).filter((x) => x.places.includes(place)).map((x) => x.id);
+const SVC = C['services.json'];
+const FG = C['fotograf.json'];
+// «Записаться» leads to the schedule (Alexey 2026-10-06: the form button worked badly there);
+// next to it: the phone and the messengers
+const bookActions = (extra = '') => `<div class="actions book"><a class="btn solid" href="${slugUrl('raspisanie')}">Записаться</a><a class="btn" href="tel:${site.phoneHref}">${esc(site.phone)}</a>${extra}${channelLinks('channels book-ch')}</div>`;
+const svcUrl = (k) => `/${SVC.base}/${k.slug}/`;
+function pf(id, i, { eager = false } = {}) {
+  const ser = PORT[id];
+  if (!ser || !ser.photos[i]) throw new Error(`no portfolio photo: ${id} #${i}`);
+  const p = ser.photos[i];
+  return `<figure class="ph" style="--r:${p.r}"><img src="/photos/p/${id}/t/${pfName(p)}.jpg" data-full="/photos/p/${id}/${pfName(p)}.jpg" alt="${esc(ser.alt)}, фото ${i + 1}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
+}
+function seriesGallery(id, preview, { head = true } = {}) {
+  const ser = PORT[id];
+  if (!ser) throw new Error(`no portfolio series: ${id}`);
+  const n = ser.photos.length;
+  if (!n) return '';
+  const btn = (p, i) => `<button class="open${preview && i >= preview ? ' more' : ''}" aria-label="Открыть фото ${i + 1}" style="--r:${p.r}">${pf(id, i)}</button>`;
+  return `<section class="wrap gallery series" id="${esc(id)}">${head ? `<div class="sec-head" style="padding-top:clamp(28px,4vw,56px)"><h3 class="series-h">${esc(ser.title)}</h3><span class="label">${n} фото</span></div>` : ''}
+<div class="cols">${ser.photos.map(btn).join('')}</div>
+${preview && n > preview ? `<button class="btn show-all" type="button">Показать все ${n} фото</button>` : ''}</section>`;
+}
+// genre card: the cover of the genre's first series, or an empty frame until there is one
+function svcCard(k) {
+  const first = seriesIn(k.slug).find((id) => PORT[id].photos.length);
+  const pic = first ? `<img src="/photos/p/${first}/t/${pfName(PORT[first].photos[0])}.jpg" alt="" loading="lazy" decoding="async">` : `<span class="svc-soon-l">${esc(SVC.soonShort)}</span>`;
+  return `<a class="svc" href="${svcUrl(k)}"><span class="svc-pic">${pic}</span><span class="svc-n">${esc(k.name)}</span><span class="svc-t">${esc(k.short)}</span><span class="svc-go" aria-hidden="true">→</span></a>`;
+}
+// places a series can be pinned to (admin «Портфолио»): the landing, a service, a hall
+const hallBySlug = Object.fromEntries(Object.values(halls).map((h) => [h.pageSlug, h]));
+const seriesUrl = (id) => `/raboty/${id}/`;
+const locLabel = Object.fromEntries((SVC.locations || []).map((l) => [l.slug, l.label]));
+// «где снято» as words: «зал Сфера», «на улице»
+const whereTags = (x) => x.places.map((pl) => (hallBySlug[pl] ? `зал ${hallBySlug[pl].name}` : locLabel[pl] ? locLabel[pl].toLowerCase() : null)).filter(Boolean);
+function seriesCard(id) {
+  const x = PORT[id];
+  const tags = whereTags(x);
+  return `<a class="sc" href="${seriesUrl(id)}"><span class="sc-pic"><img src="/photos/p/${id}/t/${pfName(x.photos[0])}.jpg" alt="${esc(x.alt)}" loading="lazy" decoding="async"></span><span class="sc-t">${esc(x.title)}</span><span class="label">${x.photos.length} фото${tags.length ? ' · ' + esc(tags.join(', ')) : ''}</span></a>`;
+}
+function seriesBlock(ids, title, note) {
+  ids = ids.filter((id) => PORT[id].photos.length);
+  if (!ids.length) return '';
+  return `<section class="wrap series-block"><div class="sec-head"><h2>${esc(title)}</h2>${note ? `<span class="label">${esc(note)}</span>` : ''}</div><div class="sc-grid">${ids.map(seriesCard).join('')}</div></section>`;
+}
+const svcGrid = (list) => `<div class="svc-grid">${list.map(svcCard).join('')}</div>`;
+// genres by group (services.json → groups): cards with covers, or a compact list of links
+const byGroup = (list) => (SVC.groups || [{ id: undefined, title: '' }]).map((g) => [g, list.filter((k) => k.group === g.id)]).filter(([, l]) => l.length);
+const svcGroups = (list) => byGroup(list).map(([g, l]) => `${g.title ? `<h3 class="svc-gh">${esc(g.title)}</h3>` : ''}${svcGrid(l)}`).join('');
+const svcIndex = (list) => `<div class="svc-index">${byGroup(list).map(([g, l]) => `<div><h3 class="svc-gh">${esc(g.title)}</h3><ul>${l.map((k) => `<li><a href="${svcUrl(k)}">${esc(k.name)}</a></li>`).join('')}</ul></div>`).join('')}</div>`;
+
+function fotografPage() {
+  const c = FG;
+  const landing = seriesIn('fotograf');
+  // the chosen cover, or the first photo of the first series if that series was removed in the admin
+  const cover = PORT[c.cover.series] && PORT[c.cover.series].photos[c.cover.index] ? c.cover : landing[0] ? { series: landing[0], index: 0 } : null;
+  const h1 = c.headline.map((l, i) => (i === c.italicLine ? `<em>${esc(l)}</em>` : esc(l))).join('<br>');
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / ${esc(c.crumb)}</span></div>
+<section class="wrap cover">
+<div class="text"><div><span class="label">${esc(c.kicker)}</span><h1><span class="fg-name">${esc(c.name)}</span>${h1}</h1></div>
+<p class="lead">${esc(c.lead)}</p>
+<div class="actions"><a class="btn solid" href="${slugUrl('raspisanie')}">${esc(c.ctaPrimary)}</a><a class="btn" href="#raboty">${esc(c.ctaSecondary)}</a></div></div>
+<div class="fig">${cover ? pf(cover.series, cover.index, { eager: true }) : ''}</div>
+</section>
+<div class="wrap"><div class="facts facts-3">${c.facts.map((f) => `<div><b>${esc(f.value)}</b><span class="label">${esc(f.label)}</span></div>`).join('')}</div></div>
+<section class="wrap fg-about"><h2>${esc(c.aboutTitle)}</h2><div>${c.about.map((t) => `<p>${esc(t)}</p>`).join('')}</div></section>
+<section class="wrap" id="uslugi"><div class="sec-head"><h2>${esc(c.servicesTitle)}</h2><span class="label">${esc(c.servicesNote)}</span></div>${svcGroups(SVC.list)}</section>
+<div id="raboty">${seriesBlock(landing, c.seriesTitle, c.seriesNote)}</div>
+<section class="wrap fg-process"><h2>${esc(c.processTitle)}</h2><ol>${c.process.map((s) => `<li><b>${esc(s.h)}</b><p>${esc(s.t)}</p></li>`).join('')}</ol></section>
+<section class="wrap visit"><h2>${esc(c.studioTitle)}</h2><div class="info"><p>${esc(c.studioText)}</p><a class="btn" href="/#zaly">Залы студии</a></div></section>
+${contactsBlock()}
+${requestForm(c.formPreset)}
+</main>
+${LIGHTBOX}`;
+  return page('fotograf/index.html', { title: c.title, description: c.description, body, current: 'Фотограф', image: null, imageAbs: cover && `/photos/p/${cover.series}/${pfName(PORT[cover.series].photos[cover.index])}.jpg` });
+}
+
+function servicePage(k) {
+  const series = seriesIn(k.slug);
+  const pkgs = k.packages ? `<section class="wrap pkgs"><div class="sec-head" style="padding-top:0"><h2>${esc(k.packagesTitle)}</h2><span class="label">${esc(k.packagesNote)}</span></div>
+<div class="pkg-grid">${k.packages.map((p) => `<article class="pkg"><h3>${esc(p.name)}</h3><p class="pkg-h">${esc(p.hours)} · ${esc(p.photos)}</p><ul>${p.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ul><p class="pkg-price">${priceStr(p.price)}</p></article>`).join('')}</div>
+<p class="pkg-foot">${esc(k.packagesFoot)}</p></section>` : '';
+  const price = k.price ? `<p class="svc-price"><b>${priceStr(k.price)}</b> — ${esc(SVC.priceNote)}</p>` : '';
+  const works = series.length ? seriesBlock(series, 'Работы', 'Нажмите, чтобы посмотреть съёмку целиком')
+    : `<section class="wrap svc-soon"><p>${esc(SVC.soon)}</p><a class="btn" href="/fotograf/#raboty">Работы фотографа</a></section>`;
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/fotograf/">${esc(FG.crumb)}</a> / ${esc(k.name)}</span></div>
+<section class="wrap page-title"><h1>${esc(k.h1)}</h1><div class="pt-side"><p class="lede-s">${esc(k.lede)}</p></div></section>
+<section class="wrap fg-about svc-about"><div>${k.text.map((t) => `<p>${esc(t)}</p>`).join('')}${price}</div>${bookActions()}</section>
+${pkgs}
+${works}
+${(k.related || []).length ? `<section class="wrap related"><div class="sec-head"><h2>${esc(SVC.relatedTitle)}</h2></div>${svcGrid(SVC.list.filter((x) => k.related.includes(x.slug)))}</section>` : ''}
+<section class="wrap"><div class="sec-head"><h2>${esc(SVC.otherTitle)}</h2><a class="label" href="/fotograf/">Фотограф Алексей Новопашин</a></div>${svcIndex(SVC.list.filter((x) => x !== k))}</section>
+${contactsBlock()}
+${requestForm(k.name)}
+</main>
+${LIGHTBOX}`;
+  return page(`${SVC.base}/${k.slug}/index.html`, { title: k.title, description: k.description, body, current: 'Фотограф', noindex: !series.length, imageAbs: series[0] && `/photos/p/${series[0]}/${pfName(PORT[series[0]].photos[0])}.jpg` });
+}
+
+// One page per series (/raboty/<id>/): the whole shoot, then what such a shoot costs.
+function seriesPage(x) {
+  const svcs = SVC.list.filter((k) => x.places.includes(k.slug));
+  const hs = x.places.filter((pl) => hallBySlug[pl]).map((pl) => hallBySlug[pl]);
+  const away = x.places.filter((pl) => locLabel[pl]);
+  const tagLinks = [...svcs.map((k) => `<a href="${svcUrl(k)}">${esc(k.name)}</a>`), ...hs.map((h) => `<a href="${esc(hallUrl(h))}">Зал ${esc(h.name)}</a>`), ...away.map((pl) => esc(locLabel[pl]))];
+  const where = hs.length ? ` в зале ${hs.map((h) => h.name).join(' / ')}` : away.length ? ` — ${locLabel[away[0]].toLowerCase()}` : '';
+  const offer = `<section class="wrap offer"><div><span class="label">${esc(SVC.offerLabel)}</span><h2>${esc(SVC.offerTitle)}</h2>
+<p class="offer-price"><b>${priceStr('photo_hour')}</b> ${esc(SVC.offerHour)}</p>
+${away.length ? `<p class="offer-hall">${esc(SVC.offerAway)}</p>` : ''}
+${hs.map((h) => `<p class="offer-hall">${esc(SVC.offerHall.replace('{hall}', h.name))} <a href="${esc(hallUrl(h))}#bron">от ${money(fromPrice(h))} ₽ в час</a></p>`).join('')}</div>
+${bookActions(svcs[0] ? `<a class="btn" href="${svcUrl(svcs[0])}">${esc(svcs[0].name)}</a>` : '')}</section>`;
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/fotograf/#raboty">Работы</a> / ${esc(x.title)}</span></div>
+<section class="wrap page-title"><h1>${esc(x.title)}</h1><div class="pt-side"><p class="lede-s">${x.photos.length} фото${tagLinks.length ? ' · ' + tagLinks.join(' · ') : ''}</p></div></section>
+${seriesGallery(x.id, 0, { head: false })}
+${offer}
+${requestForm(svcs[0] ? svcs[0].name : FG.formPreset)}
+</main>
+${LIGHTBOX}`;
+  const title = `${x.title} — ${svcs[0] ? svcs[0].name.toLowerCase() : 'фотосессия'}${where} | фотограф Алексей Новопашин, Томск`;
+  const description = `${x.alt}: ${x.photos.length} фото. ${svcs[0] ? svcs[0].name : 'Фотосессия'} в Томске${where}, фотограф Алексей Новопашин. Стоимость съёмки и запись.`;
+  return page(`raboty/${x.id}/index.html`, { title, description, body, current: 'Фотограф', noindex: !x.photos.length, imageAbs: x.photos[0] && `/photos/p/${x.id}/${pfName(x.photos[0])}.jpg` });
+}
+
+function searchPage() {
+  const list = pagesSeen.filter((p) => p.url !== SEARCH_URL);
+  const body = `<main>
+<div class="wrap crumbs"><span class="label"><a href="/">Студия</a> / ${esc(SEARCH.title)}</span></div>
+<section class="wrap page-title"><h1>${esc(SEARCH.title)}</h1><div class="pt-side"><p class="lede-s">${esc(SEARCH.lede)}</p></div></section>
+<section class="wrap search">
+<form class="sform" role="search" action="${SEARCH_URL}" method="get"><label class="sr" for="sq">${esc(SEARCH.title)}</label><input id="sq" type="search" name="q" placeholder="${esc(SEARCH.placeholder)}" autocomplete="off" enterkeyhint="search"><button class="btn solid" type="submit">${esc(SEARCH.button)}</button></form>
+<p class="s-status" aria-live="polite" data-none="${esc(SEARCH.none)}" data-found="${esc(SEARCH.found)}" data-loading="${esc(SEARCH.loading)}" data-err="${esc(SEARCH.error)}"></p>
+<ol class="s-results" data-pages="${esc(JSON.stringify(list))}"></ol>
+<noscript><p>${esc(SEARCH.noscript)}</p></noscript>
+</section>
+</main>`;
+  return page('poisk/index.html', { title: SEARCH.pageTitle, description: SEARCH.description, body, current: 'search' });
 }
 
 function schoolPage() {
@@ -351,6 +539,13 @@ ${e.photo && versions[e.photo] ? `<figure class="ph" style="--r:1/1"><img src="/
 <div class="ev-b"><p class="ev-when"><b>${esc(e.day)}</b> ${esc(e.time || '')}<span class="ev-past">прошло</span></p>
 <h3><span>${esc(e.kind)}</span> ${esc(e.title)}</h3><p>${esc(e.text)}</p><p class="ev-place">${esc(e.place)}</p></div>
 </article>`;
+  const schoolVideos = (C['school_videos.json'] || []).filter((v) => v.vk || v.yt);
+  const schoolVideo = (v) => `<figure class="sv" data-title="${esc(v.title)}"${v.vk ? ` data-vk="${esc(v.vk)}&amp;hd=2"` : ''}${v.yt ? ` data-yt="${esc(ytEmbed(v.yt))}"` : ''}>
+<div class="sv-frame"></div>
+<figcaption><b>${esc(v.title)}</b>${v.vk && v.yt ? `<span class="sv-tabs" role="group" aria-label="Плеер"><button type="button" class="sv-tab" data-k="vk">VK Видео</button><button type="button" class="sv-tab" data-k="yt">YouTube</button></span>` : ''}</figcaption>
+<p class="sv-hint" hidden></p>
+<noscript><p>${v.vk ? `<a href="${esc(v.vk)}">Смотреть в VK Видео</a>` : ''} ${v.yt ? `<a href="https://www.youtube.com/watch?v=${esc(v.yt)}">Смотреть на YouTube</a>` : ''}</p></noscript>
+</figure>`;
   const strip = (slots) => `<section class="wrap strip">${slots.map((s) => photo(s)).join('')}</section>`;
   const course = (k, i) => `<article class="course${i % 2 ? ' flip' : ''}">
 ${photo(k.photo)}
@@ -374,19 +569,31 @@ ${strip(c.strips[1])}
 <section class="wrap faq"><h2>Вопрос — ответ</h2>${c.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</section>
 <section class="wrap teacher"><span class="label">Преподаватель</span><h2>${esc(c.teacher.name)}</h2><p>${esc(c.teacher.text)}</p></section>
 <section class="school-cta" id="zapis"><div class="wrap cta-grid"><div><h2>${esc(c.contact.cta)}</h2><p class="cta-phone">${telLink(c.contact.phoneHref, c.contact.phone)}</p><p>${esc(c.contact.address)}</p></div>${photo(c.contact.photo)}</div></section>
+${schoolVideos.length ? `<section class="wrap svideo" id="video"><div class="sec-head" style="padding-top:0"><h2>${esc(c.videoTitle || 'Видео')}</h2><span class="label">${esc(c.videoNote || 'Если один плеер не открывается, переключите на другой')}</span></div>
+<div class="sv-grid">${schoolVideos.map(schoolVideo).join('')}</div></section>` : ''}
 ${requestForm(C['form.json'] && C['form.json'].schoolPreset)}
 <section class="wrap gallery"><div class="sec-head" style="padding-top:0"><h2 style="font-size:clamp(32px,4.4vw,60px)">${esc(c.galleryTitle)}</h2><span class="label">${esc(c.galleryNote)}</span></div>${galleryBlock(c.gallery)}</section>
+${c.camera ? `<section class="booking" id="kamera"><div class="wrap grid"><div class="intro"><span class="label">${esc(c.camera.label)}</span><h2>${esc(c.camera.title)}</h2>${c.camera.text.map((t) => `<p>${esc(t)}</p>`).join('')}<p><a class="btn light" href="${esc(c.camera.link)}" target="_blank" rel="noopener">${esc(c.camera.linkText)}</a></p></div>
+<div class="frame"><iframe src="${esc(c.camera.widget)}" title="${esc(c.camera.title)}" height="${c.camera.height}" loading="lazy"></iframe></div></div></section>` : ''}
 </main>
 ${LIGHTBOX}`;
-  return { path: 'fotosfera/index.html', html: shell({ title: c.title, description: c.description, body, current: 'Фотошкола' }) };
+  return page('fotosfera/index.html', { title: c.title, description: c.description, body, current: 'Фотошкола', image: c.banner });
 }
 
   const files = [{ path: 'index.html', html: home() }];
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
   files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
   if (privacyOn) files.push(privacyPage());
+  if (FG && SVC) files.push(fotografPage(), ...SVC.list.map(servicePage), ...(C['portfolio.json'] || []).map(seriesPage));
+  if (SEARCH.title) files.push(searchPage()); // last: it lists every page rendered before it
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
-  return { files, unused };
+  // non-HTML files that change with content: the sitemap follows which service pages are open to search
+  const other = [];
+  if (site.siteUrl) {
+    const locs = files.filter((f) => !f.noindex && f.path !== 'poisk/index.html').map((f) => `<url><loc>${site.siteUrl}${urlOf(f.path)}</loc></url>`);
+    other.push({ path: 'sitemap.xml', type: 'application/xml; charset=utf-8', body: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${locs.join('\n')}\n</urlset>\n` });
+  }
+  return { files, unused, other };
 }
 
 // VK Video: accepts a page link (vkvideo.ru/video-1_2, vk.com/video?z=video-1_2) or the
@@ -410,17 +617,30 @@ export function vkEmbed(input) {
   return `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}${h}&hd=2&autoplay=1`;
 }
 
+// YouTube: accepts a page link (watch?v=, youtu.be/, /embed/, /shorts/, /live/) or the embed iframe;
+// returns the 11-character video id or null. The page embeds it from youtube-nocookie.com.
+export function ytId(input) {
+  let s = String(input || '').trim().replace(/&amp;/g, '&');
+  const src = s.match(/src=["']([^"']+)["']/);
+  if (src) s = src[1];
+  const m = s.match(/^https?:\/\/(?:www\.|m\.)?(?:youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#\s]*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([\w-]{11})(?![\w-])/);
+  return m ? m[1] : null;
+}
+export const ytEmbed = (id) => `https://www.youtube-nocookie.com/embed/${id}?rel=0`;
+
 // Edits from the admin page, applied by the cloud function to content loaded from the bucket.
 // Lives here, next to the pages, so a new kind of edit ships with a normal deploy instead of a
 // new function version. Returns { changes: [text], files: [content files that changed] };
 // throws an Error with .user = true for a mistake Alexey can fix himself.
-export const ADMIN_FILES = ['prices.json', 'videos.json', 'events.json'];
+export const ADMIN_FILES = ['prices.json', 'videos.json', 'events.json', 'portfolio.json', 'school_videos.json'];
 const userError = (msg) => Object.assign(new Error(msg), { user: true });
 
 export function adminEdit(C, req) {
   if (req.action === 'prices') return editPrices(C, req);
   if (req.action === 'videos') return editVideos(C, req);
   if (req.action === 'events') return editEvents(C, req);
+  if (req.action === 'schoolVideos') return editSchoolVideos(C, req);
+  if (req.action === 'portfolio') return editPortfolio(C, req);
   throw userError('нет такого действия');
 }
 
@@ -472,6 +692,46 @@ function editVideos(C, req) {
   return { changes, files: changes.length ? ['videos.json'] : [] };
 }
 
+// Videos of the photo school: one title, up to two players (VK Video, YouTube) per video. The admin
+// sends the whole list in the order wanted; a link left empty keeps what is stored, a dash removes it.
+function editSchoolVideos(C, req) {
+  const old = C['school_videos.json'] || [];
+  const byId = Object.fromEntries(old.map((v) => [v.id, v]));
+  if (!Array.isArray(req.list) || req.list.length > 30) throw userError('список роликов не прочитался, обновите страницу');
+  const used = new Set();
+  const list = req.list.map((v, i) => {
+    const title = String(v.title ?? '').replace(/\s+/g, ' ').trim();
+    if (!title) throw userError(`Ролик ${i + 1}: заполните название`);
+    if (title.length > 100) throw userError(`${title}: название длиннее 100 знаков`);
+    const id = byId[v.id] ? v.id : `sv-${Math.random().toString(36).slice(2, 8)}`;
+    if (used.has(id)) throw userError('два ролика с одним номером, обновите страницу');
+    used.add(id);
+    const prev = byId[id] || {};
+    const pick = (raw, kept, parse, label) => {
+      const t = String(raw ?? '').trim();
+      if (t === '') return kept || '';
+      if (t === '-') return '';
+      const r = parse(t);
+      if (!r) throw userError(`${title}: не похоже на ссылку ${label}`);
+      return r;
+    };
+    const vk = pick(v.vk, prev.vk, (t) => { const u = vkEmbed(t); return u && u.replace(/&hd=2&autoplay=1$/, ''); }, 'VK Видео');
+    const yt = pick(v.yt, prev.yt, ytId, 'YouTube');
+    if (!vk && !yt) throw userError(`${title}: нужна хотя бы одна ссылка, VK Видео или YouTube`);
+    return { id, title, vk, yt };
+  });
+  const changes = [];
+  for (const v of list) {
+    const p = byId[v.id];
+    if (!p) changes.push(`Добавлен ролик: ${v.title}`);
+    else if (JSON.stringify(p) !== JSON.stringify(v)) changes.push(`Изменён ролик: ${v.title}`);
+  }
+  for (const p of old) if (!used.has(p.id)) changes.push(`Удалён ролик: ${p.title}`);
+  if (!changes.length && list.map((v) => v.id).join() !== old.map((v) => v.id).join()) changes.push('Изменён порядок');
+  C['school_videos.json'] = list;
+  return { changes, files: changes.length ? ['school_videos.json'] : [] };
+}
+
 // Places a photo can be uploaded to from the admin: page slots plus one per announcement.
 export function photoSlotOk(C, slot) {
   return !!C['photos.json'][slot] || (C['events.json'] || []).some((e) => e.photo === slot);
@@ -521,4 +781,57 @@ function editEvents(C, req) {
   if (!changes.length && list.map((e) => e.id).join() !== old.map((e) => e.id).join()) changes.push('Изменён порядок');
   C['events.json'] = list;
   return { changes, files: changes.length ? ['events.json'] : [], ids: list.map((e) => e.id) };
+}
+
+// Portfolio from the admin: the whole list of series in the order wanted. Photo files are uploaded
+// one by one before this (function action 'pfile' → photos/p/<series>/<hash>.jpg); here only the
+// list, titles and places change. Places: 'fotograf' (the landing) or a service slug.
+// File names of portfolio photos start with the photographer's name (Alexey 2026-10-06: «префикс для
+// фотографий alexey_novopashin» — image search reads file names). p.n = the file name without .jpg;
+// photos uploaded before the prefix have only the hash p.f.
+export const PHOTO_PREFIX = 'alexey_novopashin-';
+export const pfName = (p) => p.n || p.f;
+export const seriesIdOk = (id) => /^[a-z0-9][a-z0-9-]{0,58}[a-z0-9]$/.test(String(id));
+function editPortfolio(C, req) {
+  const old = C['portfolio.json'] || [];
+  const byId = Object.fromEntries(old.map((x) => [x.id, x]));
+  const placesOk = new Set(['fotograf', ...(C['services.json'] ? C['services.json'].list.map((k) => k.slug) : []), ...Object.values(C['halls.json']).map((h) => h.pageSlug), ...((C['services.json'] || {}).locations || []).map((l) => l.slug)]);
+  const text = (v, max, label) => {
+    const t = String(v ?? '').replace(/\s+/g, ' ').trim();
+    if (!t) throw userError(`${label}: заполните поле`);
+    if (t.length > max) throw userError(`${label}: слишком длинно, до ${max} знаков`);
+    return t;
+  };
+  if (!Array.isArray(req.series) || req.series.length > 60) throw userError('список серий не прочитался, обновите страницу');
+  const used = new Set();
+  const list = req.series.map((x, i) => {
+    const title = text(x.title, 60, `Серия ${i + 1}, название`);
+    if (!seriesIdOk(x.id) || used.has(x.id)) throw userError(`${title}: неверный номер серии, обновите страницу`);
+    used.add(x.id);
+    if (!Array.isArray(x.photos) || x.photos.length > 400) throw userError(`${title}: список фото не прочитался`);
+    const photos = x.photos.map((p) => {
+      if (!/^[0-9a-f]{10}$/.test(p.f) || !/^\d{1,2}(\.\d{1,3})?\/\d{1,2}$/.test(p.r)) throw userError(`${title}: фото не прочиталось, обновите страницу`);
+      return /^[a-z0-9_-]{1,80}$/.test(p.n || '') ? { f: p.f, n: p.n, r: p.r } : { f: p.f, r: p.r };
+    });
+    const places = [...new Set((x.places || []).filter((pl) => placesOk.has(pl)))];
+    return { id: x.id, title, alt: text(x.alt || title, 120, `${title}, подпись`), places, photos };
+  });
+  const changes = [];
+  for (const x of list) {
+    const p = byId[x.id];
+    if (!p) { changes.push(`Новая серия: ${x.title}, ${x.photos.length} фото`); continue; }
+    const was = new Set(p.photos.map((f) => f.f)), now = new Set(x.photos.map((f) => f.f));
+    const add = x.photos.filter((f) => !was.has(f.f)).length, del = p.photos.filter((f) => !now.has(f.f)).length;
+    const what = [];
+    if (p.title !== x.title || p.alt !== x.alt) what.push('название');
+    if (add) what.push(`+${add} фото`);
+    if (del) what.push(`−${del} фото`);
+    if (p.places.join() !== x.places.join()) what.push('где показывать');
+    if (!add && !del && p.photos.map((f) => f.f).join() !== x.photos.map((f) => f.f).join()) what.push('порядок фото');
+    if (what.length) changes.push(`${x.title}: ${what.join(', ')}`);
+  }
+  for (const p of old) if (!used.has(p.id)) changes.push(`Убрана серия: ${p.title} (файлы фото остались в хранилище)`);
+  if (!changes.length && list.map((x) => x.id).join() !== old.map((x) => x.id).join()) changes.push('Изменён порядок серий');
+  C['portfolio.json'] = list;
+  return { changes, files: changes.length ? ['portfolio.json'] : [] };
 }

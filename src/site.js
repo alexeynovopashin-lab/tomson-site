@@ -18,6 +18,37 @@
     vd.querySelector('.vd-x').addEventListener('click',function(){vd.close()});
     vd.addEventListener('click',function(e){if(!e.target.closest('.vd-frame')&&!e.target.closest('.vd-title'))vd.close()});
   }
+  // photo school videos: VK Video by default, YouTube on the switch. The player loads when the video comes
+  // into view. A page that failed to open (VK is blocked in some places) still fires «load» and the
+  // address is cross-origin, so a failure can't be detected: the offer to switch is always shown.
+  var NAME={vk:'VK Видео',yt:'YouTube'},OTHER={vk:'yt',yt:'vk'};
+  function pref(){try{return localStorage.getItem('svKind')}catch(e){return null}}
+  function setPref(k){try{localStorage.setItem('svKind',k)}catch(e){}}
+  [].slice.call(document.querySelectorAll('.sv')).forEach(function(box){
+    var frame=box.querySelector('.sv-frame'),hint=box.querySelector('.sv-hint'),tabs=box.querySelectorAll('.sv-tab');
+    var kinds=['vk','yt'].filter(function(k){return box.dataset[k]});
+    function play(k){
+      var o=OTHER[k];
+      [].forEach.call(tabs,function(t){t.setAttribute('aria-pressed',String(t.dataset.k===k))});
+      var f=document.createElement('iframe');
+      f.allow='autoplay; encrypted-media; fullscreen; picture-in-picture';f.allowFullscreen=true;f.title=box.dataset.title+' — '+NAME[k];
+      frame.innerHTML='';frame.appendChild(f);f.src=box.dataset[k];
+      if(box.dataset[o]){
+        hint.innerHTML='';
+        hint.appendChild(document.createTextNode('Не открывается или не грузится? '));
+        var b=document.createElement('button');b.type='button';b.textContent='Переключить на '+NAME[o];
+        b.addEventListener('click',function(){setPref(o);play(o)});
+        hint.appendChild(b);hint.hidden=false;
+      }
+    }
+    [].forEach.call(tabs,function(t){t.addEventListener('click',function(){setPref(t.dataset.k);play(t.dataset.k)})});
+    var first=kinds.indexOf(pref())>=0?pref():kinds[0];
+    [].forEach.call(tabs,function(t){t.setAttribute('aria-pressed',String(t.dataset.k===first))});
+    if('IntersectionObserver' in window){
+      var io=new IntersectionObserver(function(es){if(es[0].isIntersecting){io.disconnect();play(first)}},{rootMargin:'300px'});
+      io.observe(box);
+    }else play(first);
+  });
   // photo school announcements: upcoming first (soonest on top), then past ones marked «прошло»
   var evl=document.querySelector('.ev-list');
   if(evl){
@@ -51,11 +82,76 @@
       }).catch(function(){say(rf.dataset.err,'bad')}).then(function(){sb.disabled=false;sb.textContent=label});
     });
   }
+  // site search: loads the pages listed on /poisk/ once, looks through their text in the browser
+  var sres=document.querySelector('.s-results');
+  if(sres){
+    var sf=document.querySelector('form.sform'),sq=sf.elements.q,ss=document.querySelector('.s-status'),spages=JSON.parse(sres.dataset.pages),sdocs=null;
+    var norm=function(t){return t.toLowerCase().replace(/ё/g,'е')};
+    // crude Russian stem: «вспышки» finds «вспышка», «циклорамой» finds «циклорама»
+    var stem=function(w){return w.length>=5?w.slice(0,Math.max(4,w.length-2)):w};
+    var rx=function(t){return t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')};
+    // a word has to start with the term: «ёлка» must not find «тарелка»
+    var has=function(n,w){return new RegExp('(^|[^a-zа-я0-9])'+rx(w)).test(n)};
+    function load(){
+      if(sdocs)return Promise.resolve(sdocs);
+      return Promise.all(spages.map(function(pg){
+        return fetch(pg.url).then(function(r){if(!r.ok)throw r.status;return r.text()}).then(function(html){
+          var main=new DOMParser().parseFromString(html,'text/html').querySelector('main');
+          var blocks=[];
+          if(main)[].forEach.call(main.querySelectorAll('h1,h2,h3,p,li,dt,dd,summary,figcaption'),function(el){
+            if(el.querySelector('p,li,h2,h3'))return; // keep the innermost text only
+            var t=el.textContent.replace(/\s+/g,' ').trim();if(t.length<2)return;
+            var a=el.closest('[id]');blocks.push({t:t,n:norm(t),id:a&&a.id});
+          });
+          return{url:pg.url,title:pg.title,blocks:blocks};
+        });
+      })).then(function(d){sdocs=d;return d});
+    }
+    function mark(li,text,terms){
+      var n=norm(text),i=0,re=new RegExp('(?:^|[^a-zа-я0-9])((?:'+terms.map(rx).join('|')+')[a-zа-я0-9]*)','g'),m;
+      while((m=re.exec(n))){var at=m.index+m[0].length-m[1].length;if(at>i)li.appendChild(document.createTextNode(text.slice(i,at)));var k=document.createElement('mark');k.textContent=text.slice(at,at+m[1].length);li.appendChild(k);i=at+m[1].length}
+      if(i<text.length)li.appendChild(document.createTextNode(text.slice(i)));
+    }
+    function cut(t,terms){ // a window of text around the first hit
+      if(t.length<=220)return t;var n=norm(t),at=Math.min.apply(null,terms.map(function(w){var j=n.indexOf(w);return j<0?1e9:j}));
+      var from=Math.max(0,Math.min(at-80,t.length-220));return(from?'… ':'')+t.slice(from,from+220).trim()+(from+220<t.length?' …':'');
+    }
+    function run(q){
+      var terms=norm(q).split(/[^a-zа-я0-9]+/).filter(function(w){return w.length>1}).map(stem);
+      sres.innerHTML='';
+      if(!terms.length){ss.textContent=q.trim()?ss.dataset.none:'';return}
+      ss.textContent=ss.dataset.loading;
+      load().then(function(docs){
+        var hits=docs.map(function(d){
+          var all=d.blocks.map(function(b){return b.n}).join(' ')+' '+norm(d.title);
+          if(!terms.every(function(w){return has(all,w)}))return null;
+          var bl=d.blocks.filter(function(b){return terms.some(function(w){return has(b.n,w)})});
+          var score=bl.length+(terms.some(function(w){return has(norm(d.title),w)})?5:0);
+          return{d:d,bl:bl.slice(0,3),score:score};
+        }).filter(Boolean).sort(function(a,b){return b.score-a.score});
+        ss.textContent=hits.length?ss.dataset.found.replace('{n}',hits.length):ss.dataset.none;
+        hits.forEach(function(h){
+          var li=document.createElement('li'),a=document.createElement('a');
+          a.href=h.d.url+(h.bl[0]&&h.bl[0].id?'#'+h.bl[0].id:'');a.className='s-title';a.textContent=h.d.title;li.appendChild(a);
+          h.bl.forEach(function(b){var p=document.createElement('p');mark(p,cut(b.t,terms),terms);li.appendChild(p)});
+          sres.appendChild(li);
+        });
+      }).catch(function(){sdocs=null;ss.textContent=ss.dataset.err});
+    }
+    sf.addEventListener('submit',function(e){e.preventDefault();var q=sq.value.trim();history.replaceState(null,'',q?'?q='+encodeURIComponent(q):location.pathname);run(q)});
+    var q0=new URLSearchParams(location.search).get('q');
+    if(q0){sq.value=q0;run(q0)}else sq.focus();
+  }
   var lb=document.querySelector('dialog.lb');
   if(!lb)return;
-  var items=[].slice.call(document.querySelectorAll('.gallery .open')),i=0,img=lb.querySelector('img');
-  function show(k){i=(k+items.length)%items.length;var s=items[i].querySelector('img');img.src=s.currentSrc||s.src;img.alt=s.alt}
-  items.forEach(function(b,k){b.addEventListener('click',function(){show(k);lb.showModal()})});
+  // portfolio series: the first photos show, «Показать все» opens the rest
+  [].forEach.call(document.querySelectorAll('.show-all'),function(b){b.addEventListener('click',function(){b.closest('.gallery').classList.add('all');b.remove()})});
+  // the lightbox walks through the gallery that was clicked (a page can hold several series)
+  var items=[],i=0,img=lb.querySelector('img');
+  function show(k){i=(k+items.length)%items.length;var s=items[i].querySelector('img');img.src=s.dataset.full||s.currentSrc||s.src;img.alt=s.alt}
+  [].forEach.call(document.querySelectorAll('.gallery .open'),function(b){b.addEventListener('click',function(){
+    var g=b.closest('.gallery');items=[].slice.call(g.querySelectorAll('.open')).filter(function(x){return g.classList.contains('all')||!x.classList.contains('more')});
+    show(items.indexOf(b));lb.showModal()})});
   lb.querySelector('.x').addEventListener('click',function(){lb.close()});
   lb.querySelector('.p').addEventListener('click',function(){show(i-1)});
   lb.querySelector('.n').addEventListener('click',function(){show(i+1)});

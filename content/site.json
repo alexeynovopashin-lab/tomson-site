@@ -6,10 +6,14 @@
   "phone": "+7 961 887-80-78",
   "phoneHref": "+79618878078",
   "oldSite": "https://xn--l1acbbod.xn--p1ai",
+  "siteUrl": "https://studiotomson.ru",
+  "seoName": "Фотостудия Томсон",
+  "pinterestVerify": "",
   "nav": [
     { "label": "Залы", "href": "/#zaly" },
     { "label": "Расписание", "slug": "raspisanie" },
     { "label": "Фотошкола", "slug": "fotosfera" },
+    { "label": "Фотограф", "slug": "fotograf" },
     { "label": "Правила", "slug": "pravila_i_cena" },
     { "label": "Оборудование", "slug": "oborudovanie" },
     { "label": "Услуги", "slug": "sertifikaty" },
@@ -25,6 +29,20 @@
     { "id": "instagram", "label": "Instagram", "href": "https://www.instagram.com/studiotomson" }
   ],
   "quick": ["raspisanie", "kak-najti"],
+  "search": {
+    "title": "Поиск по сайту",
+    "menu": "Поиск",
+    "pageTitle": "Поиск по сайту — фотостудия Томсон",
+    "description": "Поиск по страницам фотостудии Томсон: залы, цены, оборудование, правила, фотошкола.",
+    "lede": "Залы, цены, оборудование, правила, курсы фотошколы — введите слово, например «циклорама» или «вспышка».",
+    "placeholder": "Что найти?",
+    "button": "Найти",
+    "loading": "Ищем…",
+    "found": "Найдено страниц: {n}",
+    "none": "Ничего не нашлось. Попробуйте другое слово или короче, например «свет» вместо «освещение».",
+    "error": "Не удалось загрузить страницы. Проверьте интернет и попробуйте ещё раз.",
+    "noscript": "Поиск работает при включённом JavaScript. Все страницы есть в меню вверху."
+  },
   "adminApi": "https://functions.yandexcloud.net/d4epbmr3i7lmo39rpsf2",
   "formApi": "https://functions.yandexcloud.net/d4ej4fel9tp674rm39u9",
   "footerNote": "Страницы без своей версии пока открываются на прежнем сайте студии."

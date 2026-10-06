@@ -17,7 +17,7 @@ Alexey edits them in `/admin/` (any device). The page reads `/_src/…` and post
 function `tomsonadmin` (`cloud/admin/index.js`, folder `tomson`, public, service account
 `deploytomson`, env `ADMIN_PASSWORD` — Alexey's own since 2026-09-25, never ask for it; its form in the
 console shows it in plain text: no screenshots below «Точка входа»). It writes admin-owned content
-(`render.mjs` → `ADMIN_FILES`: prices.json, videos.json) or `photos/<slot>.jpg`, re-renders pages
+(`render.mjs` → `ADMIN_FILES`: prices.json, videos.json, events.json, portfolio.json, school_videos.json) or `photos/<slot>.jpg`, re-renders pages
 with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<time>/`. So:
 - ALWAYS `python3 deploy.py` (pull → build → push), never upload `dist/` another way:
   a stale local `prices.json` would overwrite his prices. After a pull, commit the pulled files
@@ -42,7 +42,22 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
 - Request form: `content/form.json` (texts), `site.json` → `formApi`, cloud function `tomsonform` (`cloud/form/index.js`,
   public, one instance, env SMTP_*: Alexey types them, never ask). Without `formApi` the form is hidden; keep it in `site.json`.
 - `src/` — `style.css`, `site.js`, self-hosted fonts (Playfair Display, Manrope).
+- Photographer (step 6c): `/fotograf/` landing (`content/fotograf.json`), photo services
+  `/uslugi/<slug>/` from ONE list `content/services.json` (also shown on the studio «Услуги» page).
+  A service page with no portfolio series is `noindex` and out of the sitemap; it opens by itself
+  once a series is placed on it. Portfolio = `content/portfolio.json` (ADMIN-OWNED: list of series,
+  each with `places`: 'fotograf' and/or service slugs) + `photos/p/<id>/` (hashed, `t/` = thumbnails).
+  Alexey edits it in the admin tab «Портфолио» (function action `pfile` uploads each photo, then the
+  `portfolio` edit saves the list); from a Mac folder: `deploy.py --pull-only`, then
+  `python3 tools/portfolio.py <folder> <id> "<Title>" "<alt>" --place=…` (strips EXIF/GPS).
+  `sitemap.xml` comes from render (`other`), so the function rewrites it too.
+- SEO / search (step 6b): `site.json` → `siteUrl` (main domain) drives canonical, og: tags, the
+  LocalBusiness card on home, `robots.txt` (`build.mjs`) and `sitemap.xml` (`render.mjs` → `other`). `src/root/` = files copied to the site
+  root (Yandex/Google ownership, from Vigbo). Search page `/poisk/` (texts `site.json` → `search`):
+  `site.js` fetches the listed pages and searches their text in the browser — no index to keep fresh.
 - `build.mjs` — `node build.mjs` → `dist/` (static, root-absolute paths) + `dist/_src/` for the function.
+- Mirror: bucket `novopashin.ru` gets every file too (`deploy.py` MIRRORS, admin function env MIRRORS,
+  default novopashin.ru) — the second domain shows the same site until the switch (Alexey, 2026-10-06).
 - Deploy: `python3 deploy.py [--dry-run] [--pull-only]` uploads changed files of `dist/` to bucket
   `tomson` (S3 API, keys in `~/.config/tomson/s3.env`, made by Alexey, never in a repo). No deletes.
   HTML/JSON are `no-cache`, photos a year (versioned URLs).

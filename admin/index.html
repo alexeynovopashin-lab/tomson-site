@@ -95,12 +95,41 @@ h3{font:600 12px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;c
 @media (max-width:560px){.evc{grid-template-columns:1fr}.evc .f{grid-template-columns:1fr}}
 .vrow input{width:100%;margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:14px}
 .vrow input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.svrow{display:block}
+.svrow input{width:100%;margin-top:8px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:14px;color:var(--ink)}
+.svrow input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.svrow.bad input.bad{border-color:var(--err)}
+.svrow.changed{background:var(--changed)}
+.svrow .sv-state{font-size:12px;color:var(--muted);margin-top:2px;display:block}
 .vstate{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:2px}
 .vstate a{color:inherit}
 .vrow.changed .vstate{color:var(--accent)}
 .vrow.bad .vstate{color:var(--err)}
 .vrow.bad input{border-color:var(--err)}
 .ph .small-btn{margin:8px 10px 10px;align-self:flex-start}
+.pfc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.pfc.dirty{border-color:var(--accent)}
+.pfc .f{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pfc label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.pfc input[type=text]{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--field);font-size:15px;color:var(--ink)}
+.pf-places{display:flex;flex-wrap:wrap;gap:6px 14px;margin:12px 0}
+.pf-grp{flex-basis:100%;font:600 11px/1.2 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.pf-places label{flex-direction:row;align-items:center;gap:6px;font-size:14px;color:var(--ink)}
+.pf-photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.pf-ph{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:var(--paper-2);cursor:grab}
+.pf-ph.drag{opacity:.35}.pf-ph.over{outline:3px solid var(--accent);outline-offset:-3px}
+.pf-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.pf-ph.new{outline:2px solid var(--accent);outline-offset:-2px}
+.pf-ph button{position:absolute;border:0;background:rgba(0,0,0,.62);color:#fff;cursor:pointer;line-height:1;padding:0;border-radius:999px}
+.pf-ph [data-pfdel]{top:5px;right:5px;width:28px;height:28px;font-size:16px}
+.pf-ph .cover,.pf-ph [data-pffirst]{top:5px;left:5px;font:700 11px/1 var(--sans);padding:6px 9px}
+.pf-ph .cover{position:absolute;background:var(--accent);color:var(--accent-ink);border-radius:999px}
+.pf-ph [data-pfmv]{bottom:5px;width:34px;height:30px;font-size:18px}
+.pf-ph [data-pfmv="-1"]{left:5px}.pf-ph [data-pfmv="1"]{right:5px}
+.pf-ph .num{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font:700 11px/1 var(--sans);color:#fff;text-shadow:0 0 3px rgba(0,0,0,.8)}
+.pfc .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.pfc .acts .n{color:var(--muted);font-size:13px;margin-right:auto}
+@media (max-width:560px){.pfc .f{grid-template-columns:1fr}}
 .login{max-width:380px;margin:12vh auto 0;padding:0 16px}
 .login h1{font:600 40px/1 var(--serif);margin:0 0 6px}
 .login form{display:flex;gap:8px;margin-top:18px}
@@ -140,6 +169,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <button role="tab" aria-selected="false" data-tab="photos">Фото</button>
       <button role="tab" aria-selected="false" data-tab="videos">Ролики</button>
       <button role="tab" aria-selected="false" data-tab="events">Афиша</button>
+      <button role="tab" aria-selected="false" data-tab="portfolio">Портфолио</button>
     </div>
     <a class="link" href="/" target="_blank" rel="noopener">Открыть сайт</a>
     <button class="link" id="logout">Выйти</button>
@@ -155,7 +185,11 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <div id="items"></div>
     </section>
     <section id="tab-videos" hidden>
-      <h2>Ролики</h2>
+      <h2>Видео фотошколы</h2>
+      <p class="hint">Ролики внизу страницы «Фотошкола». К одному ролику можно дать две ссылки: на VK Видео и на YouTube. На странице появится переключатель, по умолчанию открывается VK; если он не загружается, сайт предложит переключить плеер. Достаточно одной ссылки. Чтобы убрать ссылку, впишите в её поле «-», чтобы убрать весь ролик, нажмите «убрать ролик».</p>
+      <p><button class="btn" id="svAdd" type="button">+ Добавить ролик</button></p>
+      <div class="card" id="svList"></div>
+      <h2 style="margin-top:44px">Ролики оборудования</h2>
       <p class="hint">Ролик с VK Видео у позиции оборудования. На сайте у неё появится кнопка «Смотреть в работе», ролик откроется поверх каталога. Надёжнее всего код из VK: под роликом «Поделиться» → «Экспортировать» → скопировать код. Обычная ссылка на ролик тоже подойдёт, но некоторые ролики без кода не показываются.</p>
       <div id="videoGroups"></div>
     </section>
@@ -165,6 +199,13 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       <p><button class="btn" id="evAdd" type="button">+ Добавить мероприятие</button></p>
       <div id="evList"></div>
       <input type="file" id="evFile" accept="image/*" hidden>
+    </section>
+    <section id="tab-portfolio" hidden>
+      <h2>Портфолио</h2>
+      <p class="hint">Серии фотографий для страницы фотографа и страниц услуг. Создайте серию, добавьте фото (можно сразу много, прямо с телефона — они уменьшатся до размера сайта, данные о месте съёмки удалятся) и отметьте, где её показывать: на странице фотографа, в одном или нескольких жанрах и где снимали. Если в нашем зале — превью съёмки с ценой появится на странице зала; на улице, в другой студии или на выезде — только подпись у серии. Первое фото серии — обложка: нажмите «в обложку» на любом фото. Порядок — стрелками ‹ › под фото, на компьютере можно перетаскивать мышкой. Страница услуги появляется в поиске Яндекса и Google, как только на ней есть хотя бы одна серия.</p>
+      <p><button class="btn" id="pfAdd" type="button">+ Новая серия</button></p>
+      <div id="pfList"></div>
+      <input type="file" id="pfFile" accept="image/*" multiple hidden>
     </section>
     <section id="tab-photos" hidden>
       <h2>Фото</h2>
@@ -223,9 +264,9 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   function load() {
     return getJson('/_src/manifest.json').then(function (m) {
       manifest = m;
-      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json', 'events.json'].map(function (f) {
+      return Promise.all(['site.json', 'prices.json', 'halls.json', 'photos.json', 'oborudovanie.json', 'videos.json', 'events.json', 'portfolio.json', 'services.json', 'school_videos.json'].map(function (f) {
         return getJson('/_src/content/' + f).then(function (d) { C[f] = d; }, function (e) {
-          if (f === 'videos.json') C[f] = {}; else if (f === 'events.json') C[f] = []; else throw e;  // not published yet
+          if (f === 'videos.json') C[f] = {}; else if (f === 'events.json' || f === 'school_videos.json') C[f] = []; else throw e;  // not published yet
         });
       }).concat(import('/_src/render.mjs?t=' + Date.now()).then(function (m) { site = m; })));
     }).then(function () {
@@ -253,7 +294,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     show($('loginMsg'), 'err', text || '');
     $('pw').focus();
   }
-  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); renderVideos(); renderEvents(); }
+  function openApp() { $('login').hidden = true; $('app').hidden = false; renderPrices(); renderPhotos(); renderVideos(); renderEvents(); renderPortfolio(); }
   function tab() { return document.querySelector('.tabs [aria-selected=true]').dataset.tab; }
   $('loginForm').addEventListener('submit', function (ev) {
     ev.preventDefault();
@@ -267,7 +308,7 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   document.querySelectorAll('.tabs button').forEach(function (b) {
     b.addEventListener('click', function () {
       document.querySelectorAll('.tabs button').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
-      ['prices', 'photos', 'videos', 'events'].forEach(function (t) { $('tab-' + t).hidden = b.dataset.tab !== t; });
+      ['prices', 'photos', 'videos', 'events', 'portfolio'].forEach(function (t) { $('tab-' + t).hidden = b.dataset.tab !== t; });
       show($('msg'), '', '');
       updateBar();
     });
@@ -338,16 +379,18 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
   function updateBar() {
     if (tab() === 'videos') return updateVideoBar();
     if (tab() === 'events') return updateEventBar();
+    if (tab() === 'portfolio') return updatePfBar();
     if (tab() === 'photos') { $('bar').classList.remove('on'); return; }
     var n = edits ? count() : 0;
     $('bar').classList.toggle('on', (n > 0 || (edits && edits.bad > 0)) && tab() === 'prices');
     $('barWhat').textContent = edits && edits.bad ? 'В поле не число, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние цены';
     $('publish').disabled = !!(edits && edits.bad) || busy;
   }
-  $('undo').addEventListener('click', function () { if (tab() === 'videos') renderVideos(); else if (tab() === 'events') renderEvents(); else renderPrices(); show($('msg'), '', ''); });
+  $('undo').addEventListener('click', function () { if (tab() === 'videos') renderVideos(); else if (tab() === 'events') renderEvents(); else if (tab() === 'portfolio') renderPortfolio(); else renderPrices(); show($('msg'), '', ''); });
   $('publish').addEventListener('click', function () {
     if (tab() === 'videos') return publishVideos();
     if (tab() === 'events') return publishEvents();
+    if (tab() === 'portfolio') return publishPortfolio();
     if (busy || edits.bad) return;
     busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
     call({ action: 'prices', halls: edits.halls, items: edits.items }).then(function (d) {
@@ -363,6 +406,65 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
   });
 
+  // ---------- school videos ----------
+  var svDirty = false, svSeq = 0;
+  function svRow(v) {
+    var id = v.id || '', key = id || ('new' + (++svSeq));
+    function st(has) { return has ? 'Ссылка есть · <a href="' + esc(has) + '" target="_blank" rel="noopener">посмотреть</a>. Вставьте новую, чтобы заменить, или «-», чтобы убрать' : 'Ссылки нет'; }
+    return '<div class="row svrow" data-id="' + esc(id) + '" data-key="' + esc(key) + '"><div class="name">' +
+      '<input type="text" class="sv-t" autocomplete="off" placeholder="Название ролика" value="' + esc(v.title || '') + '">' +
+      '<input type="text" class="sv-vk" inputmode="url" autocomplete="off" spellcheck="false" placeholder="' + (v.vk ? 'Новая ссылка или код VK Видео' : 'Ссылка или код VK Видео') + '">' +
+      '<span class="sv-state sv-vks">VK Видео: ' + (v.vk ? st(v.vk) : 'ссылки нет') + '</span>' +
+      '<input type="text" class="sv-yt" inputmode="url" autocomplete="off" spellcheck="false" placeholder="' + (v.yt ? 'Новая ссылка YouTube' : 'Ссылка YouTube') + '">' +
+      '<span class="sv-state sv-yts">YouTube: ' + (v.yt ? st('https://www.youtube.com/watch?v=' + v.yt) : 'ссылки нет') + '</span>' +
+      '</div><button class="link" type="button" data-svdel>убрать ролик</button></div>';
+  }
+  function renderSchoolVideos() {
+    var L = C['school_videos.json'] || [];
+    $('svList').innerHTML = L.map(svRow).join('') || '<p class="hint" style="padding:12px 16px;margin:0">Роликов пока нет.</p>';
+    svDirty = false;
+  }
+  function svRows() { return [].slice.call(document.querySelectorAll('#svList .svrow')); }
+  function svCheck() {
+    var bad = 0;
+    svRows().forEach(function (r) {
+      var t = r.querySelector('.sv-t').value.trim(), vk = r.querySelector('.sv-vk').value.trim(), yt = r.querySelector('.sv-yt').value.trim();
+      var old = (C['school_videos.json'] || []).filter(function (x) { return x.id === r.dataset.id; })[0] || {};
+      var vkOk = !vk || vk === '-' || !!site.vkEmbed(vk), ytOk = !yt || yt === '-' || !!site.ytId(yt);
+      var hasVk = vk === '-' ? false : (vk ? true : !!old.vk), hasYt = yt === '-' ? false : (yt ? true : !!old.yt);
+      var ok = !!t && vkOk && ytOk && (hasVk || hasYt);
+      r.classList.toggle('bad', !ok);
+      r.querySelector('.sv-vk').classList.toggle('bad', !vkOk);
+      r.querySelector('.sv-yt').classList.toggle('bad', !ytOk);
+      if (!ok) bad++;
+    });
+    return bad;
+  }
+  $('svAdd').addEventListener('click', function () {
+    var first = !svRows().length;
+    if (first) $('svList').innerHTML = '';
+    $('svList').insertAdjacentHTML('beforeend', svRow({}));
+    svRows().pop().classList.add('changed');
+    svDirty = true; updateBar();
+  });
+  document.addEventListener('input', function (ev) {
+    var row = ev.target.closest && ev.target.closest('.svrow');
+    if (!row) return;
+    row.classList.add('changed'); svDirty = true; updateBar();
+  });
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-svdel]');
+    if (!b) return;
+    b.closest('.svrow').remove(); svDirty = true;
+    if (!svRows().length) $('svList').innerHTML = '<p class="hint" style="padding:12px 16px;margin:0">Роликов пока нет.</p>';
+    updateBar();
+  });
+  function svPayload() {
+    return svRows().map(function (r) {
+      return { id: r.dataset.id, title: r.querySelector('.sv-t').value, vk: r.querySelector('.sv-vk').value, yt: r.querySelector('.sv-yt').value };
+    });
+  }
+
   // ---------- videos ----------
   function renderVideos() {
     var V = C['videos.json'] || {};
@@ -375,14 +477,15 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       }).join('') + '</div>';
     }).join('');
     vEdits = {};
+    renderSchoolVideos();
     updateBar();
   }
   function vBad() { return Object.keys(vEdits).filter(function (k) { return vEdits[k] && !site.vkEmbed(vEdits[k]); }).length; }
   function updateVideoBar() {
-    var n = Object.keys(vEdits).length, bad = vBad();
+    var n = Object.keys(vEdits).length + (svDirty ? 1 : 0), bad = vBad(), svBad = svDirty ? svCheck() : 0;
     $('bar').classList.toggle('on', n > 0);
-    $('barWhat').textContent = bad ? 'Одна из ссылок не с VK Видео, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние ролики';
-    $('publish').disabled = bad > 0 || busy;
+    $('barWhat').textContent = svBad ? 'В видео фотошколы что-то не заполнено или ссылка не подходит, исправьте' : bad ? 'Одна из ссылок не с VK Видео, исправьте' : n + ' ' + plural(n, 'изменение', 'изменения', 'изменений') + ', на сайте пока прежние ролики';
+    $('publish').disabled = bad > 0 || svBad > 0 || busy;
   }
   document.addEventListener('input', function (ev) {
     var row = ev.target.closest && ev.target.closest('.vrow');
@@ -404,12 +507,17 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
     updateBar();
   });
   function publishVideos() {
-    if (busy || vBad()) return;
+    if (busy || vBad() || (svDirty && svCheck())) return;
     busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
-    call({ action: 'videos', videos: vEdits }).then(function (d) {
+    var changes = [];
+    (Object.keys(vEdits).length ? call({ action: 'videos', videos: vEdits }) : Promise.resolve({ changes: [] })).then(function (d) {
+      changes = changes.concat(d.changes || []);
+      return svDirty ? call({ action: 'schoolVideos', list: svPayload() }) : { changes: [] };
+    }).then(function (d) {
+      changes = changes.concat(d.changes || []);
       return load().then(function () {
         renderVideos();
-        var list = (d.changes || []).join('\n');
+        var list = changes.join('\n');
         show($('msg'), 'ok', list ? 'Опубликовано:\n' + list : 'Всё и так совпадало с сайтом, ничего не поменялось.');
         window.scrollTo(0, 0);
       });
@@ -510,6 +618,187 @@ dialog::backdrop{background:rgba(10,8,6,.6)}
       if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Афиша не опубликована.');
       show($('msg'), 'err', (done.length ? 'Опубликовано частично:\n' + done.join('\n') + '\n\n' : '') + 'Не опубликовано: ' + e.message); window.scrollTo(0, 0);
     }).then(function () { busy = false; $('publish').textContent = 'Опубликовать'; updateBar(); });
+  }
+
+  // ---------- portfolio ----------
+  // pf = working copy of portfolio.json; new photos carry their shrunk blobs until published
+  var pf = [], pfDirty = false, pfFor = null, pfBusyMsg = '';
+  function pfPlaces() {
+    // a series is pinned like a tag: the landing, genres (services), halls where it was shot
+    var H = C['halls.json'] || {};
+    var SV = C['services.json'] || {}, G = {}, prev = null;
+    (SV.groups || []).forEach(function (g) { G[g.id] = g.title; });
+    return [['fotograf', 'Страница фотографа', 'Где показывать']].concat((SV.list || []).map(function (k) {
+      var head = k.group !== prev ? 'Жанр' + (G[k.group] ? ': ' + G[k.group] : '') : ''; prev = k.group; return [k.slug, k.name, head];
+    }))
+      .concat(Object.keys(H).map(function (k, i) { return [H[k].pageSlug, 'Зал ' + H[k].name, i ? '' : 'Где снято']; }))
+      .concat(((C['services.json'] || {}).locations || []).map(function (l) { return [l.slug, l.label, '']; }));
+  }
+  function pfThumb(s, p) { return p.url || '/photos/p/' + s.id + '/t/' + (p.n || p.f) + '.jpg'; }
+  function renderPortfolio() {
+    pf = JSON.parse(JSON.stringify(C['portfolio.json'] || []));
+    pfDirty = false; drawPortfolio();
+  }
+  function drawPortfolio() {
+    $('pfList').innerHTML = pf.length ? pf.map(function (s, si) {
+      return '<div class="pfc' + (s.dirty ? ' dirty' : '') + '" data-si="' + si + '">' +
+        '<div class="f"><label>Название серии<input type="text" name="title" value="' + esc(s.title || '') + '" placeholder="Семья Ивановых"></label>' +
+        '<label>Подпись к фото (видят поисковики)<input type="text" name="alt" value="' + esc(s.alt || '') + '" placeholder="Семейная фотосессия в студии"></label></div>' +
+        '<div class="pf-places">' + pfPlaces().map(function (pl) {
+          return (pl[2] ? '<span class="pf-grp">' + esc(pl[2]) + '</span>' : '') + '<label><input type="checkbox" value="' + esc(pl[0]) + '"' + (s.places.indexOf(pl[0]) >= 0 ? ' checked' : '') + '> ' + esc(pl[1]) + '</label>';
+        }).join('') + '</div>' +
+        '<div class="pf-photos">' + s.photos.map(function (p, pi) {
+          var last = pi === s.photos.length - 1;
+          return '<div class="pf-ph' + (p.blob ? ' new' : '') + '" data-pi="' + pi + '" draggable="true"><img loading="lazy" src="' + esc(pfThumb(s, p)) + '" alt="" draggable="false">' +
+            (pi ? '<button type="button" data-pffirst title="Поставить первым: это фото станет обложкой серии">в обложку</button>' : '<span class="cover">обложка</span>') +
+            '<button type="button" data-pfdel title="Убрать фото из серии" aria-label="Убрать фото">×</button>' +
+            (pi ? '<button type="button" data-pfmv="-1" title="Сдвинуть раньше" aria-label="Сдвинуть раньше">‹</button>' : '') +
+            '<span class="num">' + (pi + 1) + '</span>' +
+            (last ? '' : '<button type="button" data-pfmv="1" title="Сдвинуть дальше" aria-label="Сдвинуть дальше">›</button>') + '</div>';
+        }).join('') + '</div>' +
+        '<div class="acts"><span class="n">' + s.photos.length + ' фото</span><button class="small-btn" type="button" data-pfphotos>+ Фото</button>' +
+        '<button class="small-btn" type="button" data-pfmove="-1">↑</button><button class="small-btn" type="button" data-pfmove="1">↓</button>' +
+        '<button class="small-btn" type="button" data-pfdelser>Убрать серию</button></div></div>';
+    }).join('') : '<p class="hint">Серий пока нет.</p>';
+    updateBar();
+  }
+  function pfMark(si) { if (si != null && pf[si]) pf[si].dirty = true; pfDirty = true; }
+  function updatePfBar() {
+    var n = 0; pf.forEach(function (s) { s.photos.forEach(function (p) { if (p.blob) n++; }); });
+    $('bar').classList.toggle('on', pfDirty || !!pfBusyMsg);
+    $('barWhat').textContent = pfBusyMsg || (n ? n + ' ' + plural(n, 'новое фото', 'новых фото', 'новых фото') + ' ждут публикации' : 'Есть изменения, на сайте пока прежнее портфолио');
+    $('publish').disabled = busy;
+  }
+  $('pfAdd').addEventListener('click', function () {
+    pf.unshift({ id: '', title: '', alt: '', places: [], photos: [], dirty: true, fresh: true });
+    pfDirty = true; drawPortfolio();
+    $('pfList').querySelector('input[name=title]').focus();
+  });
+  $('pfList').addEventListener('input', function (ev) {
+    var card = ev.target.closest('.pfc'); if (!card) return;
+    var s = pf[+card.dataset.si];
+    if (ev.target.name === 'title' || ev.target.name === 'alt') s[ev.target.name] = ev.target.value;
+    if (ev.target.type === 'checkbox') s.places = [].slice.call(card.querySelectorAll('.pf-places input:checked')).map(function (x) { return x.value; });
+    card.classList.add('dirty'); pfMark(+card.dataset.si); updateBar();
+  });
+  $('pfList').addEventListener('click', function (ev) {
+    var card = ev.target.closest('.pfc'); if (!card) return;
+    var si = +card.dataset.si, s = pf[si], ph = ev.target.closest('.pf-ph'), pi = ph ? +ph.dataset.pi : -1;
+    if (ev.target.closest('[data-pfdel]')) { s.photos.splice(pi, 1); pfMark(si); drawPortfolio(); }
+    else if (ev.target.closest('[data-pffirst]')) { s.photos.unshift(s.photos.splice(pi, 1)[0]); pfMark(si); drawPortfolio(); }
+    else if (ev.target.closest('[data-pfmv]')) {
+      var to = pi + +ev.target.closest('[data-pfmv]').dataset.pfmv;
+      if (to >= 0 && to < s.photos.length) { s.photos.splice(to, 0, s.photos.splice(pi, 1)[0]); pfMark(si); drawPortfolio(); }
+    }
+    else if (ev.target.closest('[data-pfphotos]')) { pfFor = s; $('pfFile').value = ''; $('pfFile').click(); }
+    else if (ev.target.closest('[data-pfmove]')) {
+      var to = si + +ev.target.closest('[data-pfmove]').dataset.pfmove;
+      if (to >= 0 && to < pf.length) { pf.splice(to, 0, pf.splice(si, 1)[0]); pfMark(null); drawPortfolio(); }
+    } else if (ev.target.closest('[data-pfdelser]')) {
+      if (confirm('Убрать серию «' + (s.title || 'без названия') + '» с сайта? Сами фото останутся в хранилище.')) { pf.splice(si, 1); pfMark(null); drawPortfolio(); }
+    }
+  });
+  // computer: drag a photo onto another one to put it in that place (phone: the ‹ › buttons)
+  var pfDrag = null;
+  $('pfList').addEventListener('dragstart', function (ev) {
+    var ph = ev.target.closest && ev.target.closest('.pf-ph'); if (!ph) return;
+    pfDrag = { si: +ph.closest('.pfc').dataset.si, pi: +ph.dataset.pi };
+    ph.classList.add('drag'); ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', '');
+  });
+  $('pfList').addEventListener('dragover', function (ev) {
+    var ph = ev.target.closest && ev.target.closest('.pf-ph');
+    if (!pfDrag || !ph || +ph.closest('.pfc').dataset.si !== pfDrag.si) return;
+    ev.preventDefault();
+    [].forEach.call(document.querySelectorAll('.pf-ph.over'), function (x) { if (x !== ph) x.classList.remove('over'); });
+    ph.classList.add('over');
+  });
+  $('pfList').addEventListener('drop', function (ev) {
+    var ph = ev.target.closest && ev.target.closest('.pf-ph');
+    if (!pfDrag || !ph || +ph.closest('.pfc').dataset.si !== pfDrag.si) return;
+    ev.preventDefault();
+    var s = pf[pfDrag.si], to = +ph.dataset.pi;
+    if (to !== pfDrag.pi) { s.photos.splice(to, 0, s.photos.splice(pfDrag.pi, 1)[0]); pfMark(pfDrag.si); }
+    pfDrag = null; drawPortfolio();
+  });
+  $('pfList').addEventListener('dragend', function () { pfDrag = null; [].forEach.call(document.querySelectorAll('.pf-ph.drag,.pf-ph.over'), function (x) { x.classList.remove('drag', 'over'); }); });
+  $('pfFile').addEventListener('change', function () {
+    var files = [].slice.call($('pfFile').files), s = pfFor, bad = 0, i = 0;
+    if (!files.length || !s) return;
+    busy = true;
+    files.reduce(function (p, f) {
+      return p.then(function () {
+        pfBusyMsg = 'Готовлю фото ' + (++i) + ' из ' + files.length + '…'; updateBar();
+        return shrink2(f).then(function (r) { s.photos.push(r); }, function () { bad++; });
+      });
+    }, Promise.resolve()).then(function () {
+      busy = false; pfBusyMsg = ''; s.dirty = true; pfDirty = true; drawPortfolio();
+      if (bad) { show($('msg'), 'err', bad + ' ' + plural(bad, 'файл не открылся', 'файла не открылись', 'файлов не открылись') + '. Подойдут JPEG, PNG или снимки с телефона.'); window.scrollTo(0, 0); }
+    });
+  });
+  // one decode, two sizes: 1600 px for the full view, 700 px for the gallery grid
+  function shrink2(file) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var sw = img.naturalWidth, sh = img.naturalHeight;
+        function at(side, q) {
+          var k = Math.min(1, side / Math.max(sw, sh)), cv = document.createElement('canvas');
+          cv.width = Math.round(sw * k); cv.height = Math.round(sh * k);
+          var cx = cv.getContext('2d'); cx.imageSmoothingQuality = 'high'; cx.drawImage(img, 0, 0, cv.width, cv.height);
+          return new Promise(function (ok, no) { cv.toBlob(function (b) { b ? ok(b) : no(new Error('toBlob')); }, 'image/jpeg', q); });
+        }
+        Promise.all([at(1600, 0.82), at(700, 0.8)]).then(function (b) {
+          URL.revokeObjectURL(url);
+          resolve({ blob: b[0], thumb: b[1], r: ratioOf(sw, sh), url: URL.createObjectURL(b[1]) });
+        }, reject);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('decode')); };
+      img.src = url;
+    });
+  }
+  function ratioOf(w, h) {
+    var std = [[2, 3], [3, 2], [4, 5], [5, 4], [3, 4], [4, 3], [1, 1], [16, 9], [9, 16]];
+    for (var i = 0; i < std.length; i++) if (Math.abs(w / h - std[i][0] / std[i][1]) < 0.01) return std[i][0] + '/' + std[i][1];
+    return (Math.round(w / h * 1000) / 1000) + '/1';
+  }
+  var TR = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'j', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'ch', ш: 'sh', щ: 'sch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'ju', я: 'ja' };
+  function newId(title) {
+    var base = String(title).toLowerCase().split('').map(function (c) { return TR[c] != null ? TR[c] : c; }).join('').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'seriya';
+    return base + '-' + Math.random().toString(36).slice(2, 6);
+  }
+  function publishPortfolio() {
+    if (busy) return;
+    var empty = pf.filter(function (s) { return !String(s.title).trim(); })[0];
+    if (empty) { show($('msg'), 'err', 'У серии нет названия — впишите его.'); window.scrollTo(0, 0); return; }
+    pf.forEach(function (s) { if (!s.id) s.id = newId(s.title); });
+    var jobs = [];
+    pf.forEach(function (s) { s.photos.forEach(function (p) { if (p.blob) jobs.push({ s: s, p: p }); }); });
+    busy = true; $('publish').disabled = true; $('publish').textContent = 'Публикую…';
+    var sent = 0;
+    jobs.reduce(function (pr, j) {
+      return pr.then(function () {
+        pfBusyMsg = 'Загружаю фото ' + (sent + 1) + ' из ' + jobs.length + '…'; updateBar();
+        return Promise.all([base64(j.p.blob), base64(j.p.thumb)]).then(function (b) {
+          return call({ action: 'pfile', series: j.s.id, full: b[0], thumb: b[1] });
+        }).then(function (d) { j.p.f = d.f; if (d.n) j.p.n = d.n; delete j.p.blob; delete j.p.thumb; sent++; });
+      });
+    }, Promise.resolve()).then(function () {
+      pfBusyMsg = 'Сохраняю серии и обновляю страницы…'; updateBar();
+      return call({ action: 'portfolio', series: pf.map(function (s) {
+        return { id: s.id, title: s.title, alt: s.alt, places: s.places, photos: s.photos.map(function (p) { return p.n ? { f: p.f, n: p.n, r: p.r } : { f: p.f, r: p.r }; }) };
+      }) });
+    }).then(function (d) {
+      return load().then(function () {
+        renderPortfolio();
+        var list = (d.changes || []).join('\n');
+        show($('msg'), 'ok', list ? 'Опубликовано:\n' + list : 'Всё и так совпадало с сайтом, ничего не поменялось.');
+        window.scrollTo(0, 0);
+      });
+    }).catch(function (e) {
+      // photos already sent keep their file name: «Опубликовать» again continues from where it stopped
+      if (e.status === 401) return askPassword('Пароль не подошёл, войдите снова. Портфолио не опубликовано, загруженные фото сохранятся при следующей публикации.');
+      show($('msg'), 'err', 'Не опубликовано' + (sent ? ' (фото загружено: ' + sent + ' из ' + jobs.length + ')' : '') + ': ' + e.message + '\nНажмите «Опубликовать» ещё раз — продолжится с того же места.'); window.scrollTo(0, 0);
+    }).then(function () { busy = false; pfBusyMsg = ''; $('publish').textContent = 'Опубликовать'; updateBar(); });
   }
 
   // ---------- photos ----------
