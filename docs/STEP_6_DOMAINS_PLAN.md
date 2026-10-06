@@ -162,3 +162,6 @@ Proposed as a separate step before the switch (step 6b), on the test address.
 - 05:57Z: A 158.255.3.212 → ANAME `novopashin.ru.website.yandexcloud.net`; http served by the bucket
   (200, мерено via `--resolve`). www.novopashin.ru has no bucket yet. HTTPS waits for the certificate
   (VALIDATING), then `yc storage bucket set-https`.
+- www.novopashin.ru (Alexey: «да, делай WWW»): bucket `www.novopashin.ru`, website = redirect all
+  requests → https://novopashin.ru, CNAME www → `www.novopashin.ru.website.yandexcloud.net`;
+  301 to https://novopashin.ru/<path> (мерено via `--resolve`). HTTPS on it after the certificate.
