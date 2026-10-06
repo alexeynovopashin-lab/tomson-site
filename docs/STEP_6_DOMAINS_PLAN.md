@@ -111,7 +111,7 @@ redirect rules exist; a rule matching every path — не мерено, test on 
 - «vybor-kamery и camerateka, это проекты которые я запарковал на сайте студии для теста.
   Вообще виджет "выбор камеры" — это внешняя встраиваемая функция, которая ведет на
   камератеку, камератека отдельный сайт, но пока пусть будет запаркован на странице фотошколы.»
-- `light-plan`: not said yet.
+- `light-plan`: «страницу light-plan удаляем» (not ported; old URL gives 404 after the switch).
 - .рф: «не везде работают, тот же инстаграм плохо переваривает их». Alexey: «думаю купить
   сейчас домен tom-son.ru» (reg.ru cart: 169 ₽ first year, 226 ₽ without discount).
   Registry 2026-10-06: tom-son.ru and studiotomson.ru free, tomson.ru taken since 2006.
