@@ -118,6 +118,10 @@ redirect rules exist; a rule matching every path — не мерено, test on 
   If bought and made main: bucket name `tom-son.ru`; томсон.рф + www → redirect to it;
   Yandex Webmaster / Google «переезд сайта»; CORS lists in both functions get the new origin.
 
+## Decided 2026-10-06 (Alexey)
+«куплю только studiotomson.ru» → main domain studiotomson.ru (tom-son.ru not bought).
+«сейчас делаем Шаг 6b», «включаем поиск», «делаем страницу фотографа».
+
 ## Parity with Vigbo — Alexey's requirement (2026-10-06)
 «чтобы те функции, которые были у Vigbo, были и на нашем новом сайте: SEO, https, поиск по сайту».
 | Vigbo | Now on Vigbo (мерено) | New site today | To do |
