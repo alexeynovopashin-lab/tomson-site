@@ -13,7 +13,7 @@ function `tomsonform` → email to Alexey's Yandex mailbox; first real letter ar
 
 ## Platform (since 2026-10-05)
 The site becomes a platform for photo studios and schools on the Event OS core:
-`docs/PLATFORM_ARCHITECTURE.md` (draft v0.1, decisions in DECISIONS.md). Open for
+`platform_hub:docs/PLATFORM_ARCHITECTURE.md` (draft v0.1, decisions in DECISIONS.md). Open for
 Alexey: legal entity for subscriptions. Platform stage 1 (separate Tomson data from the
 engine, Opus, private repo first) starts only AFTER the site launch below (Alexey's card
 «Сначала сайт», 2026-10-05). Platform work is not part of the launch steps.
