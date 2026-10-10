@@ -1,14 +1,15 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-06 (after the step 6 report; novopashin.ru is already on the new site).
+Last rewrite: 2026-10-10 (Alexey: томсон.рф not moved; novopashin.ru already takes real orders).
 
 ## Now
 The new site is live on the test address https://tomson.website.yandexcloud.net and, since
 2026-10-06, on **novopashin.ru** (Alexey: «все шло с моего согласия, novopashin.ru работает»;
 mirror bucket `novopashin.ru`, `www` redirects 301, https certificate attached, MX/SPF kept in
 the new DNS zone). Domain томсон.рф is still on Vigbo until the night switch Alexey announced («томсон.рф переедет ночью, когда город будет спать», 2026-10-06; date not given). Vigbo paid until June, rollback exists:
-`docs/STEP_6_DOMAINS_PLAN.md`). Main domain chosen: studiotomson.ru (Alexey has not bought it yet).
+`docs/STEP_6_DOMAINS_PLAN.md`). Main domain chosen: studiotomson.ru (purchase not confirmed in chat as of 2026-10-10).
+**2026-10-10 (Alexey):** томсон.рф has NOT moved. The AppEvent widget works in production on novopashin.ru and real orders already come through it, so a hard domain binding is unlikely; the studiotomson.ru check in step 7 stays as insurance.
 Booking = AppEvent iframe. Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` has tabs
 Цены, Фото, Ролики, Афиша, Портфолио; `deploy.py` and the admin write to both buckets.
 
@@ -32,9 +33,9 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 ## Waiting for Alexey
 1. Say «да» to merging the step 6 PR (until merged, a Mac session that starts from `main` would
    have OLD code: single bucket, no photographer pages. Do not deploy from such a checkout).
-2. Buy studiotomson.ru (he buys today, 2026-10-06; main domain; tags and sitemap already use it).
+2. Buy studiotomson.ru (said 2026-10-06 he would; not confirmed; main domain; tags and sitemap already use it). Also: the night/time of step 7.
 2b. novopashin.ru home now shows the studio home; he calls it «сайт фотографа». Propose redirect of its root
-   to `/fotograf/` (his earlier wish) — needs his word, asked 2026-10-06.
+   to `/fotograf/` (his earlier wish) — needs his word, asked 2026-10-06 and 2026-10-10, still unanswered.
 3. Genre «Свадебная фотосессия»: mark it in «Портфолио» or decide to drop the genre.
 4. Pinterest code for the place prepared in the page.
 5. First school videos in the admin (no videos = no «Видео» block on the page).
@@ -53,8 +54,8 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 7. The switch of the main domain (Opus 5.5), night window announced by Alexey, date open.
    Starting prompt: `docs/STEP_7_SWITCH_PROMPT.md`. Alexey 2026-10-06: studiotomson.ru bought today = MAIN;
    томсон.рф → 301 to it; novopashin.ru = photographer's site; no mail arrives on томсон.рф, the AppEvent
-   widget is what matters. Step must check the widget loads on the new domain (not verified, may be
-   bound to the address); which night is still open.
+   widget is what matters. Widget is confirmed working in production on novopashin.ru (2026-10-10);
+   step still checks it on studiotomson.ru as insurance. Night/time and the studiotomson.ru purchase are still open.
    Advice in it: change NS in reg.ru a day or two BEFORE the night, the night itself is one record.
    Needs item 2 of «Waiting» (or a decision to keep томсон.рф as main) and the checklist above. Rollback ready (plan doc). Postbox for the form mail after it.
 8. Optional after launch: admin hardening (lockout, access log; Opus), housekeeping (INDEX
