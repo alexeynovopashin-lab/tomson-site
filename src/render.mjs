@@ -602,7 +602,7 @@ function testBronPage() {
 <section class="wrap about"><p class="lede">${esc(c.lede)}</p>
 <div class="side"><ul>${c.notes.map((t) => `<li>${esc(t)}</li>`).join('')}<li><a href="${esc(c.adminApp)}" rel="noopener">Приложение администратора (тест)</a></li></ul></div></section>
 <section class="booking" id="bron"><div class="wrap grid">
-<div class="intro"><span class="label">Онлайн-бронь · тест</span><h2>Календарь бронирования</h2><p>Выберите день, время и оставьте контакты: заявка придёт администратору в приложение.</p></div>
+<div class="intro"><span class="label">Онлайн-бронь · тест</span><h2>Окно брони</h2><p>Выберите день, время и оставьте контакты: заявка придёт администратору в приложение.</p></div>
 <div class="frame"><iframe src="${esc(src)}" title="Окно брони BroniOS, зал ${esc(h.name)}" height="${c.height}" loading="lazy"></iframe></div>
 </div></section>
 </main>`;
