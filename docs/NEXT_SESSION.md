@@ -13,6 +13,12 @@ the new DNS zone). Domain томсон.рф is still on Vigbo until the night sw
 Booking = AppEvent iframe. Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` has tabs
 Цены, Фото, Ролики, Афиша, Портфолио; `deploy.py` and the admin write to both buckets.
 
+## Test booking page (BroniOS, Q-034 in platform_hub)
+Hidden page `/test-bron/` (`content/test-bron.json`, `testBronPage()` in `src/render.mjs`) is already in main (PR #17).
+Checked 2026-10-10 in a local build: noindex, not in sitemap, not linked from other pages, widget iframe of BroniOS with hall and
+prices from the site. NOT deployed (deploy only with Alexey's word) and the live widget/Worker is not checked from the cloud.
+Do not build a second test page. Replacing the AppEvent widget on the live site is a separate step, only on Alexey's word.
+
 ## Platform (since 2026-10-05)
 Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCHITECTURE.md`
 (decisions in DECISIONS.md). Platform stage 1 starts only AFTER the site launch (Alexey's card
