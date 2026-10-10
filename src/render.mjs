@@ -580,12 +580,43 @@ ${LIGHTBOX}`;
   return page('fotosfera/index.html', { title: c.title, description: c.description, body, current: 'Фотошкола', image: c.banner });
 }
 
+// Hidden test page for the BroniOS booking window (Alexey, 2026-10-10): noindex, not in the menu, not in the
+// sitemap, and rendered after the search page so it is not in the search list either. The hall card and prices come
+// from the site content; the iframe address carries the price steps, so a price edited in /admin/ reaches the window
+// with the next render. Remove the file content/test-bron.json to remove the page.
+function testBronPage() {
+  const c = C['test-bron.json'];
+  if (!c) return null;
+  const h = halls[c.hall];
+  const tiers = h.tiers.map((t) => `<li><span>${esc(t.people)}</span><span><b>${money(t.price)}</b> <small>₽ / час</small></span></li>`).join('');
+  // «1–9 человек» → «9:1600»: the window needs the upper bound of each step
+  const steps = h.tiers.map((t) => { const n = String(t.people).match(/(\d+)\D+(\d+)/); return `${n ? n[2] : 30}:${t.price}`; }).join(',');
+  const src = `${c.widget}?hall=${encodeURIComponent(c.hall)}&tiers=${steps}&rules=${encodeURIComponent((site.siteUrl || '') + slugUrl('pravila_i_cena'))}`;
+  const body = `<main>
+<div class="wrap crumbs"><span class="label">Тестовая страница · не для клиентов</span></div>
+<section class="wrap title">
+<div class="t"><span class="label">Зал № ${h.number} · ${esc(h.kicker)}</span><h1>${esc(c.heading)}</h1></div>
+<div class="prices"><span class="label">Цены сайта, зал ${esc(h.name)}</span><ul class="tiers">${tiers}</ul></div>
+</section>
+<section class="wrap hero">${photo(h.photo, { eager: true })}</section>
+<section class="wrap about"><p class="lede">${esc(c.lede)}</p>
+<div class="side"><ul>${c.notes.map((t) => `<li>${esc(t)}</li>`).join('')}<li><a href="${esc(c.adminApp)}" rel="noopener">Приложение администратора (тест)</a></li></ul></div></section>
+<section class="booking" id="bron"><div class="wrap grid">
+<div class="intro"><span class="label">Онлайн-бронь · тест</span><h2>Календарь бронирования</h2><p>Выберите день, время и оставьте контакты: заявка придёт администратору в приложение.</p></div>
+<div class="frame"><iframe src="${esc(src)}" title="Окно брони BroniOS, зал ${esc(h.name)}" height="${c.height}" loading="lazy"></iframe></div>
+</div></section>
+</main>`;
+  return page('test-bron/index.html', { title: c.title, description: c.description, body, current: 'Залы', noindex: true });
+}
+
   const files = [{ path: 'index.html', html: home() }];
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
   files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
   if (privacyOn) files.push(privacyPage());
   if (FG && SVC) files.push(fotografPage(), ...SVC.list.map(servicePage), ...(C['portfolio.json'] || []).map(seriesPage));
   if (SEARCH.title) files.push(searchPage()); // last: it lists every page rendered before it
+  const testBron = testBronPage(); // after the search page on purpose: a hidden page must not be listed there
+  if (testBron) files.push(testBron);
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   // non-HTML files that change with content: the sitemap follows which service pages are open to search
   const other = [];
