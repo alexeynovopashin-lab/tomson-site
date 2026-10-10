@@ -88,3 +88,9 @@ engine, Opus, private repo first) starts only AFTER the site launch below (Alexe
 - The bucket is the main copy of prices/photos/videos/events: always `deploy.py`.
 - Cloud console: «internal error» toasts are false alarms; verify with `curl`.
 - Hidden browser pane draws no frames: measure with numbers.
+
+## Catalog contract with BroniOS (2026-10-10)
+Draft table of studio fields: `platform_hub:CONTRACTS/studio_catalog.md` (answer to BroniOS Q-033). No site code changed.
+Open: Alexey's fork A/B (one admin vs one catalog, two entrances); «Платформа» entering his 10.10 words in DECISIONS;
+Q-033 text lives only in hub branch `cloud-bronios` (PR #2) — answer it under the question in `QUEUE/site.md` once merged;
+Q-032 (core) is not ours to edit — facts are in the contract. `_src/content/*.json` are public, no CORS header.
