@@ -36,6 +36,7 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 2. Buy studiotomson.ru (said 2026-10-06 he would; not confirmed; main domain; tags and sitemap already use it). Also: the night/time of step 7.
 2b. novopashin.ru home now shows the studio home; he calls it «сайт фотографа». Propose redirect of its root
    to `/fotograf/` (his earlier wish) — needs his word, asked 2026-10-06 and 2026-10-10, still unanswered.
+   Context (Alexey 2026-10-10): novopashin.ru is linked from his Instagram, so visitors land there from social: keep it stable (no downtime, keep all URLs, check redirects before and after any change). Recommended: open /fotograf/ at the root; easy to revert; to be a small Mac step or folded into the next one after his «да».
 3. Genre «Свадебная фотосессия»: mark it in «Портфолио» or decide to drop the genre.
 4. Pinterest code for the place prepared in the page.
 5. First school videos in the admin (no videos = no «Видео» block on the page).
