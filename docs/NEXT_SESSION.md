@@ -80,7 +80,10 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
    Rollback: delete zone `studiotomson-ru` or NS back at reg.ru; buckets can stay; томсон.рф and novopashin.ru untouched.
    Open question to Alexey: canonical/sitemap point to studiotomson.ru since step 6 (no SEO branch sets
    novopashin.ru); now that studiotomson.ru opens, that is no longer a dead address.
-7B. IN PROGRESS 2026-10-26 (window ~23:43 Tomsk, Alexey: «через 4 часа» at 19:43). PREPARED, visitors see nothing yet:
+7B. SWITCHED 2026-10-26 23:59 Tomsk (Alexey: «можно сделать сейчас»): zone `tomson-rf` apex A → ANAME `xn--l1acbbod.xn--p1ai.website.yandexcloud.net.`, www CNAME → `www.…website…` (both 300).
+   Measured after: Google and Cloudflare answer 213.180.193.247 within 10 s; via that IP https://томсон.рф/<path> and www → 301 → studiotomson.ru, 18 of 18 sitemap pages end in 200, cert valid; old Vigbo pages (svadby, light-plan…) 301 → 404.
+   NOT measured yet: mail both ways (MX untouched, needs Alexey), Yandex Webmaster / Search Console «переезд» (Alexey's cabinets), a clean look from a phone off Wi-Fi.
+   Before the switch it was PREPARED, visitors saw nothing:
    zone `tomson-rf` (copy of Vigbo: A 158.255.3.212 TTL 300, MX 10 mx.yandex.net., SPF TXT, www CNAME → apex, two `_acme-challenge`),
    registry NS = ns1/ns2.yandexcloud.net since 19:59 (Alexey, reg.ru; before it: ns1/ns2.gophotoweb.com — NOT vigbo.site),
    Google+Cloudflare saw Yandex NS by 21:11, mail/SPF/A answered from the new zone (measured via DoH and digwebinterface),
