@@ -58,7 +58,12 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 - `CLAUDE.md` is 75 lines on the step 6 branch (rule: ≤ 60) — trim in the next Mac step.
 
 ## Launch steps still open
-7. The switch of the main domain (Opus 5.5), night window announced by Alexey, date open.
+7A. NEW (2026-10-26): Alexey bought studiotomson.ru at reg.ru without hosting («домен куплен, давай подключим»;
+   the «хостинг за 1 ₽» offer in the cart is not needed, toggle stays off). Connect it like novopashin.ru: starting
+   prompt `docs/STEP_7A_STUDIOTOMSON_PROMPT.md` (Opus 5.5, Mac). New domain, no visitors, no night window needed.
+   Does NOT change `siteUrl`/canonical: the SEO branch temporarily sets canonical to novopashin.ru; the step reads it first.
+   First thing for Alexey: set the name servers at reg.ru (the step shows the two addresses from the new zone).
+7B. The switch of томсон.рф (Opus 5.5), night window announced by Alexey, date open; after 7A.
    Starting prompt: `docs/STEP_7_SWITCH_PROMPT.md`. Alexey 2026-10-06: studiotomson.ru bought today = MAIN;
    томсон.рф → 301 to it; novopashin.ru = photographer's site; no mail arrives on томсон.рф, the AppEvent
    widget is what matters. Widget is confirmed working in production on novopashin.ru (2026-10-10);
