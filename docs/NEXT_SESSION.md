@@ -1,7 +1,7 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-26 (step 7A: studiotomson.ru opens the site; admin price check and test letter left for Alexey).
+Last rewrite: 2026-10-26 (step 7A closed: studiotomson.ru opens the site; 7B waits for the night).
 
 ## Now
 The new site is live on the test address https://tomson.website.yandexcloud.net and, since
@@ -58,7 +58,7 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 - `CLAUDE.md` is 75 lines on the step 6 branch (rule: ≤ 60) — trim in the next Mac step.
 
 ## Launch steps still open
-7A. IN PROGRESS 2026-10-26 (Mac session «Переключение томсон.рф», branch `claude/step7a-studiotomson`).
+7A. DONE 2026-10-26 (Mac session «Переключение томсон.рф», branch `claude/step7a-studiotomson`).
    Done and measured: zone `studiotomson-ru` (ANAME → bucket, www CNAME, no MX), registry NS = ns1/ns2.yandexcloud.net
    (Alexey set them), bucket `studiotomson.ru` = copy of `tomson` (bucket-to-bucket, nothing new published),
    `www.studiotomson.ru` → 301 https://studiotomson.ru/<path>, LE certificate `fpqdqk4104u421hvk8ev` ISSUED till
@@ -73,7 +73,10 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
    (+ MIRRORS=novopashin.ru,studiotomson.ru), `tomsonform` d4eakhdkskj4cail9k8p (ORIGINS + studiotomson.ru, www). Measured by curl:
    both answer for studiotomson.ru, www, novopashin.ru, test address; a foreign origin gets 403. Old versions d4ecdhu8k70djd2i5ak4 /
    d4ehukaq9h2j5enru6f1 stay as rollback (create a version from them with `--source-version-id`; set-tag failed once).
-   LEFT for Alexey (needs his password / consent): price edit in studiotomson.ru/admin/ and back; test letter from the form.
+   DONE 2026-10-26: Alexey changed a price in studiotomson.ru/admin/ (Vegas 16–30: 8100 → 8200), it reached all three buckets,
+   he put it back (8100 on all three, measured); test letter from the form on studiotomson.ru arrived in his mailbox (his word).
+   7A is CLOSED. Not done: PR of `claude/step7a-studiotomson` (waits for Alexey's word); `/test-bron/` + `_src/render.mjs` of main
+   are not deployed (differ in all three buckets alike; needs his word); canonical question above.
    Rollback: delete zone `studiotomson-ru` or NS back at reg.ru; buckets can stay; томсон.рф and novopashin.ru untouched.
    Open question to Alexey: canonical/sitemap point to studiotomson.ru since step 6 (no SEO branch sets
    novopashin.ru); now that studiotomson.ru opens, that is no longer a dead address.
