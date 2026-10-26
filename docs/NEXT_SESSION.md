@@ -1,7 +1,7 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-10 (Alexey: томсон.рф not moved; novopashin.ru already takes real orders).
+Last rewrite: 2026-10-26 (step 7A: studiotomson.ru opens the site; two console settings left for Alexey).
 
 ## Now
 The new site is live on the test address https://tomson.website.yandexcloud.net and, since
@@ -16,7 +16,7 @@ Booking = AppEvent iframe. Form → `tomsonform` → Alexey's mailbox. Admin `/a
 ## Test booking page (BroniOS, Q-034 in platform_hub)
 Hidden page `/test-bron/` (`content/test-bron.json`, `testBronPage()` in `src/render.mjs`) is already in main (PR #17).
 Checked 2026-10-10 in a local build: noindex, not in sitemap, not linked from other pages, widget iframe of BroniOS with hall and
-prices from the site. NOT deployed (deploy only with Alexey's word) and the live widget/Worker is not checked from the cloud.
+prices from the site. MEASURED 2026-10-26: `/test-bron/` answers 200 on the test address and novopashin.ru (someone deployed it; who and when not known) and the live widget/Worker is not checked from the cloud.
 Do not build a second test page. Replacing the AppEvent widget on the live site is a separate step, only on Alexey's word.
 
 ## Platform (since 2026-10-05)
@@ -58,11 +58,23 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 - `CLAUDE.md` is 75 lines on the step 6 branch (rule: ≤ 60) — trim in the next Mac step.
 
 ## Launch steps still open
-7A. NEW (2026-10-26): Alexey bought studiotomson.ru at reg.ru without hosting («домен куплен, давай подключим»;
-   the «хостинг за 1 ₽» offer in the cart is not needed, toggle stays off). Connect it like novopashin.ru: starting
-   prompt `docs/STEP_7A_STUDIOTOMSON_PROMPT.md` (Opus 5.5, Mac). New domain, no visitors, no night window needed.
-   Does NOT change `siteUrl`/canonical: the SEO branch temporarily sets canonical to novopashin.ru; the step reads it first.
-   First thing for Alexey: set the name servers at reg.ru (the step shows the two addresses from the new zone).
+7A. IN PROGRESS 2026-10-26 (Mac session «Переключение томсон.рф», branch `claude/step7a-studiotomson`).
+   Done and measured: zone `studiotomson-ru` (ANAME → bucket, www CNAME, no MX), registry NS = ns1/ns2.yandexcloud.net
+   (Alexey set them), bucket `studiotomson.ru` = copy of `tomson` (bucket-to-bucket, nothing new published),
+   `www.studiotomson.ru` → 301 https://studiotomson.ru/<path>, LE certificate `fpqdqk4104u421hvk8ev` ISSUED till
+   2027-01-24, managed (Yandex renews while the `_acme-challenge` CNAMEs stay). 25 of 27 addresses 200 by https
+   (`/zal-edison` 302 → slash, `/svadby` 404 — same as the test address). AppEvent widget loads on
+   studiotomson.ru/zal-edison/ with halls and the week schedule (no booking made). `deploy.py` MIRRORS and the
+   admin code default list studiotomson.ru; HEAD retry added in deploy.py (1 HEAD in ~1700 hung 120 s).
+   Dry run 2026-10-26: 641 files identical in all three buckets; 2 differ in all three alike (`_src/render.mjs`,
+   `test-bron/index.html`: main is newer than the live site) — NOT deployed, needs Alexey's word.
+   LEFT for Alexey in the console: `tomsonadmin` env MIRRORS=novopashin.ru,studiotomson.ru (until then admin
+   edits do NOT reach studiotomson.ru; any deploy.py run fixes it); `tomsonform` env ORIGINS add
+   https://studiotomson.ru,https://www.studiotomson.ru (form answers «origin» on the new address now).
+   Then: price edit in studiotomson.ru/admin/ and back; test letter from the form with his consent.
+   Rollback: delete zone `studiotomson-ru` or NS back at reg.ru; buckets can stay; томсон.рф and novopashin.ru untouched.
+   Open question to Alexey: canonical/sitemap point to studiotomson.ru since step 6 (no SEO branch sets
+   novopashin.ru); now that studiotomson.ru opens, that is no longer a dead address.
 7B. The switch of томсон.рф (Opus 5.5), night window announced by Alexey, date open; after 7A.
    Starting prompt: `docs/STEP_7_SWITCH_PROMPT.md`. Alexey 2026-10-06: studiotomson.ru bought today = MAIN;
    томсон.рф → 301 to it; novopashin.ru = photographer's site; no mail arrives on томсон.рф, the AppEvent
