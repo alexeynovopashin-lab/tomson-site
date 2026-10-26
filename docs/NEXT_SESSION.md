@@ -80,13 +80,18 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
    Rollback: delete zone `studiotomson-ru` or NS back at reg.ru; buckets can stay; томсон.рф and novopashin.ru untouched.
    Open question to Alexey: canonical/sitemap point to studiotomson.ru since step 6 (no SEO branch sets
    novopashin.ru); now that studiotomson.ru opens, that is no longer a dead address.
-7B. The switch of томсон.рф (Opus 5.5), night window announced by Alexey, date open; after 7A.
-   Starting prompt: `docs/STEP_7_SWITCH_PROMPT.md`. Alexey 2026-10-06: studiotomson.ru bought today = MAIN;
-   томсон.рф → 301 to it; novopashin.ru = photographer's site; no mail arrives on томсон.рф, the AppEvent
-   widget is what matters. Widget is confirmed working in production on novopashin.ru (2026-10-10);
-   step still checks it on studiotomson.ru as insurance. Night/time and the studiotomson.ru purchase are still open.
-   Advice in it: change NS in reg.ru a day or two BEFORE the night, the night itself is one record.
-   Needs item 2 of «Waiting» (or a decision to keep томсон.рф as main) and the checklist above. Rollback ready (plan doc). Postbox for the form mail after it.
+7B. IN PROGRESS 2026-10-26 (window ~23:43 Tomsk, Alexey: «через 4 часа» at 19:43). PREPARED, visitors see nothing yet:
+   zone `tomson-rf` (copy of Vigbo: A 158.255.3.212 TTL 300, MX 10 mx.yandex.net., SPF TXT, www CNAME → apex, two `_acme-challenge`),
+   registry NS = ns1/ns2.yandexcloud.net since 19:59 (Alexey, reg.ru; before it: ns1/ns2.gophotoweb.com — NOT vigbo.site),
+   Google+Cloudflare saw Yandex NS by 21:11, mail/SPF/A answered from the new zone (measured via DoH and digwebinterface),
+   LE certificate `fpq48lj43cgrm83v6u2s` (томсон.рф + www) ISSUED 21:38 till 2027-01-24, attached to buckets
+   `xn--l1acbbod.xn--p1ai` and `www.xn--l1acbbod.xn--p1ai` (redirect-all → https://studiotomson.ru, path kept, 301;
+   measured via bucket IP 213.180.193.247: 12 of 12 in a row 301 with valid cert).
+   NIGHT STEP (only with Alexey's word): zone `tomson-rf`: delete A at apex, add ANAME apex → `xn--l1acbbod.xn--p1ai.website.yandexcloud.net.` (300),
+   replace www CNAME → `www.xn--l1acbbod.xn--p1ai.website.yandexcloud.net.` (300). Then check, mail both ways, Webmaster/Search Console «переезд» (Alexey's cabinets).
+   ROLLBACK (minutes): `yc dns zone delete-records --name tomson-rf` ANAME + add `A 158.255.3.212` 300 and www CNAME → apex.
+   FULL rollback (hours): reg.ru NS back to ns1.gophotoweb.com / ns2.gophotoweb.com. Do NOT delete the domain in Vigbo.
+   Old Vigbo pages (svadby, portrety, lesha+katja, petja+julja, vybor-kamery, camerateka, light-plan) → 404 on studiotomson.ru (decided earlier; svadby etc. may later go to /fotograf/).
 8. Optional after launch: admin hardening (lockout, access log; Opus), housekeeping (INDEX
    region-mirror row, cloud cost note for Alexey), mark the Vigbo plan end date (June).
 
