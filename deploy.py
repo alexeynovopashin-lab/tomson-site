@@ -18,9 +18,10 @@ Usage: python3 deploy.py [--dry-run] [--force] [--pull-only]
 import datetime, hashlib, hmac, json, mimetypes, os, subprocess, sys, urllib.error, urllib.parse, urllib.request
 
 BUCKET, HOST, REGION = "tomson", "storage.yandexcloud.net", "ru-central1"
-# buckets that get the same files: novopashin.ru shows the same site until the switch (Alexey, 2026-10-06).
+# buckets that get the same files: novopashin.ru shows the same site until the switch (Alexey, 2026-10-06),
+# studiotomson.ru is the main domain from step 7A (2026-10-26).
 # The admin function writes to them too (cloud/admin/index.js → MIRRORS). Pull reads only BUCKET.
-MIRRORS = ["novopashin.ru"]
+MIRRORS = ["novopashin.ru", "studiotomson.ru"]
 PROJECT = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(PROJECT, "dist")
 TYPES = {".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8",
@@ -60,16 +61,22 @@ def request(method, path, keys, body=b"", extra=None, bucket=BUCKET):
     h["Authorization"] = f"AWS4-HMAC-SHA256 Credential={ak}/{scope}, SignedHeaders={signed}, Signature={sig}"
     h.update(extra or {})
     req = urllib.request.Request(f"https://{HOST}{uri}", data=body if method == "PUT" else None, headers=h, method=method)
-    return urllib.request.urlopen(req, timeout=60)
+    return urllib.request.urlopen(req, timeout=30 if method == "HEAD" else 60)
 
 
 def remote_etag(path, keys, bucket=BUCKET):
-    try:
-        return request("HEAD", path, keys, bucket=bucket).headers.get("ETag", "").strip('"')
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            return None
-        raise
+    # one HEAD in ~1700 hangs until the timeout (measured 2026-10-26); three buckets = ~3000 HEADs a run
+    for attempt in range(3):
+        try:
+            return request("HEAD", path, keys, bucket=bucket).headers.get("ETag", "").strip('"')
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                return None
+            raise
+        except (urllib.error.URLError, TimeoutError) as e:
+            if attempt == 2:
+                raise
+            print(f"retry {bucket}/{path}: {e}")
 
 
 def remote_get(path, keys):

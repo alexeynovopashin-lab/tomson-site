@@ -9,7 +9,7 @@
 //   ADMIN_PASSWORD  — the password; Alexey types it into the console himself
 //   ORIGINS         — optional, comma-separated extra site addresses allowed to call the function
 //   MIRRORS         — optional, comma-separated buckets that get a copy of every write (default
-//                     novopashin.ru: a second domain shows the same site until the switch; "-" = none)
+//                     novopashin.ru,studiotomson.ru: other domains show the same site; "-" = none)
 // Bucket access: the function's service account (IAM token from the context). For a local test
 // run, AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY switch it to a signed static key instead.
 const crypto = require('node:crypto');
@@ -18,7 +18,7 @@ const { pathToFileURL } = require('node:url');
 
 const BUCKET = 'tomson';
 const HOST = 'storage.yandexcloud.net';
-const MIRRORS = (process.env.MIRRORS ?? 'novopashin.ru').split(',').map((s) => s.trim()).filter((s) => s && s !== '-');
+const MIRRORS = (process.env.MIRRORS ?? 'novopashin.ru,studiotomson.ru').split(',').map((s) => s.trim()).filter((s) => s && s !== '-');
 const ORIGINS = ['https://tomson.website.yandexcloud.net', 'https://xn--l1acbbod.xn--p1ai', 'https://www.xn--l1acbbod.xn--p1ai',
   'https://novopashin.ru', 'https://www.novopashin.ru', 'https://studiotomson.ru', 'https://www.studiotomson.ru']
   .concat((process.env.ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean));

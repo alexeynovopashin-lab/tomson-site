@@ -15,7 +15,8 @@
 const tls = require('node:tls');
 const crypto = require('node:crypto');
 
-const ORIGINS = ['https://tomson.website.yandexcloud.net', 'https://xn--l1acbbod.xn--p1ai', 'https://www.xn--l1acbbod.xn--p1ai']
+const ORIGINS = ['https://tomson.website.yandexcloud.net', 'https://xn--l1acbbod.xn--p1ai', 'https://www.xn--l1acbbod.xn--p1ai',
+  'https://novopashin.ru', 'https://www.novopashin.ru', 'https://studiotomson.ru', 'https://www.studiotomson.ru']
   .concat((process.env.ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean));
 const SMTP_HOST = 'smtp.yandex.ru';
 const SMTP_PORT = 465;
