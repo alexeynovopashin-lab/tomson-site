@@ -37,8 +37,8 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 ## Waiting for Alexey
 1. Mail both ways on томсон.рф and novopashin.ru (MX untouched since the switch; needs his test letters).
 2. Yandex Webmaster and Google Search Console «переезд» for томсон.рф → studiotomson.ru (his cabinets).
-2a. Question: canonical/sitemap point to studiotomson.ru, while novopashin.ru (linked from his Instagram) serves the same pages;
-   search engines may fold novopashin.ru into studiotomson.ru. Options: leave, or canonical per domain. Not asked yet.
+2a. DECIDED 2026-10-28 (Alexey): «novopashin.ru заменю на studiotomson.ru» (understood: he replaces his own links, e.g. Instagram; inference, not asked).
+   novopashin.ru stays working untouched until he says «пора»; then a small step: 301 novopashin.ru → studiotomson.ru (bucket redirect, DNS stays).
 2c. Deploy of `/test-bron/` and the newer `_src/render.mjs` to the three buckets: only on his word.
 2b. DECIDED 2026-10-10 (Alexey): NO redirect of novopashin.ru root to `/fotograf/`. For now novopashin.ru is
    the address people use to book the studio (and is linked from his Instagram): leave the home page as is,
