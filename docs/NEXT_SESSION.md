@@ -1,17 +1,15 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-26 (step 7A closed: studiotomson.ru opens the site; 7B waits for the night).
+Last rewrite: 2026-10-28 (steps 7A and 7B done 2026-10-26, merged to main).
 
 ## Now
-The new site is live on the test address https://tomson.website.yandexcloud.net and, since
-2026-10-06, on **novopashin.ru** (Alexey: «все шло с моего согласия, novopashin.ru работает»;
-mirror bucket `novopashin.ru`, `www` redirects 301, https certificate attached, MX/SPF kept in
-the new DNS zone). Domain томсон.рф is still on Vigbo until the night switch Alexey announced («томсон.рф переедет ночью, когда город будет спать», 2026-10-06; date not given). Vigbo paid until June, rollback exists:
-`docs/STEP_6_DOMAINS_PLAN.md`). Main domain chosen: studiotomson.ru (purchase not confirmed in chat as of 2026-10-10).
-**2026-10-10 (Alexey):** томсон.рф has NOT moved. The AppEvent widget works in production on novopashin.ru and real orders already come through it, so a hard domain binding is unlikely; the studiotomson.ru check in step 7 stays as insurance.
-Booking = AppEvent iframe. Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` has tabs
-Цены, Фото, Ролики, Афиша, Портфолио; `deploy.py` and the admin write to both buckets.
+The new site is the main site. **studiotomson.ru** (main domain, bought 2026-10-26) and **novopashin.ru** open it by https;
+**томсон.рф** and www switched on 2026-10-26 23:59 Tomsk to a 301 redirect to studiotomson.ru (details at steps 7A/7B below).
+Vigbo is untouched and paid until June (rollback in minutes). Mirror buckets: `novopashin.ru`, `studiotomson.ru`; `deploy.py`
+and the admin write to all three. AppEvent widget works on the new domains (Alexey 2026-10-10; Mac measurement 2026-10-26).
+Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` tabs: Цены, Фото, Ролики, Афиша, Портфолио.
+**Source of 7A/7B:** Mac branch `claude/step7a-studiotomson` (merged to main 2026-10-28). Live results are the Mac step's own measurements.
 
 ## Test booking page (BroniOS, Q-034 in platform_hub)
 Hidden page `/test-bron/` (`content/test-bron.json`, `testBronPage()` in `src/render.mjs`) is already in main (PR #17).
@@ -37,9 +35,11 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
    Branch `claude/step6b-seo` is on GitHub (no secrets found); PR to main opened by the orchestrator.
 
 ## Waiting for Alexey
-1. Say «да» to merging the step 6 PR (until merged, a Mac session that starts from `main` would
-   have OLD code: single bucket, no photographer pages. Do not deploy from such a checkout).
-2. Buy studiotomson.ru (said 2026-10-06 he would; not confirmed; main domain; tags and sitemap already use it). Also: the night/time of step 7.
+1. Mail both ways on томсон.рф and novopashin.ru (MX untouched since the switch; needs his test letters).
+2. Yandex Webmaster and Google Search Console «переезд» for томсон.рф → studiotomson.ru (his cabinets).
+2a. Question: canonical/sitemap point to studiotomson.ru, while novopashin.ru (linked from his Instagram) serves the same pages;
+   search engines may fold novopashin.ru into studiotomson.ru. Options: leave, or canonical per domain. Not asked yet.
+2c. Deploy of `/test-bron/` and the newer `_src/render.mjs` to the three buckets: only on his word.
 2b. DECIDED 2026-10-10 (Alexey): NO redirect of novopashin.ru root to `/fotograf/`. For now novopashin.ru is
    the address people use to book the studio (and is linked from his Instagram): leave the home page as is,
    keep it stable (no downtime, keep URLs). Not a priority; ask again only if he raises it.
@@ -48,7 +48,7 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 5. First school videos in the admin (no videos = no «Видео» block on the page).
 6. INN for the privacy policy; a lawyer's read of it before the main switch.
 
-## Not verified (carry into the pre-switch checklist)
+## Not verified
 - Live results of step 6 (200s, www redirect, https on novopashin.ru) are the Mac step's own
   measurements: the cloud container cannot reach the site.
 - VK and YouTube video playback on the school page (players black in the preview pane).
