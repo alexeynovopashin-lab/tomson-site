@@ -404,11 +404,22 @@ const FG = C['fotograf.json'];
 // next to it: the phone and the messengers
 const bookActions = (extra = '') => `<div class="actions book"><a class="btn solid" href="${slugUrl('raspisanie')}">Записаться</a><a class="btn" href="tel:${site.phoneHref}">${esc(site.phone)}</a>${extra}${channelLinks('channels book-ch')}</div>`;
 const svcUrl = (k) => `/${SVC.base}/${k.slug}/`;
+// photo caption for image search: the series caption + its genre (first service it is placed on) + city + photographer,
+// each part only if the caption does not say it already (Alexey 2026-10-31: «Да, добавь»)
+function pfAlt(ser) {
+  const has = (w) => ser.alt.toLowerCase().includes(w.toLowerCase());
+  const genre = SVC && SVC.list.find((k) => ser.places.includes(k.slug));
+  let a = ser.alt;
+  if (genre && !has(genre.name)) a += ` — ${genre.name}`;
+  if (!has('Томск')) a += ' в Томске';
+  if (!has('Новопашин')) a += ', фотограф Алексей Новопашин';
+  return a;
+}
 function pf(id, i, { eager = false } = {}) {
   const ser = PORT[id];
   if (!ser || !ser.photos[i]) throw new Error(`no portfolio photo: ${id} #${i}`);
   const p = ser.photos[i];
-  return `<figure class="ph" style="--r:${p.r}"><img src="/photos/p/${id}/t/${pfName(p)}.jpg" data-full="/photos/p/${id}/${pfName(p)}.jpg" alt="${esc(ser.alt)}, фото ${i + 1}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
+  return `<figure class="ph" style="--r:${p.r}"><img src="/photos/p/${id}/t/${pfName(p)}.jpg" data-full="/photos/p/${id}/${pfName(p)}.jpg" alt="${esc(pfAlt(ser))}, фото ${i + 1}" ${eager ? '' : 'loading="lazy" '}decoding="async"></figure>`;
 }
 function seriesGallery(id, preview, { head = true } = {}) {
   const ser = PORT[id];
