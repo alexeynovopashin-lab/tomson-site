@@ -1,7 +1,7 @@
 # NEXT_SESSION — tomson_site
 
 Owner: the orchestrator (Claude Project). Rewrite, do not append; ≤ ~100 lines.
-Last rewrite: 2026-10-28 (steps 7A and 7B done 2026-10-26, merged to main).
+Last rewrite: 2026-10-31 (SEO step 1 of 3: live check + Webmaster/Search Console verification, Mac session).
 
 ## Now
 The new site is the main site. **studiotomson.ru** (main domain, bought 2026-10-26) and **novopashin.ru** open it by https;
@@ -10,6 +10,20 @@ Vigbo is untouched and paid until June (rollback in minutes). Mirror buckets: `n
 and the admin write to all three. AppEvent widget works on the new domains (Alexey 2026-10-10; Mac measurement 2026-10-26).
 Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` tabs: Цены, Фото, Ролики, Афиша, Портфолио.
 **Source of 7A/7B:** Mac branch `claude/step7a-studiotomson` (merged to main 2026-10-28). Live results are the Mac step's own measurements.
+
+## SEO step 1 of 3 — DONE 2026-10-31 (Mac, measured by curl and a 375 px browser pane)
+- studiotomson.ru: `/`, `/fotograf/`, `/uslugi/semejnyj-portret/`, `/sitemap.xml`, `/robots.txt` 200; 18 of 18 sitemap URLs 200, all on studiotomson.ru.
+- http:// and https://www → one 301 → https://studiotomson.ru (path kept); http://www → two 301 (https first, bucket behaviour).
+- томсон.рф, www, their `/fotograf/` → 301 → studiotomson.ru, same path (http → two 301). novopashin.ru: NO redirect, 200 itself (decision 2a);
+  its canonical/og:url point to studiotomson.ru. Canonical + og:url on home and `/fotograf/` = studiotomson.ru.
+- Certificate LE (YR1) for studiotomson.ru + www valid till 2027-01-24. 375 px: home and `/fotograf/` scrollWidth 375 (no sideways scroll).
+- AppEvent widget on `/zal-edison/` loads (halls, week, free slots), no console errors. Form shown on home and `/fotograf/`;
+  `tomsonform` answers studiotomson.ru and www (CORS), foreign origin POST 403 (preflight shows `*` from the platform, harmless). No real letter sent.
+- Verification: Yandex Webmaster (Alexey's account, was empty) and Google Search Console (`photostudiothomson@gmail.com`, URL-prefix property,
+  was empty) — new files `yandex_1130dbf34f601660.html`, `google7908c5357ea65d6d.html` in `src/root/`, deployed, 200 on all three addresses.
+  Google: «Право собственности подтверждено»; Yandex: owner, file method, 31.10.2026 (Alexey pressed «Подтвердить»; seen in the cabinet).
+- Next for «переезд»: томсон.рф is in neither cabinet — add and verify it there first (its old files are still in `src/root/`, but the site now
+  redirects, so verification may need DNS TXT: Alexey's word). Sitemap not submitted in the cabinets (not in this step).
 
 ## Test booking page (BroniOS, Q-034 in platform_hub)
 Hidden page `/test-bron/` (`content/test-bron.json`, `testBronPage()` in `src/render.mjs`) is already in main (PR #17).
@@ -36,10 +50,10 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 
 ## Waiting for Alexey
 1. Mail both ways on томсон.рф and novopashin.ru (MX untouched since the switch; needs his test letters).
-2. Yandex Webmaster and Google Search Console «переезд» for томсон.рф → studiotomson.ru (his cabinets).
+2. «Переезд» томсон.рф → studiotomson.ru in Webmaster / Search Console: studiotomson.ru verified 2026-10-31, томсон.рф not yet in the cabinets.
 2a. DECIDED 2026-10-28 (Alexey): «novopashin.ru заменю на studiotomson.ru» (understood: he replaces his own links, e.g. Instagram; inference, not asked).
    novopashin.ru stays working untouched until he says «пора»; then a small step: 301 novopashin.ru → studiotomson.ru (bucket redirect, DNS stays).
-2c. Deploy of `/test-bron/` and the newer `_src/render.mjs` to the three buckets: only on his word.
+2c. DONE 2026-10-31: Alexey «Да, выкладывай всё» — `/test-bron/` (heading «Окно брони») and `_src/render.mjs` of main deployed to all three.
 2b. DECIDED 2026-10-10 (Alexey): NO redirect of novopashin.ru root to `/fotograf/`. For now novopashin.ru is
    the address people use to book the studio (and is linked from his Instagram): leave the home page as is,
    keep it stable (no downtime, keep URLs). Not a priority; ask again only if he raises it.
@@ -66,8 +80,7 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
    (`/zal-edison` 302 → slash, `/svadby` 404 — same as the test address). AppEvent widget loads on
    studiotomson.ru/zal-edison/ with halls and the week schedule (no booking made). `deploy.py` MIRRORS and the
    admin code default list studiotomson.ru; HEAD retry added in deploy.py (1 HEAD in ~1700 hung 120 s).
-   Dry run 2026-10-26: 641 files identical in all three buckets; 2 differ in all three alike (`_src/render.mjs`,
-   `test-bron/index.html`: main is newer than the live site) — NOT deployed, needs Alexey's word.
+   Deploy 2026-10-31 (SEO step 1): all three buckets equal to main (641 unchanged + 4 uploaded).
    DONE 2026-10-26 by the agent via `yc` (Alexey: «сам сделай»): new versions of the two functions from the same code
    (`--source-version-id`) with env copied from the old version (secrets never printed): `tomsonadmin` d4eb97gsohhc3hhn1nvm
    (+ MIRRORS=novopashin.ru,studiotomson.ru), `tomsonform` d4eakhdkskj4cail9k8p (ORIGINS + studiotomson.ru, www). Measured by curl:
@@ -75,23 +88,12 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
    d4ehukaq9h2j5enru6f1 stay as rollback (create a version from them with `--source-version-id`; set-tag failed once).
    DONE 2026-10-26: Alexey changed a price in studiotomson.ru/admin/ (Vegas 16–30: 8100 → 8200), it reached all three buckets,
    he put it back (8100 on all three, measured); test letter from the form on studiotomson.ru arrived in his mailbox (his word).
-   7A is CLOSED. Not done: PR of `claude/step7a-studiotomson` (waits for Alexey's word); `/test-bron/` + `_src/render.mjs` of main
-   are not deployed (differ in all three buckets alike; needs his word); canonical question above.
+   7A is CLOSED (branch merged 2026-10-28; `/test-bron/` + `_src/render.mjs` deployed 2026-10-31; canonical = studiotomson.ru, the main domain).
    Rollback: delete zone `studiotomson-ru` or NS back at reg.ru; buckets can stay; томсон.рф and novopashin.ru untouched.
-   Open question to Alexey: canonical/sitemap point to studiotomson.ru since step 6 (no SEO branch sets
-   novopashin.ru); now that studiotomson.ru opens, that is no longer a dead address.
 7B. SWITCHED 2026-10-26 23:59 Tomsk (Alexey: «можно сделать сейчас»): zone `tomson-rf` apex A → ANAME `xn--l1acbbod.xn--p1ai.website.yandexcloud.net.`, www CNAME → `www.…website…` (both 300).
    Measured after: Google and Cloudflare answer 213.180.193.247 within 10 s; via that IP https://томсон.рф/<path> and www → 301 → studiotomson.ru, 18 of 18 sitemap pages end in 200, cert valid; old Vigbo pages (svadby, light-plan…) 301 → 404.
    NOT measured yet: mail both ways (MX untouched, needs Alexey), Yandex Webmaster / Search Console «переезд» (Alexey's cabinets), a clean look from a phone off Wi-Fi.
-   Before the switch it was PREPARED, visitors saw nothing:
-   zone `tomson-rf` (copy of Vigbo: A 158.255.3.212 TTL 300, MX 10 mx.yandex.net., SPF TXT, www CNAME → apex, two `_acme-challenge`),
-   registry NS = ns1/ns2.yandexcloud.net since 19:59 (Alexey, reg.ru; before it: ns1/ns2.gophotoweb.com — NOT vigbo.site),
-   Google+Cloudflare saw Yandex NS by 21:11, mail/SPF/A answered from the new zone (measured via DoH and digwebinterface),
-   LE certificate `fpq48lj43cgrm83v6u2s` (томсон.рф + www) ISSUED 21:38 till 2027-01-24, attached to buckets
-   `xn--l1acbbod.xn--p1ai` and `www.xn--l1acbbod.xn--p1ai` (redirect-all → https://studiotomson.ru, path kept, 301;
-   measured via bucket IP 213.180.193.247: 12 of 12 in a row 301 with valid cert).
-   NIGHT STEP (only with Alexey's word): zone `tomson-rf`: delete A at apex, add ANAME apex → `xn--l1acbbod.xn--p1ai.website.yandexcloud.net.` (300),
-   replace www CNAME → `www.xn--l1acbbod.xn--p1ai.website.yandexcloud.net.` (300). Then check, mail both ways, Webmaster/Search Console «переезд» (Alexey's cabinets).
+   Preparation before the switch (zone copy of Vigbo, NS at reg.ru, certificate `fpq48lj43cgrm83v6u2s`, redirect buckets): DECISIONS 2026-10-26.
    ROLLBACK (minutes): `yc dns zone delete-records --name tomson-rf` ANAME + add `A 158.255.3.212` 300 and www CNAME → apex.
    FULL rollback (hours): reg.ru NS back to ns1.gophotoweb.com / ns2.gophotoweb.com. Do NOT delete the domain in Vigbo.
    Old Vigbo pages (svadby, portrety, lesha+katja, petja+julja, vybor-kamery, camerateka, light-plan) → 404 on studiotomson.ru (decided earlier; svadby etc. may later go to /fotograf/).
