@@ -22,8 +22,7 @@ Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` tabs: Цены, Фо
 - Verification: Yandex Webmaster (Alexey's account, was empty) and Google Search Console (`photostudiothomson@gmail.com`, URL-prefix property,
   was empty) — new files `yandex_1130dbf34f601660.html`, `google7908c5357ea65d6d.html` in `src/root/`, deployed, 200 on all three addresses.
   Google: «Право собственности подтверждено»; Yandex: owner, file method, 31.10.2026 (Alexey pressed «Подтвердить»; seen in the cabinet).
-- Next for «переезд»: томсон.рф is in neither cabinet — add and verify it there first (its old files are still in `src/root/`, but the site now
-  redirects, so verification may need DNS TXT: Alexey's word).
+- «Переезд»: see Waiting for Alexey item 2 (Google started 2026-10-31, Yandex waits for its tool).
 - 2026-10-31 cabinets (Alexey: «Карта сайта и регион»): Google — `sitemap.xml` submitted, status «Не получено» right after (the file answers
   Googlebot 200, application/xml, 18 URLs; re-check later). Yandex — Sitemap tool read-only (Yandex outage notice), not added; robots.txt
   lists the sitemap. Region «Томск» requested (page `/kak-najti/`), Yandex: «будет проверена в течение 7 дней». Яндекс Бизнес: no organisation
@@ -56,7 +55,10 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 
 ## Waiting for Alexey
 1. Mail both ways on томсон.рф and novopashin.ru (MX untouched since the switch; needs his test letters).
-2. «Переезд» томсон.рф → studiotomson.ru in Webmaster / Search Console: studiotomson.ru verified 2026-10-31, томсон.рф not yet in the cabinets.
+2. «Переезд» томсон.рф → studiotomson.ru (Alexey «Да, делай переезд», 2026-10-31): both cabinets verified томсон.рф by DNS TXT in zone
+   `tomson-rf` (SPF kept; measured via Cloudflare DoH — Mac DNS is a cache). Google: domain property, «Изменение адреса» passed both tests,
+   «Выполняется перенос этого сайта», start 2026-10-31. Yandex: «Переезд сайта» tool read-only (Yandex outage) — LEFT TO DO: retry, new domain
+   https://studiotomson.ru. Keep both TXT records (removing them cancels verification).
 2a. DONE 2026-10-31 (Alexey: «novopashin.ru → novopashin.ru/fotograf/, адрес не меняется» — «Да, именно так»; «сделай сам»):
    the bucket cannot redirect only the root (a routing rule matched `/index.html`, not `/`; reverted), so the home page carries a
    script before the first paint (`site.json` → hostHome, `hostHomeScript()` in `src/render.mjs`): outside visitors (typed address, link,
