@@ -9,6 +9,7 @@
   "siteUrl": "https://studiotomson.ru",
   "seoName": "Фотостудия Томсон",
   "pinterestVerify": "",
+  "hostHome": { "novopashin.ru": "/fotograf/" },
   "nav": [
     { "label": "Залы", "href": "/#zaly" },
     { "label": "Расписание", "slug": "raspisanie" },

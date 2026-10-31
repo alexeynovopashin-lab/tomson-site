@@ -119,6 +119,14 @@ function seoHead({ title, description, url, image, imageAbs }) {
 }
 const page = (path, o) => ({ path, html: shell({ ...o, path }), ...(o.noindex ? { noindex: true } : {}) });
 
+// site.json → hostHome {host: path}: a visitor who comes to that host's home page from outside (typed address, link)
+// goes to the path on the same host, e.g. novopashin.ru → novopashin.ru/fotograf/ (Alexey, 2026-10-31). The bucket
+// cannot redirect only the root, hence a script before the first paint. Clicks inside the site (logo, «Залы» → /#zaly)
+// keep the studio home: same-host referrer or a #hash.
+const hostHomeScript = () => site.hostHome && Object.keys(site.hostHome).length
+  ? `<script>(function(m,l,r){var t=m[l.hostname];if(t&&l.pathname==='/'&&!l.hash&&r.indexOf(l.origin+'/')!==0)l.replace(t)})(${JSON.stringify(site.hostHome).replace(/</g, '\\u003c')},location,document.referrer)</script>\n`
+  : '';
+
 function shell({ title, description, body, current, path, image, imageAbs, noindex }) {
   const url = urlOf(path);
   pagesSeen.push({ url, title });
@@ -129,7 +137,7 @@ function shell({ title, description, body, current, path, image, imageAbs, noind
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+${path === 'index.html' ? hostHomeScript() : ''}<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 ${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}${site.pinterestVerify ? `<meta name="p:domain_verify" content="${esc(site.pinterestVerify)}">\n` : ''}<meta name="theme-color" content="#f5f1ea">
