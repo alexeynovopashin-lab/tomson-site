@@ -27,7 +27,7 @@ Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` tabs: Цены, Фо
   Googlebot 200, application/xml, 18 URLs; re-check later). Yandex — Sitemap tool read-only (Yandex outage notice), not added; robots.txt
   lists the sitemap. Region «Томск» requested (page `/kak-najti/`), Yandex: «будет проверена в течение 7 дней». Яндекс Бизнес: no organisation
   linked to the site («регион сайта не задан») — Alexey's card on Maps with a link to studiotomson.ru is the next big SEO item (from experience).
-- SEO list given to Alexey 2026-10-31 (measured): no analytics counter on the site; 19 of 21 service pages noindex (no portfolio series);
+- SEO list given to Alexey 2026-10-31 (measured): no analytics counter on the site; 18 of 21 service pages noindex (no portfolio series; svadebnaya opened 2026-10-31);
   old Vigbo pages svadby, portrety, vybor-kamery, camerateka, light-plan → 404 (301 map to new pages waits for his «да»).
 
 ## Test booking page (BroniOS, Q-034 in platform_hub)
@@ -66,7 +66,7 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
    live site: novopashin.ru, www → /fotograf/; logo → studio home; «Залы» → /#zaly; Back does not loop; studiotomson.ru home unchanged.
    Search engines still show studiotomson.ru/fotograf/ (canonical); told Alexey. Without JavaScript the studio home shows.
 2c. DONE 2026-10-31: Alexey «Да, выкладывай всё» — `/test-bron/` (heading «Окно брони») and `_src/render.mjs` of main deployed to all three.
-3. Genre «Свадебная фотосессия»: mark it in «Портфолио» or decide to drop the genre.
+3. DONE 2026-10-31 (Alexey «Да, привяжи»): both wedding series placed on «Свадебная фотосессия» too; the page is open, sitemap 19 URLs.
 4. Pinterest code for the place prepared in the page.
 5. First school videos in the admin (no videos = no «Видео» block on the page).
 6. INN for the privacy policy; a lawyer's read of it before the main switch.

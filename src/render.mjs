@@ -410,7 +410,7 @@ function pfAlt(ser) {
   const has = (w) => ser.alt.toLowerCase().includes(w.toLowerCase());
   const genre = SVC && SVC.list.find((k) => ser.places.includes(k.slug));
   let a = ser.alt;
-  if (genre && !has(genre.name)) a += ` — ${genre.name}`;
+  if (genre && !has(genre.name)) a += ` — ${genre.name.replace(/^[А-ЯЁ]/, (c) => c.toLowerCase())}`;
   if (!has('Томск')) a += ' в Томске';
   if (!has('Новопашин')) a += ', фотограф Алексей Новопашин';
   return a;
