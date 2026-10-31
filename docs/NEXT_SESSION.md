@@ -23,7 +23,13 @@ Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` tabs: Цены, Фо
   was empty) — new files `yandex_1130dbf34f601660.html`, `google7908c5357ea65d6d.html` in `src/root/`, deployed, 200 on all three addresses.
   Google: «Право собственности подтверждено»; Yandex: owner, file method, 31.10.2026 (Alexey pressed «Подтвердить»; seen in the cabinet).
 - Next for «переезд»: томсон.рф is in neither cabinet — add and verify it there first (its old files are still in `src/root/`, but the site now
-  redirects, so verification may need DNS TXT: Alexey's word). Sitemap not submitted in the cabinets (not in this step).
+  redirects, so verification may need DNS TXT: Alexey's word).
+- 2026-10-31 cabinets (Alexey: «Карта сайта и регион»): Google — `sitemap.xml` submitted, status «Не получено» right after (the file answers
+  Googlebot 200, application/xml, 18 URLs; re-check later). Yandex — Sitemap tool read-only (Yandex outage notice), not added; robots.txt
+  lists the sitemap. Region «Томск» requested (page `/kak-najti/`), Yandex: «будет проверена в течение 7 дней». Яндекс Бизнес: no organisation
+  linked to the site («регион сайта не задан») — Alexey's card on Maps with a link to studiotomson.ru is the next big SEO item (from experience).
+- SEO list given to Alexey 2026-10-31 (measured): no analytics counter on the site; 19 of 21 service pages noindex (no portfolio series);
+  old Vigbo pages svadby, portrety, vybor-kamery, camerateka, light-plan → 404 (301 map to new pages waits for his «да»).
 
 ## Test booking page (BroniOS, Q-034 in platform_hub)
 Hidden page `/test-bron/` (`content/test-bron.json`, `testBronPage()` in `src/render.mjs`) is already in main (PR #17).
