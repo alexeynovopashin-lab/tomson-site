@@ -14,7 +14,7 @@ Form → `tomsonform` → Alexey's mailbox. Admin `/admin/` tabs: Цены, Фо
 ## SEO step 1 of 3 — DONE 2026-10-31 (Mac, measured by curl and a 375 px browser pane)
 - studiotomson.ru: `/`, `/fotograf/`, `/uslugi/semejnyj-portret/`, `/sitemap.xml`, `/robots.txt` 200; 18 of 18 sitemap URLs 200, all on studiotomson.ru.
 - http:// and https://www → one 301 → https://studiotomson.ru (path kept); http://www → two 301 (https first, bucket behaviour).
-- томсон.рф, www, their `/fotograf/` → 301 → studiotomson.ru, same path (http → two 301). novopashin.ru: NO redirect, 200 itself (decision 2a);
+- томсон.рф, www, their `/fotograf/` → 301 → studiotomson.ru, same path (http → two 301). novopashin.ru: NO redirect yet, 200 itself (root → /fotograf/ is the next step, 2a);
   its canonical/og:url point to studiotomson.ru. Canonical + og:url on home and `/fotograf/` = studiotomson.ru.
 - Certificate LE (YR1) for studiotomson.ru + www valid till 2027-01-24. 375 px: home and `/fotograf/` scrollWidth 375 (no sideways scroll).
 - AppEvent widget on `/zal-edison/` loads (halls, week, free slots), no console errors. Form shown on home and `/fotograf/`;
@@ -51,12 +51,12 @@ Platform for photo studios and schools on the Event OS core: `docs/PLATFORM_ARCH
 ## Waiting for Alexey
 1. Mail both ways on томсон.рф and novopashin.ru (MX untouched since the switch; needs his test letters).
 2. «Переезд» томсон.рф → studiotomson.ru in Webmaster / Search Console: studiotomson.ru verified 2026-10-31, томсон.рф not yet in the cabinets.
-2a. DECIDED 2026-10-28 (Alexey): «novopashin.ru заменю на studiotomson.ru» (understood: he replaces his own links, e.g. Instagram; inference, not asked).
-   novopashin.ru stays working untouched until he says «пора»; then a small step: 301 novopashin.ru → studiotomson.ru (bucket redirect, DNS stays).
+2a. DECIDED 2026-10-31 (Alexey, replaces the 2026-10-10 and 2026-10-28 records): «планировалось, что novopashin.ru будет открывать
+   страничку фотографа (мою) на сайте студии»; asked «novopashin.ru → novopashin.ru/fotograf/, адрес не меняется на studiotomson.ru?» —
+   «Да, именно так». NEXT SMALL STEP: root of novopashin.ru → novopashin.ru/fotograf/ (same domain); other novopashin.ru paths keep working
+   as now; no redirect to studiotomson.ru. Not checked yet: can the bucket redirect only the root (website routing rule)? If not, offer a
+   replacement. Search engines will still show studiotomson.ru/fotograf/ (canonical); told Alexey, he did not ask to change that.
 2c. DONE 2026-10-31: Alexey «Да, выкладывай всё» — `/test-bron/` (heading «Окно брони») and `_src/render.mjs` of main deployed to all three.
-2b. DECIDED 2026-10-10 (Alexey): NO redirect of novopashin.ru root to `/fotograf/`. For now novopashin.ru is
-   the address people use to book the studio (and is linked from his Instagram): leave the home page as is,
-   keep it stable (no downtime, keep URLs). Not a priority; ask again only if he raises it.
 3. Genre «Свадебная фотосессия»: mark it in «Портфолио» or decide to drop the genre.
 4. Pinterest code for the place prepared in the page.
 5. First school videos in the admin (no videos = no «Видео» block on the page).
