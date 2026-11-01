@@ -610,7 +610,8 @@ function testBronPage() {
   const tiers = h.tiers.map((t) => `<li><span>${esc(t.people)}</span><span><b>${money(t.price)}</b> <small>₽ / час</small></span></li>`).join('');
   // «1–9 человек» → «9:1600»: the window needs the upper bound of each step
   const steps = h.tiers.map((t) => { const n = String(t.people).match(/(\d+)\D+(\d+)/); return `${n ? n[2] : 30}:${t.price}`; }).join(',');
-  const src = `${c.widget}?hall=${encodeURIComponent(c.hall)}&tiers=${steps}&rules=${encodeURIComponent((site.siteUrl || '') + slugUrl('pravila_i_cena'))}`;
+  // `worker` (content/test-bron.json, optional) = address of the booking service; without it the window uses its own default (Cloudflare)
+  const src = `${c.widget}?hall=${encodeURIComponent(c.hall)}&tiers=${steps}&rules=${encodeURIComponent((site.siteUrl || '') + slugUrl('pravila_i_cena'))}${c.worker ? `&worker=${encodeURIComponent(c.worker)}` : ''}`;
   const body = `<main>
 <div class="wrap crumbs"><span class="label">Тестовая страница · не для клиентов</span></div>
 <section class="wrap title">
