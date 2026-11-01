@@ -12,6 +12,7 @@ process.env.PUBLIC_BOOKING_MODE = 'test';
 process.env.GOOGLE_SA_JSON = Buffer.from(JSON.stringify(sa)).toString('base64'); // base64 form
 
 let events = [];
+let urls = []; // calendars the function touched
 let tokenCalls = 0;
 let lastAssertion = '';
 globalThis.fetch = async (url, init = {}) => {
@@ -22,6 +23,7 @@ globalThis.fetch = async (url, init = {}) => {
     return new Response(JSON.stringify({ access_token: 'fake', expires_in: 3600 }), { status: 200 });
   }
   if (!u.includes('googleapis.com/calendar')) throw new Error('unexpected fetch ' + u);
+  urls.push(decodeURIComponent(u));
   if ((init.method || 'GET') === 'POST') {
     const body = JSON.parse(init.body);
     const ev = { id: 'e' + (events.length + 1), start: { dateTime: body.start.dateTime + '+07:00' }, end: { dateTime: body.end.dateTime + '+07:00' }, summary: body.summary, description: body.description };
@@ -110,4 +112,31 @@ assert.equal((await call('/public/request', 'POST', { ...ok, date: future(20), p
 for (let i = 0; i < 5; i++) await call('/public/request', 'POST', { ...ok, website: 'x' }, '7.7.7.7');
 assert.equal((await call('/public/request', 'POST', ok, '7.7.7.7')).statusCode, 429);
 
+// ---- working Vegas calendar, only inside the test window (fail-closed) ----
+const LIVE = 'live-vegas@group.calendar.google.com';
+process.env.VEGAS_CALENDAR_ID = LIVE;
+const vegas = { ...ok, hall: 'vegas', phone: '89130003300', start: '08:00', end: '09:00', date: future(4) };
+// no window: Vegas is not served at all, other halls still use the test calendars
+delete process.env.TEST_WINDOW;
+assert.equal((await call('/public/request', 'POST', vegas, '10.0.0.1')).statusCode, 400);
+assert.equal((await call(`/public/busy?hall=vegas&from=${vegas.date}&to=${vegas.date}`, 'GET', null, '10.0.0.2')).statusCode, 400);
+urls = [];
+assert.equal((await call('/public/request', 'POST', { ...ok, phone: '89130004400', date: future(7) }, '10.0.0.3')).statusCode, 200);
+assert.ok(!urls.some((x) => x.includes(LIVE)), 'edison must not touch the working Vegas calendar');
+// a window shorter than the minimum hour is ignored (normal hours come back), so Vegas stays closed
+process.env.TEST_WINDOW = '08:00-08:30';
+assert.equal((await call('/public/request', 'POST', vegas, '10.0.0.4')).statusCode, 400);
+// with the window: config shows it, a request inside goes to the working calendar, outside is refused
+process.env.TEST_WINDOW = '08:00-09:00';
+assert.deepEqual(parse(await call('/public/config', 'GET', null, '10.0.0.5')).hours, { open: '08:00', close: '09:00' });
+urls = [];
+assert.equal((await call('/public/request', 'POST', vegas, '10.0.0.6')).statusCode, 200);
+assert.ok(urls.some((x) => x.includes(`/calendars/${LIVE}/events`) && !x.includes('?')), 'the event is written to the working calendar');
+assert.equal((await call('/public/request', 'POST', { ...vegas, phone: '89130005500', start: '12:00', end: '14:00' }, '10.0.0.7')).statusCode, 400);
+assert.equal((await call('/public/request', 'POST', { ...vegas, phone: '89130006600', start: '08:00', end: '10:00' }, '10.0.0.8')).statusCode, 400);
+assert.equal((await call(`/public/busy?hall=vegas&from=${vegas.date}&to=${vegas.date}`, 'GET', null, '10.0.0.9')).statusCode, 200);
+// the night window works the same way
+process.env.TEST_WINDOW = '22:00-23:00';
+assert.equal((await call('/public/request', 'POST', { ...vegas, phone: '89130007700', start: '22:00', end: '23:00', date: future(8) }, '10.0.1.1')).statusCode, 200);
+assert.equal((await call('/public/request', 'POST', { ...vegas, phone: '89130008800', start: '08:00', end: '09:00', date: future(8) }, '10.0.1.2')).statusCode, 400);
 console.log('booking function: all checks passed');

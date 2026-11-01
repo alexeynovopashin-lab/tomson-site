@@ -16,6 +16,12 @@
 //     — or —
 //   GOOGLE_CLIENT_SECRET + GOOGLE_REFRESH_TOKEN — the OAuth way of the Worker (same client id as in the Worker)
 //   ORIGINS              — optional, comma-separated extra page addresses allowed to call the function
+//   VEGAS_CALENDAR_ID    — optional: the WORKING calendar of the hall Vegas (the one synced with the iPhone and read by
+//                          AppEvent). With it, hall «vegas» writes there instead of the test calendar, to check the whole
+//                          chain. Fail-closed: it works ONLY together with TEST_WINDOW, otherwise Vegas is not served.
+//   TEST_WINDOW          — "HH:MM-HH:MM", e.g. "08:00-09:00" or "22:00-23:00": the only hours the window offers and the
+//                          server accepts (replaces the 08:00–23:00 hours for every hall while it is set). Test events
+//                          in the working calendar are put in hours when the hall stands empty; delete them by hand after.
 // Spam guards as in the Worker: hidden field, ≤ 3 requests per phone per hour, ≤ 5 requests per address per
 // minute. The counters live in memory, so the function should run as one instance (like tomsonform).
 const crypto = require('node:crypto');
@@ -64,10 +70,22 @@ function telFull(v) {
   if (d.length === 10) return '7' + d;
   return d;
 }
+// Hours of online booking: the normal ones, or the single test window while TEST_WINDOW is set.
+function hours() {
+  const m = String(process.env.TEST_WINDOW || '').match(/^\s*([01]\d|2[0-3]):([0-5]\d)\s*-\s*([01]\d|2[0-3]):([0-5]\d)\s*$/);
+  if (!m) return HOURS;
+  const w = { open: `${m[1]}:${m[2]}`, close: `${m[3]}:${m[4]}` };
+  return toMin(w.close) - toMin(w.open) >= MIN_MINUTES ? w : HOURS;
+}
+const hasTestWindow = () => hours() !== HOURS;
 function hallOf(id) {
   const key = HALL_ALIAS[id] || id;
   const hall = HALLS.find((h) => h.id === key);
-  return hall && CALENDARS[key] ? { ...hall, calendarId: CALENDARS[key] } : null;
+  if (!hall) return null;
+  // The working Vegas calendar is served only inside the test window; without it the hall falls back to the test calendar.
+  const live = key === 'vegas' && (process.env.VEGAS_CALENDAR_ID || '').trim();
+  if (live) return hasTestWindow() ? { ...hall, calendarId: live } : null;
+  return CALENDARS[key] ? { ...hall, calendarId: CALENDARS[key] } : null;
 }
 
 // ---------- Google access ----------
@@ -142,7 +160,7 @@ const notePhone = (phone, now = Date.now()) => hits.set('p:' + phone, [...(hits.
 // ---------- doors ----------
 
 async function doConfig(reply) {
-  return reply(200, { mode: 'test', tz: 'Asia/Tomsk', hours: HOURS, stepMin: STEP_MIN, minMinutes: MIN_MINUTES, maxDays: MAX_DAYS,
+  return reply(200, { mode: 'test', tz: 'Asia/Tomsk', hours: hours(), stepMin: STEP_MIN, minMinutes: MIN_MINUTES, maxDays: MAX_DAYS,
     halls: HALLS.map((h) => ({ id: h.id, name: h.name })) });
 }
 
@@ -172,8 +190,9 @@ async function doRequest(reply, b) {
   const s = toMin(b.start), e = toMin(b.end), len = e - s;
   if (s % STEP_MIN || e % STEP_MIN) return reply(400, { error: 'Время должно быть кратно получасу' });
   if (len < MIN_MINUTES || len > MAX_MINUTES) return reply(400, { error: 'Минимум один час' });
-  if (s < toMin(HOURS.open) || e > toMin(HOURS.close)) {
-    return reply(400, { error: `Онлайн-запись с ${HOURS.open} до ${HOURS.close}. Нужно раньше или позже — напишите администратору` });
+  const hrs = hours();
+  if (s < toMin(hrs.open) || e > toMin(hrs.close)) {
+    return reply(400, { error: `Онлайн-запись с ${hrs.open} до ${hrs.close}. Нужно раньше или позже — напишите администратору` });
   }
   const now = tomskParts(Date.now());
   if (b.date < now.date || (b.date === now.date && s <= toMin(now.time))) return reply(400, { error: 'Это время уже прошло' });
