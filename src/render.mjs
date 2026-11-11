@@ -140,8 +140,9 @@ function shell({ title, description, body, current, path, image, imageAbs, noind
 ${path === 'index.html' ? hostHomeScript() : ''}<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}${site.pinterestVerify ? `<meta name="p:domain_verify" content="${esc(site.pinterestVerify)}">\n` : ''}<meta name="theme-color" content="#f5f1ea">
-<link rel="preload" href="/fonts/playfair-cyr.woff2" as="font" type="font/woff2" crossorigin>
+${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}${site.pinterestVerify ? `<meta name="p:domain_verify" content="${esc(site.pinterestVerify)}">\n` : ''}<meta name="theme-color" content="#fbfaf8">
+<link rel="preload" href="/fonts/noto-display-cyr.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/noto-display-italic-cyr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -192,7 +193,6 @@ function hallCard(h) {
   return `<article class="hall">
 ${pic}
 <div class="body">
-<span class="num">№ ${h.number}</span>
 <h3><a class="hall-link" href="${url}">${esc(h.name)}</a></h3>
 <p class="label kicker">${esc(h.kicker)}</p>
 <p class="blurb">${esc(h.blurb)}</p>
@@ -435,7 +435,7 @@ ${preview && n > preview ? `<button class="btn show-all" type="button">Пока�
 function svcCard(k) {
   const first = seriesIn(k.slug).find((id) => PORT[id].photos.length);
   const pic = first ? `<img src="/photos/p/${first}/t/${pfName(PORT[first].photos[0])}.jpg" alt="" loading="lazy" decoding="async">` : `<span class="svc-soon-l">${esc(SVC.soonShort)}</span>`;
-  return `<a class="svc" href="${svcUrl(k)}"><span class="svc-pic">${pic}</span><span class="svc-n">${esc(k.name)}</span><span class="svc-t">${esc(k.short)}</span><span class="svc-go" aria-hidden="true">→</span></a>`;
+  return `<a class="svc" href="${svcUrl(k)}"><span class="svc-pic">${pic}</span><span class="svc-n">${esc(k.name)}</span><span class="svc-t">${esc(k.short)}</span></a>`;
 }
 // places a series can be pinned to (admin «Портфолио»): the landing, a service, a hall
 const hallBySlug = Object.fromEntries(Object.values(halls).map((h) => [h.pageSlug, h]));

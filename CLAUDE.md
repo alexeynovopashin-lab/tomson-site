@@ -41,7 +41,7 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
   Pages link `?v=<md5 8>` so a new photo shows at once.
 - Request form: `content/form.json` (texts), `site.json` → `formApi`, cloud function `tomsonform` (`cloud/form/index.js`,
   public, one instance, env SMTP_*: Alexey types them, never ask). Without `formApi` the form is hidden; keep it in `site.json`.
-- `src/` — `style.css`, `site.js`, self-hosted fonts (Playfair Display, Manrope).
+- `src/` — `style.css`, `site.js`, self-hosted fonts (Noto Serif Display for headings, Manrope).
 - Photographer (step 6c): `/fotograf/` landing (`content/fotograf.json`), photo services
   `/uslugi/<slug>/` from ONE list `content/services.json` (also shown on the studio «Услуги» page).
   A service page with no portfolio series is `noindex` and out of the sitemap; it opens by itself
