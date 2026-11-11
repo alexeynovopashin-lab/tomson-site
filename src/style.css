@@ -564,3 +564,13 @@ nav.main .nav-search span{position:absolute;width:1px;height:1px;overflow:hidden
 .sv-tab[aria-pressed="true"]{background:var(--ink);color:#f3eee5;opacity:1}
 .sv-hint{margin:8px 0 0;font-size:14px}
 .sv-hint button{font:inherit;color:inherit;text-decoration:underline;background:none;border:0;padding:0;cursor:pointer}
+
+/* booking is the main action: a filled button in the menu (in the phone strip next to «Меню»), next to hall prices, above the request form */
+nav.main .nav-cta a{margin-block:6px;padding:9px 16px;border:0;border-radius:999px;background:var(--accent,var(--ink));color:var(--accent-ink,var(--paper))}
+nav.main .nav-cta a:hover,nav.main .nav-cta a[aria-current]{background:var(--ink);color:var(--paper)}
+@media (max-width:820px){
+  nav.main ul .nav-cta a{margin:0;padding:13px 0;border-radius:0;background:none;color:inherit;border-bottom:1px solid var(--line)}
+  nav.main .quick a.q-cta{margin-block:5px;padding:12px 15px;border:0;border-radius:999px;background:var(--accent,var(--ink));color:var(--accent-ink,var(--paper))}
+}
+.book-now{margin:18px 0 0}
+.rform-head .rform-book{margin-top:18px;color:var(--ink)}
