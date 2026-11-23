@@ -227,6 +227,25 @@ ${requestForm()}
   return shell({ title: c.title, description: c.description, body, path: 'index.html', image: c.cover.photo });
 }
 
+// Seasonal decor of a hall (zal-*.json → season, e.g. Edison as a wizard school for New Year, Alexey 2026-11-23).
+// It disappears by itself: render skips it after `until`, and site.js removes [data-until] blocks in the browser,
+// because no render runs on the day the season ends.
+const today = () => new Date().toISOString().slice(0, 10);
+const seasonOn = (s) => !!s && (!s.until || today() <= s.until);
+const SOVA_URL = '/sova/';
+const sovaOn = () => seasonOn(C['sova.json']);
+// floating candles in the night band (on the light first photo of the hall they did not read); fixed positions,
+// so the picture is the same on every visit: [left %, top %, size]
+const CANDLES = [[4, 30, 9], [15, 10, 7], [27, 38, 10], [41, 14, 8], [53, 34, 9], [66, 8, 7], [78, 28, 10], [90, 12, 8], [96, 40, 7]];
+const candles = () => `<div class="candles" aria-hidden="true">${CANDLES.map(([x, y, w], i) => `<span style="left:${x}%;top:${y}%;--w:${w};animation-delay:${-i * 0.9}s;animation-duration:${5 + (i % 4)}s"><img src="/sova/candle.webp" alt=""></span>`).join('')}</div>`;
+function seasonBlock(s) {
+  const acts = `<a class="btn solid" href="#bron">${esc(s.book)}</a>${s.sova && sovaOn() ? `<a class="btn light" href="${SOVA_URL}">${esc(s.sova)}</a>` : ''}`;
+  return `<section class="season"${s.until ? ` data-until="${esc(s.until)}"` : ''}>${s.candles ? candles() : ''}<div class="wrap s-grid">
+<div class="s-text"><span class="label">${esc(s.label)}</span><h2>${esc(s.title)}</h2>${s.text.map((t) => `<p>${esc(t)}</p>`).join('')}<div class="actions">${acts}</div></div>
+${s.photos && s.photos.length ? `<div class="s-photos">${s.photos.map((p) => photo(p)).join('')}</div>` : ''}
+</div></section>`;
+}
+
 function hallPage(file) {
   const c = C[file];
   const h = halls[c.hall];
@@ -239,6 +258,7 @@ function hallPage(file) {
 <div class="prices"><span class="label">Стоимость аренды</span><ul class="tiers">${tiers}</ul><p class="price-note">${esc(c.priceNote)} <a href="${slugUrl('pravila_i_cena')}">Правила</a></p></div>
 </section>
 <section class="wrap hero">${photo(c.photo, { eager: true })}</section>
+${seasonOn(c.season) ? seasonBlock(c.season) : ''}
 <section class="wrap about">
 <p class="lede">${esc(c.lede)}</p>
 <div class="side"><dl>${c.facts.map((f) => `<dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd>`).join('')}</dl><ul>${c.details.map((d) => `<li>${esc(d)}</li>`).join('')}</ul></div>
@@ -628,6 +648,66 @@ function testBronPage() {
   return page('test-bron/index.html', { title: c.title, description: c.description, body, current: 'Залы', noindex: true });
 }
 
+// «Совиная почта» (/sova/, Alexey 2026-11-23): the owl scene of the birthday invitations inviting to the Edison
+// decor. A page of its own (full screen, no menu), noindex and out of the search list; texts in content/sova.json,
+// scene in src/sova/ (sova.js, sova.css, Alexey's owl/envelope/paper). After `until` it is not rendered, and a stale
+// copy in the bucket sends the visitor to the hall (data-until in sova.js).
+function sovaPage() {
+  const c = C['sova.json'];
+  if (!sovaOn()) return null;
+  const L = c.letter;
+  const home = `/${halls.edison.pageSlug}/`;
+  const bg = `/photos/${c.bg}.jpg?v=${versions[c.bg]}`;
+  if (!versions[c.bg]) throw new Error(`no file for slot: ${c.bg}`);
+  const abs = site.siteUrl || '';
+  const html = `<!doctype html>
+<html lang="ru" data-until="${esc(c.until || '')}" data-home="${esc(home)}" data-pull="${esc(c.hintPull)}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0d18">
+<title>${esc(c.title)}</title>
+<meta name="description" content="${esc(c.description)}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${esc(c.title)}">
+<meta property="og:description" content="${esc(c.description)}">
+${abs ? `<meta property="og:url" content="${esc(abs + SOVA_URL)}">\n<meta property="og:image" content="${esc(abs + bg)}">\n` : ''}<link rel="preload" href="/fonts/playfair-italic-cyr.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/sova/sova.css">
+</head>
+<body>
+<div id="stage" style="--bg:url('${esc(bg)}')">
+<div class="bg"></div><div class="shade"></div><div id="fx"></div><div class="dim"></div>
+<a class="back" href="${esc(home)}">← ${esc(c.back)}</a>
+<div id="envBox" role="button" tabindex="0" aria-label="${esc(c.hintSeal)}">
+<img class="k3" id="k3" src="/sova/env3.webp" alt="">
+<div id="closed"><img class="k1" id="k1" src="/sova/env1.webp" alt=""><img class="k2" id="k2" src="/sova/env2.webp" alt=""><div id="glow"></div></div>
+</div>
+<div id="owl"><img class="lw" src="/sova/owl_lw.webp" alt=""><img class="rw" src="/sova/owl_rw.webp" alt=""><img class="body" src="/sova/owl_body.webp" alt=""><img class="head" src="/sova/owl_head.webp" alt=""></div>
+<div id="owlBeak"><img class="beak" src="/sova/owl_beak.webp" alt=""></div>
+<div id="hint">${esc(c.hintSeal)}</div>
+<div id="gate">${esc(c.gate)}<small>${esc(c.gateWait)}</small><a id="skip" href="?letter" hidden>${esc(c.skip)}</a></div>
+<div id="letter"><div id="paper">
+<img class="pt" src="/sova/paper_bot.webp" alt="">
+<div class="pm"><div class="inner"><div class="txt" id="txt">
+<div class="ln to hw">${esc(L.to)}</div>
+<div class="ln hi hw">${esc(L.hi)}</div>
+${L.text.map((t) => `<div class="ln p hw">${esc(t)}</div>`).join('\n')}
+<div class="ln det"><b>${esc(L.when)}</b>${L.lines.map((t) => `<span>${esc(t)}</span>`).join('')}<span>${esc(site.address)}</span></div>
+<div class="ln p hw">${esc(L.after)}</div>
+<div class="ln sig hw">${esc(L.sig)}<b>${esc(L.sigName)}</b></div>
+<div class="ln acts"><a class="act main" href="${esc(home)}#bron">${esc(L.book)}</a><a class="act" href="${slugUrl('kak-najti')}">${esc(L.find)}</a></div>
+</div></div></div>
+<img class="pb" src="/sova/paper_bot.webp" alt="">
+</div></div>
+</div>
+<script src="/sova/sova.js" defer></script>
+</body>
+</html>
+`;
+  return { path: 'sova/index.html', html, noindex: true };
+}
+
   const files = [{ path: 'index.html', html: home() }];
   for (const f of PAGE_FILES.filter((n) => n.startsWith('zal-'))) files.push(hallPage(f));
   files.push(equipmentPage(), rulesPage(), findPage(), schedulePage(), servicesPage(), schoolPage());
@@ -636,6 +716,8 @@ function testBronPage() {
   if (SEARCH.title) files.push(searchPage()); // last: it lists every page rendered before it
   const testBron = testBronPage(); // after the search page on purpose: a hidden page must not be listed there
   if (testBron) files.push(testBron);
+  const sova = sovaPage(); // also after the search page: a hidden seasonal page
+  if (sova) files.push(sova);
   const unused = Object.keys(prices.items).filter((k) => !usedPriceKeys.has(k));
   // non-HTML files that change with content: the sitemap follows which service pages are open to search
   const other = [];

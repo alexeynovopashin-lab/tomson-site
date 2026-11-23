@@ -1,4 +1,7 @@
 (function(){
+  // seasonal blocks (data-until="YYYY-MM-DD") leave the page the day after, even if no render ran since
+  var day=new Date().toISOString().slice(0,10);
+  [].forEach.call(document.querySelectorAll('[data-until]'),function(el){if(el.dataset.until&&day>el.dataset.until)el.remove()});
   var nav=document.querySelector('nav.main'),btn=document.querySelector('.menu-btn');
   if(btn)btn.addEventListener('click',function(){var o=nav.classList.toggle('open');btn.setAttribute('aria-expanded',o)});
   // equipment demo: VK player over the page; the iframe is removed on close so the video stops

@@ -30,6 +30,8 @@ mkdirSync(dist, { recursive: true });
 cpSync(join(root, 'src/fonts'), join(dist, 'fonts'), { recursive: true });
 cpSync(join(root, 'src/img'), join(dist, 'img'), { recursive: true });
 cpSync(join(root, 'photos'), join(dist, 'photos'), { recursive: true });
+// «Совиная почта» scene (owl, envelope, paper, candle, its script and styles); its page comes from render
+cpSync(join(root, 'src/sova'), join(dist, 'sova'), { recursive: true });
 for (const f of ['style.css', 'site.js']) cpSync(join(root, 'src', f), join(dist, f));
 for (const { path, html } of files) out(path, html);
 cpSync(join(root, 'admin/index.html'), join(dist, 'admin/index.html'));
