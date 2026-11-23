@@ -66,7 +66,7 @@ function channelLinks(cls) {
 // listed in site.json → quick, then the messengers as icons. Hidden on wide screens (full menu there).
 function quickStrip() {
   const pages = (site.quick || []).map((slug) => site.nav.find((n) => n.slug === slug)).filter(Boolean)
-    .map((n) => `<a href="${esc(navUrl(n))}">${esc(n.label)}</a>`);
+    .map((n) => `<a${n.cta ? ' class="q-cta"' : ''} href="${esc(navUrl(n))}">${esc(n.label)}</a>`);
   const chans = (site.channels || []).filter((ch) => ch.href && CHANNEL_ICONS[ch.id])
     .map((ch) => `<a class="q-ic" href="${esc(ch.href)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(ch.label)} (откроется в новой вкладке)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${CHANNEL_ICONS[ch.id]}</svg></a>`);
   const find = SEARCH.title ? [`<a class="q-ic" href="${SEARCH_URL}" aria-label="${esc(SEARCH.title)}">${SEARCH_ICON}</a>`] : [];
@@ -131,7 +131,7 @@ function shell({ title, description, body, current, path, image, imageAbs, noind
   const url = urlOf(path);
   pagesSeen.push({ url, title });
   const items = site.nav
-    .map((n) => `<li><a href="${esc(navUrl(n))}"${current === n.label ? ' aria-current="page"' : ''}>${esc(n.label)}</a></li>`)
+    .map((n) => `<li${n.cta ? ' class="nav-cta"' : ''}><a href="${esc(navUrl(n))}"${current === n.label ? ' aria-current="page"' : ''}>${esc(n.label)}</a></li>`)
     .join('') + (SEARCH.title ? `<li class="nav-search"><a href="${SEARCH_URL}"${current === 'search' ? ' aria-current="page"' : ''} aria-label="${esc(SEARCH.title)}">${SEARCH_ICON}<span>${esc(SEARCH.menu)}</span></a></li>` : '');
   return `<!doctype html>
 <html lang="ru">
@@ -140,8 +140,9 @@ function shell({ title, description, body, current, path, image, imageAbs, noind
 ${path === 'index.html' ? hostHomeScript() : ''}<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
-${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}${site.pinterestVerify ? `<meta name="p:domain_verify" content="${esc(site.pinterestVerify)}">\n` : ''}<meta name="theme-color" content="#f5f1ea">
-<link rel="preload" href="/fonts/playfair-cyr.woff2" as="font" type="font/woff2" crossorigin>
+${noindex ? '<meta name="robots" content="noindex">\n' : seoHead({ title, description, url, image, imageAbs })}${site.pinterestVerify ? `<meta name="p:domain_verify" content="${esc(site.pinterestVerify)}">\n` : ''}<meta name="theme-color" content="#fbfaf8">
+<link rel="preload" href="/fonts/noto-display-cyr.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/noto-display-italic-cyr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -171,7 +172,7 @@ function requestForm(preset) {
   const opts = (preset && !f.interests.includes(preset) ? [preset, ...f.interests] : f.interests).map((t) => `<option${t === preset ? ' selected' : ''}>${esc(t)}</option>`).join('');
   const id = (k) => `rf-${k}`;
   return `<section class="wrap rform-sec" id="zayavka">
-<div class="rform-head"><span class="label">${esc(f.label)}</span><h2>${esc(f.title)}</h2><p>${esc(f.lead)}</p></div>
+<div class="rform-head"><span class="label">${esc(f.label)}</span><h2>${esc(f.title)}</h2><p>${esc(f.lead)}</p>${f.bookLead ? `<p class="rform-book">${esc(f.bookLead)}</p><p class="rform-book"><a class="btn" href="${slugUrl('raspisanie')}#bron">${esc(f.bookButton)}</a></p>` : ''}</div>
 <form class="rform" data-api="${esc(site.formApi)}" data-sending="${esc(f.sending)}" data-sent="${esc(f.sent)}" data-err-fields="${esc(f.errorFields)}" data-err-rate="${esc(f.errorRate)}" data-err-agree="${esc(f.errorAgree || '')}" data-err="${esc(f.error)} ${esc(site.phone)}" novalidate>
 <div class="rf-row"><label for="${id('name')}">${esc(f.fields.name)}</label><input id="${id('name')}" name="name" autocomplete="name" maxlength="80" required></div>
 <div class="rf-row"><label for="${id('phone')}">${esc(f.fields.phone)}</label><input id="${id('phone')}" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" required></div>
@@ -192,13 +193,12 @@ function hallCard(h) {
   return `<article class="hall">
 ${pic}
 <div class="body">
-<span class="num">№ ${h.number}</span>
 <h3><a class="hall-link" href="${url}">${esc(h.name)}</a></h3>
 <p class="label kicker">${esc(h.kicker)}</p>
 <p class="blurb">${esc(h.blurb)}</p>
 <dl class="specs"><div><dt>Площадь</dt><dd>${esc(h.area)}</dd></div><div><dt>Потолки</dt><dd>${esc(h.ceiling)}</dd></div><div><dt>Свет</dt><dd>${esc(h.light)}</dd></div></dl>
 <p class="price">от ${money(fromPrice(h))} ₽<small>за час</small></p>
-<div class="acts"><a class="btn solid" href="${esc(hallUrl(h))}">Смотреть зал</a></div>
+<div class="acts"><a class="btn solid" href="${esc(hallUrl(h))}#bron">Забронировать</a><a class="link" href="${esc(hallUrl(h))}">Смотреть зал</a></div>
 </div>
 </article>`;
 }
@@ -210,7 +210,7 @@ function home() {
 <section class="wrap cover">
 <div class="text"><div><span class="label">${esc(c.cover.label)}</span><h1>${h1}</h1></div>
 <p class="lead">${esc(c.cover.lead)}</p>
-<div class="actions"><a class="btn solid" href="#zaly">Выбрать зал</a><a class="btn" href="${slugUrl('kak-najti')}">Как найти</a></div></div>
+<div class="actions"><a class="btn solid" href="${slugUrl('raspisanie')}">Забронировать</a><a class="btn" href="#zaly">Выбрать зал</a><a class="btn" href="${slugUrl('kak-najti')}">Как найти</a></div></div>
 <div class="fig">${photo(c.cover.photo, { eager: true })}<figcaption>${esc(c.cover.caption)}</figcaption></div>
 </section>
 <div class="wrap"><div class="facts">${c.facts.map((f) => `<div><b>${esc(f.value)}</b><span class="label">${esc(f.label)}</span></div>`).join('')}</div></div>
@@ -255,7 +255,7 @@ function hallPage(file) {
 <div class="wrap crumbs"><span class="label"><a href="/#zaly">Залы</a> / ${esc(h.name)}</span></div>
 <section class="wrap title">
 <div class="t"><span class="label">Зал № ${h.number} · ${esc(h.kicker)}</span><h1>${esc(h.name)}</h1></div>
-<div class="prices"><span class="label">Стоимость аренды</span><ul class="tiers">${tiers}</ul><p class="price-note">${esc(c.priceNote)} <a href="${slugUrl('pravila_i_cena')}">Правила</a></p></div>
+<div class="prices"><span class="label">Стоимость аренды</span><ul class="tiers">${tiers}</ul><p class="book-now"><a class="btn solid" href="#bron">Забронировать зал</a></p><p class="price-note">${esc(c.priceNote)} <a href="${slugUrl('pravila_i_cena')}">Правила</a></p></div>
 </section>
 <section class="wrap hero">${photo(c.photo, { eager: true })}</section>
 ${seasonOn(c.season) ? seasonBlock(c.season) : ''}
@@ -387,7 +387,7 @@ ${pageHead('Расписание', c)}
 <div class="frame"><iframe src="${esc(c.widget)}" title="Календарь бронирования залов" height="${c.height}" loading="lazy"></iframe></div>
 </div></section>
 </main>`;
-  return page('raspisanie/index.html', { title: c.title, description: c.description, body, current: 'Расписание' });
+  return page('raspisanie/index.html', { title: c.title, description: c.description, body, current: site.nav.find((n) => n.slug === 'raspisanie')?.label });
 }
 
 function servicesPage() {
@@ -455,7 +455,7 @@ ${preview && n > preview ? `<button class="btn show-all" type="button">Пока�
 function svcCard(k) {
   const first = seriesIn(k.slug).find((id) => PORT[id].photos.length);
   const pic = first ? `<img src="/photos/p/${first}/t/${pfName(PORT[first].photos[0])}.jpg" alt="" loading="lazy" decoding="async">` : `<span class="svc-soon-l">${esc(SVC.soonShort)}</span>`;
-  return `<a class="svc" href="${svcUrl(k)}"><span class="svc-pic">${pic}</span><span class="svc-n">${esc(k.name)}</span><span class="svc-t">${esc(k.short)}</span><span class="svc-go" aria-hidden="true">→</span></a>`;
+  return `<a class="svc" href="${svcUrl(k)}"><span class="svc-pic">${pic}</span><span class="svc-n">${esc(k.name)}</span><span class="svc-t">${esc(k.short)}</span></a>`;
 }
 // places a series can be pinned to (admin «Портфолио»): the landing, a service, a hall
 const hallBySlug = Object.fromEntries(Object.values(halls).map((h) => [h.pageSlug, h]));

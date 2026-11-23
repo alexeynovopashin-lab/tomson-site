@@ -12,7 +12,7 @@
   "hostHome": { "novopashin.ru": "/fotograf/" },
   "nav": [
     { "label": "Залы", "href": "/#zaly" },
-    { "label": "Расписание", "slug": "raspisanie" },
+    { "label": "Забронировать", "slug": "raspisanie", "cta": true },
     { "label": "Фотошкола", "slug": "fotosfera" },
     { "label": "Фотограф", "slug": "fotograf" },
     { "label": "Правила", "slug": "pravila_i_cena" },
@@ -25,7 +25,7 @@
   "channels": [
     { "id": "whatsapp", "label": "WhatsApp", "href": "https://wa.me/79618878078" },
     { "id": "telegram", "label": "Telegram", "href": "https://t.me/studiotomson" },
-    { "id": "max", "label": "Max", "href": "https://max.ru/u/f9LHodD0cOJ1KqGFpSHGfkGG-7hNMJcvtZs2M9d5rgtn10AmmB512SkO-Us" },
+    { "id": "max", "label": "MAX", "href": "https://max.ru/u/f9LHodD0cOJ1KqGFpSHGfkGG-7hNMJcvtZs2M9d5rgtn10AmmB512SkO-Us" },
     { "id": "vk", "label": "VK", "href": "https://vk.com/studiotomson" },
     { "id": "instagram", "label": "Instagram", "href": "https://www.instagram.com/studiotomson" }
   ],
