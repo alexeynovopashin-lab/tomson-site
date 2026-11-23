@@ -61,6 +61,10 @@ with `_src/render.mjs` from the bucket, keeps the old file in `_src/archive/<tim
 - Deploy: `python3 deploy.py [--dry-run] [--pull-only]` uploads changed files of `dist/` to bucket
   `tomson` (S3 API, keys in `~/.config/tomson/s3.env`, made by Alexey, never in a repo). No deletes.
   HTML/JSON are `no-cache`, photos a year (versioned URLs).
+- Season (New Year 2026/27, Edison as a wizard school; live 2026-11-23): `zal-*.json` → `season`
+  (night band with candles, decor photos `edison-ny-*`, `hero` = first photo for the season) and `/sova/`
+  (owl-post page from dr_invites: `content/sova.json`, `src/sova/`; noindex, no Adlery font, no sounds,
+  crest cut off the parchment). Both end by themselves after `until` (render + `data-until` in site.js/sova.js).
 - Preview: `preview_start tomson-site` (8791, `dist/`; entry in `light_plan:.claude/launch.json`).
 
 ## Booking
