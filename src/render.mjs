@@ -238,6 +238,11 @@ const sovaOn = () => seasonOn(C['sova.json']);
 // so the picture is the same on every visit: [left %, top %, size]
 const CANDLES = [[4, 30, 9], [15, 10, 7], [27, 38, 10], [41, 14, 8], [53, 34, 9], [66, 8, 7], [78, 28, 10], [90, 12, 8], [96, 40, 7]];
 const candles = () => `<div class="candles" aria-hidden="true">${CANDLES.map(([x, y, w], i) => `<span style="left:${x}%;top:${y}%;--w:${w};animation-delay:${-i * 0.9}s;animation-duration:${5 + (i % 4)}s"><img src="/sova/candle.webp" alt=""></span>`).join('')}</div>`;
+// the hall's first photo is the decorated one while the season lasts; the usual one waits hidden (lazy, so it is not
+// downloaded) and site.js shows it after `until`, when the page in the bucket was not rendered again
+const seasonHero = (s, usual) => s.until
+  ? `<div data-until="${esc(s.until)}">${photo(s.hero, { eager: true })}</div><div data-after="${esc(s.until)}" hidden>${photo(usual)}</div>`
+  : photo(s.hero, { eager: true });
 function seasonBlock(s) {
   const acts = `<a class="btn solid" href="#bron">${esc(s.book)}</a>${s.sova && sovaOn() ? `<a class="btn light" href="${SOVA_URL}">${esc(s.sova)}</a>` : ''}`;
   return `<section class="season"${s.until ? ` data-until="${esc(s.until)}"` : ''}>${s.candles ? candles() : ''}<div class="wrap s-grid">
@@ -257,7 +262,7 @@ function hallPage(file) {
 <div class="t"><span class="label">Зал № ${h.number} · ${esc(h.kicker)}</span><h1>${esc(h.name)}</h1></div>
 <div class="prices"><span class="label">Стоимость аренды</span><ul class="tiers">${tiers}</ul><p class="book-now"><a class="btn solid" href="#bron">Забронировать зал</a></p><p class="price-note">${esc(c.priceNote)} <a href="${slugUrl('pravila_i_cena')}">Правила</a></p></div>
 </section>
-<section class="wrap hero">${photo(c.photo, { eager: true })}</section>
+<section class="wrap hero">${seasonOn(c.season) && c.season.hero ? seasonHero(c.season, c.photo) : photo(c.photo, { eager: true })}</section>
 ${seasonOn(c.season) ? seasonBlock(c.season) : ''}
 <section class="wrap about">
 <p class="lede">${esc(c.lede)}</p>
@@ -276,7 +281,7 @@ ${g.closing ? `<button class="open wide" aria-label="Открыть фото">${
 </div></section>
 </main>
 <dialog class="lb" aria-label="Просмотр фото"><div class="stage"><img alt=""></div><button class="x" aria-label="Закрыть">×</button><button class="p" aria-label="Назад">‹</button><button class="n" aria-label="Вперёд">›</button></dialog>`;
-  return page(`${h.pageSlug}/index.html`, { title: c.title, description: c.description, body, current: 'Залы', image: c.photo });
+  return page(`${h.pageSlug}/index.html`, { title: c.title, description: c.description, body, current: 'Залы', image: seasonOn(c.season) && c.season.hero ? c.season.hero : c.photo });
 }
 
 function tierTable(h) {
@@ -672,7 +677,7 @@ function sovaPage() {
 <meta property="og:type" content="website">
 <meta property="og:title" content="${esc(c.title)}">
 <meta property="og:description" content="${esc(c.description)}">
-${abs ? `<meta property="og:url" content="${esc(abs + SOVA_URL)}">\n<meta property="og:image" content="${esc(abs + bg)}">\n` : ''}<link rel="preload" href="/fonts/playfair-italic-cyr.woff2" as="font" type="font/woff2" crossorigin>
+${abs ? `<meta property="og:url" content="${esc(abs + SOVA_URL)}">\n<meta property="og:image" content="${esc(abs + bg)}">\n` : ''}<link rel="preload" href="/fonts/noto-display-italic-cyr.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/sova/sova.css">
 </head>
 <body>

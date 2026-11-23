@@ -155,6 +155,8 @@ footer .note{grid-column:1/-1;font-size:12.5px;color:var(--muted);border-top:1px
 .season h2{margin:14px 0 22px;font:500 clamp(36px,4.4vw,64px)/1.02 var(--serif);letter-spacing:-.01em;text-wrap:balance}
 .season p{margin:0 0 14px;color:rgba(243,238,229,.8);font-size:16px;max-width:34em}
 .season .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.season .btn.solid{background:#f3eee5;border-color:#f3eee5;color:#141414}
+.season .btn.solid:hover{background:transparent;color:#f3eee5}
 .season .s-photos{grid-column:6/13;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
 .season .s-photos .ph:nth-child(2){transform:translateY(clamp(16px,3vw,48px))}
 @media (max-width:900px){.season .s-text,.season .s-photos{grid-column:1/-1}.season .s-photos{margin-top:12px}}
